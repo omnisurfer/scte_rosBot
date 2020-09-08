@@ -12,7 +12,7 @@ https://wiki.ros.org/action/fullsearch/urdf/Tutorials/Building%20a%20Visual%20Ro
     <!-- vehicle params-->
     <xacro:property name="scte_chassis_length" value="0.292"/>
     <xacro:property name="scte_chassis_width" value="0.165"/>
-    <xacro:property name="scte_chassis_depth" value="0.0635"/> <!--value="0.127"/-->
+    <xacro:property name="scte_chassis_depth" value="0.00635"/> <!--value="0.127"/-->
     <xacro:property name="scte_total_mass" value="3.8"/>
     <xacro:property name="scte_wheel_mass" value="0.5"/>
 
@@ -67,14 +67,14 @@ https://wiki.ros.org/action/fullsearch/urdf/Tutorials/Building%20a%20Visual%20Ro
     </link>
 
     <joint name='scte_chassis_JOINT_scte_front_diff' type='fixed'>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz="${scte_chassis_length * 0.63} 0 0" rpy="0 0 0"/>
         <parent link="scte_chassis"/>
         <child link="scte_front_diff"/>
         <axis xyz="0 0 0" rpy="0 0 0"/>
     </joint>
 
     <joint name='scte_chassis_JOINT_scte_rear_diff' type='fixed'>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz="${scte_chassis_length * 0.63 * -1} 0 0" rpy="0 0 0"/>
         <parent link="scte_chassis"/>
         <child link="scte_rear_diff"/>
         <axis xyz="0 0 0" rpy="0 0 0"/>
