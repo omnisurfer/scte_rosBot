@@ -1,0 +1,31 @@
+/home/daniel/opt/clion-2020.2.1/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/daniel/ros_ws/scteBot_ws/src
+-- Using CATKIN_DEVEL_PREFIX: /home/daniel/ros_ws/scteBot_ws/src/cmake-build-debug/devel
+-- Using CMAKE_PREFIX_PATH: /home/daniel/ros_ws/scteBot_ws/devel;/opt/ros/noetic
+-- This workspace overlays: /home/daniel/ros_ws/scteBot_ws/devel;/opt/ros/noetic
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.2", minimum required is "3") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Using Debian Python package layout
+-- Using empy: /usr/lib/python3/dist-packages/em.py
+-- Using CATKIN_ENABLE_TESTING: ON
+-- Call enable_testing()
+-- Using CATKIN_TEST_RESULTS_DIR: /home/daniel/ros_ws/scteBot_ws/src/cmake-build-debug/test_results
+-- Forcing gtest/gmock from source, though one was otherwise available.
+-- Found gtest sources under '/usr/src/googletest': gtests will be built
+-- Found gmock sources under '/usr/src/googletest': gmock will be built
+-- Found PythonInterp: /usr/bin/python3 (found version "3.8.2") 
+-- Using Python nosetests: /usr/bin/nosetests3
+-- catkin 0.8.8
+-- BUILD_SHARED_LIBS is on
+-- BUILD_SHARED_LIBS is on
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~  traversing 2 packages in topological order:
+-- ~~  - scte_description
+-- ~~  - scte_gazebo
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- +++ processing catkin package: 'scte_description'
+-- ==> add_subdirectory(urdf_models/scte_vehicle/scte_description)
+-- +++ processing catkin package: 'scte_gazebo'
+-- ==> add_subdirectory(urdf_models/scte_vehicle/scte_gazebo)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/daniel/ros_ws/scteBot_ws/src/cmake-build-debug

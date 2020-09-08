@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<robot>
+
+    <link name="scte_front_diff">
+        <inertial>
+            <mass value="${scte_total_mass * 0.05}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="${scte_chassis_length * 0.63} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${scte_chassis_length * 0.26} ${scte_chassis_width * 0.38} ${scte_chassis_depth}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="${scte_chassis_length * 0.63} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${scte_chassis_length * 0.26} ${scte_chassis_width * 0.38} ${scte_chassis_depth}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <link name="scte_front_axle">
+        <inertial>
+            <mass value="${scte_total_mass * 0.02}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="${scte_chassis_length * 0.63} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="${scte_chassis_depth * 0.1}" length="${scte_chassis_width * 1.11}"/>
+            </geometry>
+            <material name="red"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="${scte_chassis_length * 0.63} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="${scte_chassis_depth * 0.1}" length="${scte_chassis_width * 1.11}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name='scte_front_diff_JOINT_scte_front_axle' type='fixed'>
+        <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+        <parent link="scte_front_diff"/>
+        <child link="scte_front_axle"/>
+        <axis xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+
+    <link name="scte_rear_diff">
+        <inertial>
+            <mass value="${scte_total_mass * 0.05}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="${scte_chassis_length * 0.63 * -1} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${scte_chassis_length * 0.26} ${scte_chassis_width * 0.38} ${scte_chassis_depth}"/>
+            </geometry>
+            <material name="red"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="${scte_chassis_length * 0.63 * -1} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${scte_chassis_length * 0.26} ${scte_chassis_width * 0.38} ${scte_chassis_depth}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <link name="scte_rear_axle">
+        <inertial>
+            <mass value="${scte_total_mass * 0.02}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="${scte_chassis_length * 0.63 * -1} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="${scte_chassis_depth * 0.1}" length="${scte_chassis_width * 1.11}"/>
+            </geometry>
+            <material name="red"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="${scte_chassis_length * 0.63 * -1} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="${scte_chassis_depth * 0.1}" length="${scte_chassis_width * 1.11}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name='scte_rear_diff_JOINT_scte_rear_axle' type='fixed'>
+        <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+        <parent link="scte_rear_diff"/>
+        <child link="scte_rear_axle"/>
+        <axis xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+</robot>
+

@@ -1,0 +1,103 @@
+<?xml version='1.0'?>
+<!--
+https://answers.ros.org/question/192817/error-msg-the-root-link_base-has-an-inertia-specified-in-the-urdf-but-kdl/
+http://gazebosim.org/tutorials?tut=ros_urdf
+https://wiki.ros.org/action/fullsearch/urdf/Tutorials/Building%20a%20Visual%20Robot%20Model%20with%20URDF%20from%20Scratch?action=fullsearch&context=180&value=linkto%3A%22urdf%2FTutorials%2FBuilding+a+Visual+Robot+Model+with+URDF+from+Scratch%22
+-->
+
+<robot name="scteBot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
+
+    <!-- vehicle params-->
+    <xacro:property name="scte_chassis_length" value="0.292"/>
+    <xacro:property name="scte_chassis_width" value="0.2159"/>
+    <xacro:property name="scte_chassis_depth" value="0.0635"/> <!--value="0.127"/-->
+    <xacro:property name="scte_total_mass" value="3.8"/>
+
+    <xacro:include filename="$(find scte_description)/urdf/scte.gazebo" />
+    <xacro:include filename="$(find scte_description)/urdf/scte_diff.xacro"/>
+
+    <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
+    <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />
+
+    <!--LIDAR-->
+    <!--xacro:include filename="$(find SOMESENSOR_description)/urdf/SENSOR.urdf.xacro"/>
+    <SOMESENSOR parent="scte_chassis" name="SOMESENSOR_sensor" hz="10" samples="220" lasers="16">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </SOMESENSOR-->
+
+    <link name="base_link">
+
+    </link>
+
+    <joint name="base_link" type="fixed">
+        <origin xyz="0 0.0 0.0" rpy="0 -0 0"/>
+        <parent link="base_link"/>
+        <child link="scte_chassis"/>
+    </joint>
+
+    <link name='scte_chassis'>
+        <inertial>
+            <mass value="${scte_total_mass * 0.86}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${scte_chassis_length} ${scte_chassis_width} ${scte_chassis_depth}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${scte_chassis_length} ${scte_chassis_width} ${scte_chassis_depth}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name='scte_chassis_JOINT_scte_front_diff' type='fixed'>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="scte_chassis"/>
+        <child link="scte_front_diff"/>
+        <axis xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <joint name='scte_chassis_JOINT_scte_rear_diff' type='fixed'>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="scte_chassis"/>
+        <child link="scte_rear_diff"/>
+        <axis xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <!--link name='main_computer'>
+    <inertial>
+        <mass value="1"/>
+        <inertia
+                ixx="1" ixy="0" ixz="0"
+                iyy="1" iyz="0"
+                izz="1"
+        />
+    </inertial>
+
+    <visual name='visual'>
+        <geometry>
+            <box size="1 1 1"/>
+        </geometry>
+        <material name="white"/>
+    </visual>
+
+    <collision name='collision'>
+        <geometry>
+            <box size="1 1 1"/>
+        </geometry>
+    </collision>
+    </link-->
+
+</robot>
