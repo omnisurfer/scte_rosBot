@@ -11,9 +11,13 @@ https://wiki.ros.org/action/fullsearch/urdf/Tutorials/Building%20a%20Visual%20Ro
 
     <!-- vehicle params-->
     <xacro:property name="scte_chassis_length" value="0.292"/>
-    <xacro:property name="scte_chassis_width" value="0.2159"/>
+    <xacro:property name="scte_chassis_width" value="0.165"/>
     <xacro:property name="scte_chassis_depth" value="0.0635"/> <!--value="0.127"/-->
     <xacro:property name="scte_total_mass" value="3.8"/>
+    <xacro:property name="scte_wheel_mass" value="0.5"/>
+
+    <xacro:property name="scte_wheel_radius" value="0.0508"/>
+    <xacro:property name="scte_wheel_depth" value="0.0508"/>
 
     <xacro:include filename="$(find scte_description)/urdf/scte.gazebo" />
     <xacro:include filename="$(find scte_description)/urdf/scte_diff.xacro"/>
