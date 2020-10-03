@@ -3,6 +3,7 @@
 https://answers.ros.org/question/192817/error-msg-the-root-link_base-has-an-inertia-specified-in-the-urdf-but-kdl/
 http://gazebosim.org/tutorials?tut=ros_urdf
 https://wiki.ros.org/action/fullsearch/urdf/Tutorials/Building%20a%20Visual%20Robot%20Model%20with%20URDF%20from%20Scratch?action=fullsearch&context=180&value=linkto%3A%22urdf%2FTutorials%2FBuilding+a+Visual+Robot+Model+with+URDF+from+Scratch%22
+http://wiki.ros.org/xacro
 -->
 
 <robot name="scteBot" xmlns:xacro="http://www.ros.org/wiki/xacro">
@@ -20,7 +21,6 @@ https://wiki.ros.org/action/fullsearch/urdf/Tutorials/Building%20a%20Visual%20Ro
     <xacro:property name="scte_wheel_depth" value="0.0508"/>
 
     <xacro:include filename="$(find scte_description)/urdf/scte.gazebo" />
-    <xacro:include filename="$(find scte_description)/urdf/scte_diff.xacro"/>
 
     <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
     <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />
@@ -30,6 +30,12 @@ https://wiki.ros.org/action/fullsearch/urdf/Tutorials/Building%20a%20Visual%20Ro
     <SOMESENSOR parent="scte_chassis" name="SOMESENSOR_sensor" hz="10" samples="220" lasers="16">
         <origin xyz="0 0 0" rpy="0 0 0" />
     </SOMESENSOR-->
+
+    <!--sensors>
+    <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
+    <xacro:logitech_c270_camera parent_link="scte_front_axle" camera_link="left_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65 * -1.0}" joint_rpy="0 0 0"/>
+    <xacro:logitech_c270_camera parent_link="scte_front_axle" camera_link="right_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65}" joint_rpy="0 0 0"/>
+    -->
 
     <link name="base_link">
 
@@ -66,6 +72,13 @@ https://wiki.ros.org/action/fullsearch/urdf/Tutorials/Building%20a%20Visual%20Ro
         </collision>
     </link>
 
+    <xacro:include filename="$(find scte_description)/urdf/scte_diff_axle.xacro"/>
+
+    <xacro:scte_diff_axle suffix="scte_front" parent_link="scte_chassis" joint_xyz="${scte_chassis_length * 0.63} 0 0" joint_rpy="0 0 0"/>
+    <xacro:scte_diff_axle suffix="scte_rear" parent_link="scte_chassis" joint_xyz="${scte_chassis_length * -0.63} 0 0" joint_rpy="0 0 0"/>
+
+
+    <!--
     <joint name='scte_chassis_JOINT_scte_front_diff' type='fixed'>
         <origin xyz="${scte_chassis_length * 0.63} 0 0" rpy="0 0 0"/>
         <parent link="scte_chassis"/>
@@ -79,6 +92,19 @@ https://wiki.ros.org/action/fullsearch/urdf/Tutorials/Building%20a%20Visual%20Ro
         <child link="scte_rear_diff"/>
         <axis xyz="0 0 0" rpy="0 0 0"/>
     </joint>
+    -->
+
+
+
+    <!--sensors-->
+
+    <!--cameras-->
+    <!--joint name="scte_chassis_JOINT_left_camera" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="scte_chassis"/>
+        <child link="left_cam"/>
+        <axis xyz="0 0 0" rpy="0 0 0"/>
+    </joint-->
 
     <!--link name='main_computer'>
     <inertial>

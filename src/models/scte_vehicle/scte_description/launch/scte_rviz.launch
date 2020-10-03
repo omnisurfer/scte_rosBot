@@ -27,6 +27,6 @@
     http://wiki.ros.org/libuvc_camera
     -->
     <!-- launch RViz-->
-    <node name="rviz" pkg="rviz" type="rviz"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find scte_description)/rviz/scteBot.rviz"/>
 
 </launch>
