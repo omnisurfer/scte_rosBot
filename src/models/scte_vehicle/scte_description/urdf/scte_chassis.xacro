@@ -31,12 +31,6 @@ http://wiki.ros.org/xacro
         <origin xyz="0 0 0" rpy="0 0 0" />
     </SOMESENSOR-->
 
-    <!--sensors>
-    <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
-    <xacro:logitech_c270_camera parent_link="scte_front_axle" camera_link="left_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65 * -1.0}" joint_rpy="0 0 0"/>
-    <xacro:logitech_c270_camera parent_link="scte_front_axle" camera_link="right_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65}" joint_rpy="0 0 0"/>
-    -->
-
     <link name="base_link">
 
     </link>
@@ -77,25 +71,12 @@ http://wiki.ros.org/xacro
     <xacro:scte_diff_axle suffix="scte_front" parent_link="scte_chassis" joint_xyz="${scte_chassis_length * 0.63} 0 0" joint_rpy="0 0 0"/>
     <xacro:scte_diff_axle suffix="scte_rear" parent_link="scte_chassis" joint_xyz="${scte_chassis_length * -0.63} 0 0" joint_rpy="0 0 0"/>
 
+    <!--sensors-->
+    <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
+    <xacro:logitech_c270_camera parent_link="axle_scte_front" camera_link="left_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65 * -1.0}" joint_rpy="0 0 0"/>
+    <xacro:logitech_c270_camera parent_link="axle_scte_front" camera_link="right_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65}" joint_rpy="0 0 0"/>
 
-    <!--
-    <joint name='scte_chassis_JOINT_scte_front_diff' type='fixed'>
-        <origin xyz="${scte_chassis_length * 0.63} 0 0" rpy="0 0 0"/>
-        <parent link="scte_chassis"/>
-        <child link="scte_front_diff"/>
-        <axis xyz="0 0 0" rpy="0 0 0"/>
-    </joint>
-
-    <joint name='scte_chassis_JOINT_scte_rear_diff' type='fixed'>
-        <origin xyz="${scte_chassis_length * 0.63 * -1} 0 0" rpy="0 0 0"/>
-        <parent link="scte_chassis"/>
-        <child link="scte_rear_diff"/>
-        <axis xyz="0 0 0" rpy="0 0 0"/>
-    </joint>
-    -->
-
-
-
+    <!---->
     <!--sensors-->
 
     <!--cameras-->
