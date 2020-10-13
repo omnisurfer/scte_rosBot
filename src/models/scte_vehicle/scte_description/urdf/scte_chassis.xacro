@@ -75,18 +75,7 @@ http://wiki.ros.org/xacro
     <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
     <xacro:logitech_c270_camera parent_link="axle_scte_front" camera_link="left_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65 * -1.0}" joint_rpy="0 0 0"/>
     <xacro:logitech_c270_camera parent_link="axle_scte_front" camera_link="right_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65}" joint_rpy="0 0 0"/>
-
-    <!---->
-    <!--sensors-->
-
-    <!--cameras-->
-    <!--joint name="scte_chassis_JOINT_left_camera" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-        <parent link="scte_chassis"/>
-        <child link="left_cam"/>
-        <axis xyz="0 0 0" rpy="0 0 0"/>
-    </joint-->
-
+    
     <!--link name='main_computer'>
     <inertial>
         <mass value="1"/>
