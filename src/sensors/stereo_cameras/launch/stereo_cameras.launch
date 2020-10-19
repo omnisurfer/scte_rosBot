@@ -6,14 +6,14 @@ https://cse.sc.edu/~jokane/agitr/
     <group ns="stereo">
         <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
             <arg name="cameraName" value="c270_left"/>
-            <arg name="device" value="/dev/video0"/>
+            <arg name="device" value="/dev/c270VideoLeft"/>
             <arg name="displayVideo" value="1"/>
         </include>
 
         <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
             <arg name="cameraName" value="c270_right"/>
-            <arg name="device" value="/dev/video2"/>
-            <arg name="displayVideo" value="0"/>
+            <arg name="device" value="/dev/c270VideoRight"/>
+            <arg name="displayVideo" value="1"/>
         </include>
     </group>
 </launch>
