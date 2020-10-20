@@ -5,31 +5,34 @@ https://answers.ros.org/question/212847/how-to-get-usb-camera-frame/
 -->
 
 <launch>
-    <node name="usb_cam_left" pkg="usb_cam" type="usb_cam_node" output="screen">
-        <param name="video_device" value="/dev/video0"/>
-        <param name="image_width" value="800"/>
-        <param name="image_height" value="600"/>
-        <param name="pixel_format" value="mjpeg"/><!--"mjpeg yuyv"/-->
-        <param name="camera_frame_id" value="usb_cam_left"/>
+
+    <arg name="cameraName" default="logitech_c270"/>
+    <arg name="device" default="/dev/video0"/>
+    <arg name="frameId" default="logitech_c270_base"/>
+    <arg name="displayVideo" default="0"/>
+    
+    <node name="$(arg cameraName)" pkg="usb_cam" type="usb_cam_node" output="screen">
+        <param name="video_device" value="$(arg device)"/>
+        <param name="image_width" value="320"/>
+        <param name="image_height" value="240"/>
+        <param name="pixel_format" value="yuyv"/><!--"mjpeg yuyv"/-->
+        <param name="camera_frame_id" value="$(arg frameId)"/>
         <param name="io_method" value="mmap"/>
-    </node>
 
-    <node name="image_view_left" pkg="image_view" type="image_view" respawn="false" output="screen">
-        <remap from="image" to="/usb_cam_left/image_raw"/>
-        <param name="autosize" value="true"/>
-    </node>
+        <!--rosparam command="load" file="/home/daniel/.ros/camera_info/$(arg cameraName).yaml"/-->
+    </node>    
 
-    <node name="usb_cam_right" pkg="usb_cam" type="usb_cam_node" output="screen">
-        <param name="video_device" value="/dev/video2"/>
-        <param name="image_width" value="800"/>
-        <param name="image_height" value="600"/>
-        <param name="pixel_format" value="mjpeg"/><!--"mjpeg yuyv"/-->
-        <param name="camera_frame_id" value="usb_cam_right"/>
-        <param name="io_method" value="mmap"/>
-    </node>
+    <group ns="$(arg cameraName)/image_raw" >
+      <rosparam param="disable_pub_plugins">
+        - 'image_transport/compressedDepth'
+        - 'image_transport/theora'
+      </rosparam>
+    </group>
 
-    <node name="image_view_right" pkg="image_view" type="image_view" respawn="false" output="screen">
-        <remap from="image" to="/usb_cam_right/image_raw"/>
-        <param name="autosize" value="true"/>
-    </node>
+    <group if="$(arg displayVideo)">
+        <node name="image_view_$(arg cameraName)" pkg="image_view" type="image_view" respawn="false" output="screen">
+            <remap from="image" to="$(arg cameraName)/image_raw"/>
+            <param name="autosize" value="true"/>
+        </node>
+    </group>
 </launch>
