@@ -10,7 +10,21 @@ http://wiki.ros.org/xacro
 
     <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
 
-    <!-- vehicle params-->
+    <xacro:include filename="$(find scte_description)/urdf/scte.gazebo" />
+    <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
+    <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />
+        
+    <link name="base_link">
+        
+    </link>
+
+    <joint name="base_link" type="fixed">
+        <origin xyz="0 0.0 0.0" rpy="0 -0 0"/>
+        <parent link="base_link"/>
+        <child link="scte_chassis"/>
+    </joint>
+        
+    <!--CHASSIS-->
     <xacro:property name="scte_chassis_length" value="0.292"/>
     <xacro:property name="scte_chassis_width" value="0.165"/>
     <xacro:property name="scte_chassis_depth" value="0.00635"/> <!--value="0.127"/-->
@@ -19,28 +33,7 @@ http://wiki.ros.org/xacro
 
     <xacro:property name="scte_wheel_radius" value="0.0508"/>
     <xacro:property name="scte_wheel_depth" value="0.0508"/>
-
-    <xacro:include filename="$(find scte_description)/urdf/scte.gazebo" />
-
-    <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
-    <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />
-
-    <!--LIDAR-->
-    <!--xacro:include filename="$(find SOMESENSOR_description)/urdf/SENSOR.urdf.xacro"/>
-    <SOMESENSOR parent="scte_chassis" name="SOMESENSOR_sensor" hz="10" samples="220" lasers="16">
-        <origin xyz="0 0 0" rpy="0 0 0" />
-    </SOMESENSOR-->
-
-    <link name="base_link">
-
-    </link>
-
-    <joint name="base_link" type="fixed">
-        <origin xyz="0 0.0 0.0" rpy="0 -0 0"/>
-        <parent link="base_link"/>
-        <child link="scte_chassis"/>
-    </joint>
-
+    
     <link name='scte_chassis'>
         <inertial>
             <mass value="${scte_total_mass * 0.86}"/>
@@ -66,15 +59,78 @@ http://wiki.ros.org/xacro
         </collision>
     </link>
 
-    <xacro:include filename="$(find scte_description)/urdf/scte_diff_axle.xacro"/>
+    <xacro:include filename="$(find scte_description)/urdf/scte_axle_components.xacro"/>
 
-    <xacro:scte_diff_axle suffix="scte_front" parent_link="scte_chassis" joint_xyz="${scte_chassis_length * 0.63} 0 0" joint_rpy="0 0 0"/>
-    <xacro:scte_diff_axle suffix="scte_rear" parent_link="scte_chassis" joint_xyz="${scte_chassis_length * -0.63} 0 0" joint_rpy="0 0 0"/>
+    <xacro:scte_axle_components suffix="scte_front" 
+        parent_link="scte_chassis" 
+        diff_joint_xyz="${scte_chassis_length * 0.63} 0 0" 
+        diff_joint_rpy="0 0 0" 
+        diff_plate_size="0.07 0.07 ${scte_chassis_depth}"
+        
+        drive_axle_radius="0.005"
+        drive_axle_length="0.25"
+        drive_axle_joint_origin="0 0 0.03"
+        drive_axle_joint_rpy="${M_PI/2} 0 0"
+        
+        shock_tower_size="0.015 0.14 0.105"
+        shock_tower_joint_origin="0 0 ${0.105 * 0.5}"
+        shock_tower_joint_rpy="0 0 0"    
+    />
+    <!--xacro:scte_diff_axle suffix="scte_rear" parent_link="scte_chassis" joint_xyz="${scte_chassis_length * -0.63} 0 0" joint_rpy="0 0 0"/-->
+    <!--CHASSIS-->
+    
+    <!--mounting bards-->
+    <!--
+    <xacro:property name="mounting_bars_length_scale_value" value="1.60"/>
+    <xacro:property name="mounting_bars_width_scale_value" value="0.15"/>
+    <xacro:property name="mounting_bars_depth_scale_value" value="0.05"/>
+    <link name="driver_side_mounting_bar">
+        <inertial>
+            <mass value="${scte_total_mass * 0.02}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="${scte_chassis_length * -0.63} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${scte_chassis_length * mounting_bars_length_scale_value} ${scte_chassis_width * mounting_bars_width_scale_value} ${scte_chassis_depth * mounting_bars_depth_scale_value}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="${scte_chassis_length * -0.63} 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${scte_chassis_length * mounting_bars_length_scale_value} ${scte_chassis_width * mounting_bars_width_scale_value} ${scte_chassis_depth * mounting_bars_depth_scale_value}"/>
+            </geometry>
+        </collision>
+    </link>
+    
+    <joint name="shock_tower_scte_front_LINKED_driver_side_mounting_bar" type="fixed">
+        <origin xyz="0 0.0 0.0" rpy="0 -0 0"/>
+        <parent link="shock_tower_scte_front"/>
+        <child link="driver_side_mounting_bar"/>
+    </joint>
+    
+    -->
+    
+    <!-- chassis -->
 
     <!--sensors-->
+    <!--
     <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
     <xacro:logitech_c270_camera parent_link="axle_scte_front" camera_link="left_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65 * -1.0}" joint_rpy="0 0 0"/>
     <xacro:logitech_c270_camera parent_link="axle_scte_front" camera_link="right_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65}" joint_rpy="0 0 0"/>
+    -->
+    
+    <!--LIDAR-->
+    <!--xacro:include filename="$(find SOMESENSOR_description)/urdf/SENSOR.urdf.xacro"/>
+    <SOMESENSOR parent="scte_chassis" name="SOMESENSOR_sensor" hz="10" samples="220" lasers="16">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </SOMESENSOR-->
     
     <!--link name='main_computer'>
     <inertial>

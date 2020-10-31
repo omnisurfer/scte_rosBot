@@ -16,14 +16,14 @@ https://cse.sc.edu/~jokane/agitr/
             <arg name="displayVideo" value="1"/>
         </include>
 
-        <!--node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
+        <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
             <remap from="left/image_raw" to="c270_left/image_raw"/>
             <remap from="right/image_raw" to="c270_right/image_raw"/>
             <remap from="left/camera_info" to="c270_left/camera_info"/>
             <remap from="right/camera_info" to="c270_right/camera_info"/>
             <param name="approximate_sync" value="true"/>
             <param name="queue_size" value="10"/>
-        </node-->
+        </node>
 
     </group>
 

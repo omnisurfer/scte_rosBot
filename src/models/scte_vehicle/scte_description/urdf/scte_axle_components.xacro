@@ -1,12 +1,30 @@
 <?xml version="1.0"?>
 <robot name="scte_diff_axle" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:macro name="scte_diff_axle" params="suffix parent_link joint_xyz joint_rpy">
-        <!--diff-->
-        <link name="diff_${suffix}">
-            <!--xacro:insert_block name="inertial"/>
-            <xacro:insert_block name="visual"/>
-            <xacro:insert_block name="collision"/-->
+    <xacro:macro name="scte_axle_components" params="suffix parent_link 
+diff_plate_size  
+diff_joint_xyz
+diff_joint_rpy      
+drive_axle_radius
+drive_axle_length
+drive_axle_joint_origin
+drive_axle_joint_rpy        
+shock_tower_size
+shock_tower_joint_origin
+shock_tower_joint_rpy">
+<!--
+left_wheel_radius
+left_wheel_length
+left_wheel_joint_origin
+left_wheel_joint_rpy
+right_wheel_radius
+right_wheel_length
+right_wheel_joint_origin
+right_wheel_joint_rpy">
+-->
+        
+        <!--diff base plate-->
+        <link name="diff_base_plate_${suffix}">            
             <intertial>
                 <mass value="${scte_total_mass * 0.05}"/>
                 <inertia
@@ -17,24 +35,56 @@
             </intertial>
             <visual>
                 <geometry>
-                    <box size="${scte_chassis_length * 0.26} ${scte_chassis_width * 0.38} ${scte_chassis_depth}"/>
+                    <box size="${diff_plate_size}"/>
                 </geometry>
                 <material name="green"/>
             </visual>
             <collision>
                 <geometry>
-                    <box size="${scte_chassis_length * 0.26} ${scte_chassis_width * 0.38} ${scte_chassis_depth}"/>
+                    <box size="${diff_plate_size}"/>
                 </geometry>
             </collision>
         </link>
         <joint name="diff_${suffix}_JOINT_${parent_link}" type="fixed">
             <axis xyz="0 0 1"/>
-            <origin xyz="${joint_xyz}" rpy="${joint_rpy}"/>
+            <origin xyz="${diff_joint_xyz}" rpy="${diff_joint_rpy}"/>
             <parent link="${parent_link}"/>
-            <child link="diff_${suffix}"/>
+            <child link="diff_base_plate_${suffix}"/>
         </joint>
+        
+        <!--shock tower-->
+        <!---->
+        <link name="shock_tower_${suffix}">
+            <inertial>
+                <mass value="${scte_wheel_mass / 4}"/>
+                <inertia
+                        ixx="1" ixy="0" ixz="0"
+                        iyy="1" iyz="0"
+                        izz="1"
+                />
+            </inertial>
+            <visual name='visual'>
+                <geometry>
+                    <box size="${shock_tower_size}"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision name='collision'>
+                <geometry>
+                    <box size="${shock_tower_size}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name='shock_tower_${suffix}_JOINT_diff_${suffix}' type='fixed'>
+            <origin xyz="${shock_tower_joint_origin}" rpy="${shock_tower_joint_rpy}"/>
+            <parent link="diff_base_plate_${suffix}"/>
+            <child link="shock_tower_${suffix}"/>
+            <axis xyz="0 0 0" rpy="0 0 0"/>
+        </joint>
+        <!---->
 
         <!--axle-->
+        <!---->
         <link name="axle_${suffix}">
             <inertial>
                 <mass value="${scte_total_mass * 0.02}"/>
@@ -46,24 +96,26 @@
             </inertial>
             <visual name='visual'>
                 <geometry>
-                    <cylinder radius="${scte_chassis_depth * 0.35}" length="${scte_chassis_width * 1.46}"/>
+                    <cylinder radius="${drive_axle_radius}" length="${drive_axle_length}"/>
                 </geometry>
                 <material name="red"/>
             </visual>
             <collision name='collision'>
                 <geometry>
-                    <cylinder radius="${scte_chassis_depth * 0.35}" length="${scte_chassis_width * 1.46}"/>
+                    <cylinder radius="${drive_axle_radius}" length="${drive_axle_length}"/>
                 </geometry>
             </collision>
         </link>
         <joint name='diff_${suffix}_JOINT_axle_${suffix}' type='fixed'>
-            <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
-            <parent link="diff_${suffix}"/>
+            <origin xyz="${drive_axle_joint_origin}" rpy="${drive_axle_joint_rpy}"/>
+            <parent link="diff_base_plate_${suffix}"/>
             <child link="axle_${suffix}"/>
             <axis xyz="0 0 0" rpy="0 0 0"/>
         </joint>
-
+        <!---->
+               
         <!--wheels-->
+        <!--
         <link name="left_wheel_${suffix}">
             <inertial>
                 <mass value="${scte_wheel_mass / 4}"/>
@@ -75,18 +127,18 @@
             </inertial>
             <visual name='visual'>
                 <geometry>
-                    <cylinder radius="${scte_wheel_radius}" length="${scte_wheel_depth}"/>
+                    <cylinder radius="${left_wheel_radius}" length="${left_wheel_length}"/>
                 </geometry>
                 <material name="green"/>
             </visual>
             <collision name='collision'>
                 <geometry>
-                    <cylinder radius="${scte_wheel_radius}" length="${scte_wheel_depth}"/>
+                    <cylinder radius="${left_wheel_radius}" length="${left_wheel_length}"/>
                 </geometry>
             </collision>
         </link>
         <joint name='left_wheel_${suffix}_JOINT_axle_${suffix}' type='fixed'>
-            <origin xyz="0 0 ${scte_chassis_width * -0.65}" rpy="0 0 0"/>
+            <origin xyz="${left_wheel_joint_origin}" rpy="${left_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
             <child link="left_wheel_${suffix}"/>
             <axis xyz="0 0 0" rpy="0 0 0"/>
@@ -103,51 +155,23 @@
             </inertial>
             <visual name='visual'>
                 <geometry>
-                    <cylinder radius="${scte_wheel_radius}" length="${scte_wheel_depth}"/>
+                    <cylinder radius="${right_wheel_radius}" length="${right_wheel_length}"/>
                 </geometry>
                 <material name="red"/>
             </visual>
             <collision name='collision'>
                 <geometry>
-                    <cylinder radius="${scte_wheel_radius}" length="${scte_wheel_depth}"/>
+                    <cylinder radius="${right_wheel_radius}" length="${right_wheel_lengths}"/>
                 </geometry>
             </collision>
         </link>
         <joint name='right_wheel_${suffix}_JOINT_axle_${suffix}' type='fixed'>
-            <origin xyz="0 0 ${scte_chassis_width * 0.65}" rpy="0 0 0"/>
+            <origin xyz="${right_wheel_joint_origin}" rpy="${right_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
             <child link="right_wheel_${suffix}"/>
             <axis xyz="0 0 0" rpy="0 0 0"/>
         </joint>
-
-        <!--shock tower-->
-        <link name="shock_tower_${suffix}">
-            <inertial>
-                <mass value="${scte_wheel_mass / 4}"/>
-                <inertia
-                        ixx="1" ixy="0" ixz="0"
-                        iyy="1" iyz="0"
-                        izz="1"
-                />
-            </inertial>
-            <visual name='visual'>
-                <geometry>
-                    <box size="${scte_chassis_depth} ${scte_chassis_length * 0.26} ${scte_chassis_width * 0.38}"/>
-                </geometry>
-                <material name="red"/>
-            </visual>
-            <collision name='collision'>
-                <geometry>
-                    <box size="${scte_chassis_depth} ${scte_chassis_length * 0.26} ${scte_chassis_width * 0.38}"/>
-                </geometry>
-            </collision>
-        </link>
-        <joint name='shock_tower_${suffix}_JOINT_diff_${suffix}' type='fixed'>
-            <origin xyz="0 0 ${scte_chassis_width * 0.38 / 2 + scte_chassis_depth / 2}" rpy="0 0 0"/>
-            <parent link="diff_${suffix}"/>
-            <child link="shock_tower_${suffix}"/>
-            <axis xyz="0 0 0" rpy="0 0 0"/>
-        </joint>
+        -->
     </xacro:macro>
 
 </robot>
