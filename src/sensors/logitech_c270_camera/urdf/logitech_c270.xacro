@@ -6,10 +6,6 @@
 
     <!--https://answers.ros.org/question/331432/pass-parameters-of-xacro-file-in-another-xacro-file/-->
     <xacro:macro name="logitech_c270_camera" params="parent_link camera_link joint_xyz joint_rpy">
-        <!--camera params-->
-        <xacro:property name="logitech_c270_radius" value="0.02"/>
-        <xacro:property name="logitech_c270_length" value="0.08"/>
-
         <link name='${camera_link}'>
             <inertial>
                 <mass value="1.0"/>
@@ -21,16 +17,19 @@
                 />
             </inertial>
             <visual name='visual'>
+                <transparency>1</transparency>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <cylinder radius="${logitech_c270_radius}" length="${logitech_c270_length}"/>
+                    <box size="0.075 0.075 0.025"/>
                 </geometry>
-                <material name="blue"/>
+                <material name="none">
+                    <color rgba="${122/255} ${125/255} ${121/255} 0.5"/>
+                </material>
             </visual>
             <collision name='collision'>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <cylinder radius="${logitech_c270_radius}" length="${logitech_c270_length}"/>
+                    <box size="0.075 0.075 0.025"/>
                 </geometry>
             </collision>
         </link>
@@ -39,6 +38,27 @@
             <origin xyz="${joint_xyz}" rpy="${joint_rpy}"/>
             <parent link="${parent_link}"/>
             <child link="${camera_link}"/>
+        </joint>
+        
+        <link name="${camera_link}_optical">
+            <visual name='visual'>                
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.01 0.01 0.01"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision name='collision'>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.01 0.01 0.01"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${camera_link}_base_optical_JOINT_${camera_link}_link" type="fixed">
+            <origin xyz="0.03 0.015 0" rpy="${M_PI/-2} 0 ${M_PI/-2}"/>
+            <parent link="${camera_link}"/>
+            <child link="${camera_link}_optical"/>
         </joint>
     </xacro:macro>
 </robot>
