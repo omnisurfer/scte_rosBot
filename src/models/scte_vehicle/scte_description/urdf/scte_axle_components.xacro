@@ -11,8 +11,7 @@ drive_axle_joint_origin
 drive_axle_joint_rpy        
 shock_tower_size
 shock_tower_joint_origin
-shock_tower_joint_rpy">
-<!--
+shock_tower_joint_rpy
 left_wheel_radius
 left_wheel_length
 left_wheel_joint_origin
@@ -21,7 +20,6 @@ right_wheel_radius
 right_wheel_length
 right_wheel_joint_origin
 right_wheel_joint_rpy">
--->
         
         <!--diff base plate-->
         <link name="diff_base_plate_${suffix}">            
@@ -115,7 +113,7 @@ right_wheel_joint_rpy">
         <!---->
                
         <!--wheels-->
-        <!--
+        <!---->
         <link name="left_wheel_${suffix}">
             <inertial>
                 <mass value="${scte_wheel_mass / 4}"/>
@@ -144,6 +142,7 @@ right_wheel_joint_rpy">
             <axis xyz="0 0 0" rpy="0 0 0"/>
         </joint>
 
+        <!---->
         <link name="right_wheel_${suffix}">
             <inertial>
                 <mass value="${scte_wheel_mass / 4}"/>
@@ -161,7 +160,7 @@ right_wheel_joint_rpy">
             </visual>
             <collision name='collision'>
                 <geometry>
-                    <cylinder radius="${right_wheel_radius}" length="${right_wheel_lengths}"/>
+                    <cylinder radius="${right_wheel_radius}" length="${right_wheel_length}"/>
                 </geometry>
             </collision>
         </link>
@@ -171,7 +170,7 @@ right_wheel_joint_rpy">
             <child link="right_wheel_${suffix}"/>
             <axis xyz="0 0 0" rpy="0 0 0"/>
         </joint>
-        -->
+        <!---->
     </xacro:macro>
 
 </robot>

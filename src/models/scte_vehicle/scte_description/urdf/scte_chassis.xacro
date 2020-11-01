@@ -60,23 +60,59 @@ http://wiki.ros.org/xacro
     </link>
 
     <xacro:include filename="$(find scte_description)/urdf/scte_axle_components.xacro"/>
-
+    <xacro:property name="drive_axle_length" value="0.25"/>
+    <xacro:property name="drive_axle_radius" value="0.005"/>
+    
     <xacro:scte_axle_components suffix="scte_front" 
         parent_link="scte_chassis" 
         diff_joint_xyz="${scte_chassis_length * 0.63} 0 0" 
         diff_joint_rpy="0 0 0" 
         diff_plate_size="0.07 0.07 ${scte_chassis_depth}"
         
-        drive_axle_radius="0.005"
-        drive_axle_length="0.25"
-        drive_axle_joint_origin="0 0 0.03"
+        drive_axle_radius="${drive_axle_radius}"
+        drive_axle_length="${drive_axle_length}"
+        drive_axle_joint_origin="0 0 ${0.03 * 0.5}"
         drive_axle_joint_rpy="${M_PI/2} 0 0"
         
         shock_tower_size="0.015 0.14 0.105"
         shock_tower_joint_origin="0 0 ${0.105 * 0.5}"
-        shock_tower_joint_rpy="0 0 0"    
+        shock_tower_joint_rpy="0 0 0"
+        
+        left_wheel_radius="0.05"
+        left_wheel_length="0.045"
+        left_wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
+        left_wheel_joint_rpy="0 0 0"
+        
+        right_wheel_radius="0.05"
+        right_wheel_length="0.045"
+        right_wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
+        right_wheel_joint_rpy="0 0 0"
     />
-    <!--xacro:scte_diff_axle suffix="scte_rear" parent_link="scte_chassis" joint_xyz="${scte_chassis_length * -0.63} 0 0" joint_rpy="0 0 0"/-->
+    <xacro:scte_axle_components suffix="scte_rear" 
+        parent_link="scte_chassis" 
+        diff_joint_xyz="${scte_chassis_length * -0.63} 0 0" 
+        diff_joint_rpy="0 0 0" 
+        diff_plate_size="0.07 0.07 ${scte_chassis_depth}"
+        
+        drive_axle_radius="${drive_axle_radius}"
+        drive_axle_length="${drive_axle_length}"
+        drive_axle_joint_origin="0 0 ${0.03 * 0.5}"
+        drive_axle_joint_rpy="${M_PI/2} 0 0"
+        
+        shock_tower_size="0.015 0.14 0.105"
+        shock_tower_joint_origin="0 0 ${0.105 * 0.5}"
+        shock_tower_joint_rpy="0 0 0"
+        
+        left_wheel_radius="0.05"
+        left_wheel_length="0.045"
+        left_wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
+        left_wheel_joint_rpy="0 0 0"
+        
+        right_wheel_radius="0.05"
+        right_wheel_length="0.045"
+        right_wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
+        right_wheel_joint_rpy="0 0 0"
+    />
     <!--CHASSIS-->
     
     <!--mounting bards-->
