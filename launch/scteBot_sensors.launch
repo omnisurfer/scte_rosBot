@@ -1,0 +1,9 @@
+<launch>
+    
+    <include file="$(find stereo_cameras)/launch/stereo_cameras.launch">
+        <!--params are in the stereo_cameras.launch file-->
+    </include>
+
+    <include file="$(find ydlidar_ros)/launch/G2.launch"/>
+
+</launch>
