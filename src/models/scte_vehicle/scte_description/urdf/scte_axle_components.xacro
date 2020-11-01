@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot name="scte_diff_axle" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:macro name="scte_axle_components" params="suffix parent_link 
+    <xacro:macro name="scte_axle_components" params="suffix parent_link
 diff_plate_size  
 diff_joint_xyz
 diff_joint_rpy      
@@ -44,17 +44,137 @@ right_wheel_joint_rpy">
             </collision>
         </link>
         <joint name="diff_${suffix}_JOINT_${parent_link}" type="fixed">
-            <axis xyz="0 0 1"/>
+            <axis xyz="0 0 0"/>
             <origin xyz="${diff_joint_xyz}" rpy="${diff_joint_rpy}"/>
             <parent link="${parent_link}"/>
             <child link="diff_base_plate_${suffix}"/>
         </joint>
         
+        <!--front bumper plate-->
+        <xacro:if value="${suffix == 'scte_front'}">
+        <link name="diff_base_bumper_plate_${suffix}">            
+            <intertial>
+                <mass value="${scte_total_mass * 0.05}"/>
+                <inertia
+                        ixx="1" ixy="0" ixz="0"
+                        iyy="1" iyz="0"
+                        izz="1"
+                />
+            </intertial>
+            <visual>
+                <geometry>
+                    <box size="${diff_plate_size}"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${diff_plate_size}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="diff_bumper_${suffix}_JOINT_${parent_link}" type="fixed">
+            <axis xyz="0 0 0"/>
+            <origin xyz="${0.07} 0 ${0.07 * 0.30}" rpy="0 ${M_PI/-6}  0"/>
+            <parent link="diff_base_plate_${suffix}"/>
+            <child link="diff_base_bumper_plate_${suffix}"/>
+        </joint>
+        
+        <link name="bumper_${suffix}">
+            <intertial>
+                <mass value="${scte_total_mass * 0.05}"/>
+                <inertia
+                        ixx="1" ixy="0" ixz="0"
+                        iyy="1" iyz="0"
+                        izz="1"
+                />
+            </intertial>
+            <visual>
+                <geometry>
+                    <box size="0.01 0.175 0.05"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="0.01 0.175 0.05"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="bumper_${suffix}_JOINT_${parent_link}" type="fixed">
+            <axis xyz="0 0 0"/>
+            <origin xyz="${0.07 * 0.70} 0 ${0.07 * 0.35}" rpy="0 ${M_PI/6} 0"/>
+            <parent link="diff_base_bumper_plate_${suffix}"/>
+            <child link="bumper_${suffix}"/>
+        </joint>
+        
+        </xacro:if>
+        
+        <!--rear bumper assembly-->
+        <xacro:if value="${suffix == 'scte_rear'}">
+        <link name="diff_base_bumper_plate_${suffix}">            
+            <intertial>
+                <mass value="${scte_total_mass * 0.05}"/>
+                <inertia
+                        ixx="1" ixy="0" ixz="0"
+                        iyy="1" iyz="0"
+                        izz="1"
+                />
+            </intertial>
+            <visual>
+                <geometry>
+                    <box size="0.09 0.05 0.05"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="0.09 0.05 0.05"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="diff_bumper_${suffix}_JOINT_${parent_link}" type="fixed">
+            <axis xyz="0 0 0"/>
+            <origin xyz="${0.09 * -0.5} 0 0" rpy="0 0 0"/>
+            <parent link="shock_tower_${suffix}"/>
+            <child link="diff_base_bumper_plate_${suffix}"/>
+        </joint>
+        
+        <link name="bumper_${suffix}">
+            <intertial>
+                <mass value="${scte_total_mass * 0.05}"/>
+                <inertia
+                        ixx="1" ixy="0" ixz="0"
+                        iyy="1" iyz="0"
+                        izz="1"
+                />
+            </intertial>
+            <visual>
+                <geometry>
+                    <box size="0.01 0.255 0.05"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="0.01 0.255 0.05"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="bumper_${suffix}_JOINT_${parent_link}" type="fixed">
+            <axis xyz="0 0 0"/>
+            <origin xyz="${0.09 * -0.5} 0 0.015" rpy="0 0 0"/>
+            <parent link="diff_base_bumper_plate_${suffix}"/>
+            <child link="bumper_${suffix}"/>
+        </joint>
+        
+        </xacro:if>                         
+        
         <!--shock tower-->
         <!---->
         <link name="shock_tower_${suffix}">
             <inertial>
-                <mass value="${scte_wheel_mass / 4}"/>
+                <mass value="${scte_total_mass * 0.25 * 0.05}"/>
                 <inertia
                         ixx="1" ixy="0" ixz="0"
                         iyy="1" iyz="0"
@@ -116,7 +236,7 @@ right_wheel_joint_rpy">
         <!---->
         <link name="left_wheel_${suffix}">
             <inertial>
-                <mass value="${scte_wheel_mass / 4}"/>
+                <mass value="${scte_total_mass * 0.25 * 0.05}"/>
                 <inertia
                         ixx="1" ixy="0" ixz="0"
                         iyy="1" iyz="0"
@@ -145,7 +265,7 @@ right_wheel_joint_rpy">
         <!---->
         <link name="right_wheel_${suffix}">
             <inertial>
-                <mass value="${scte_wheel_mass / 4}"/>
+                <mass value="${scte_total_mass * 0.25 * 0.05}"/>
                 <inertia
                         ixx="1" ixy="0" ixz="0"
                         iyy="1" iyz="0"
