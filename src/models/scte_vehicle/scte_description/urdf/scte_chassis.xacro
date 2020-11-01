@@ -144,8 +144,7 @@ http://wiki.ros.org/xacro
                 <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
             </geometry>
         </collision>
-    </link>
-    
+    </link>    
     <joint name="shock_tower_scte_front_LINKED_driver_side_mounting_bar" type="fixed">
         <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * 0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
         <parent link="shock_tower_scte_front"/>
@@ -175,52 +174,58 @@ http://wiki.ros.org/xacro
                 <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
             </geometry>
         </collision>
-    </link>
-    
+    </link>    
     <joint name="shock_tower_scte_front_LINKED_passenger_side_mounting_bar" type="fixed">
         <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * -0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
         <parent link="shock_tower_scte_front"/>
         <child link="passenger_side_mounting_bar"/>
     </joint>      
     <!---->
+    <!--/MOUNTING BARS-->
     
-    <!--/MOUNTING BARS-->        
+    <!--COMPUTER ENCLOSURE-->
+    <link name="main_computer_enclosure">
+        <inertial>
+            <mass value="${scte_total_mass * 0.02}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.263 0.185 0.06"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.263 0.185 0.06"/>
+            </geometry>
+        </collision>
+    </link>    
+    <joint name="main_computer_enclosure_LINKED_driver_side_mounting_bar" type="fixed">
+        <origin xyz="0 ${(scte_chassis_width * -0.5) + (mounting_bars_width * 0.5)} ${0.06 * 0.5}" rpy="0 0 0"/>
+        <parent link="driver_side_mounting_bar"/>
+        <child link="main_computer_enclosure"/>
+    </joint>
+    <!--/COMPUTER ENCLOSURE-->
 
-    <!--sensors-->
-    <!--
+    <!--SENSORS-->
+    <!---->
     <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
-    <xacro:logitech_c270_camera parent_link="axle_scte_front" camera_link="left_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65 * -1.0}" joint_rpy="0 0 0"/>
-    <xacro:logitech_c270_camera parent_link="axle_scte_front" camera_link="right_cam" joint_xyz="0 0.15 ${scte_chassis_width * 0.65}" joint_rpy="0 0 0"/>
-    -->
+    <xacro:logitech_c270_camera parent_link="main_computer_enclosure" camera_link="left_cam" joint_xyz="0 -0.05 0.05" joint_rpy="${M_PI/2} 0 0"/>
+    <xacro:logitech_c270_camera parent_link="main_computer_enclosure" camera_link="right_cam" joint_xyz="0 0.05 0.05" joint_rpy="${M_PI/2} 0 0"/>
+    <!---->
     
     <!--LIDAR-->
     <!--xacro:include filename="$(find SOMESENSOR_description)/urdf/SENSOR.urdf.xacro"/>
     <SOMESENSOR parent="scte_chassis" name="SOMESENSOR_sensor" hz="10" samples="220" lasers="16">
         <origin xyz="0 0 0" rpy="0 0 0" />
-    </SOMESENSOR-->
-    
-    <!--link name='main_computer'>
-    <inertial>
-        <mass value="1"/>
-        <inertia
-                ixx="1" ixy="0" ixz="0"
-                iyy="1" iyz="0"
-                izz="1"
-        />
-    </inertial>
-
-    <visual name='visual'>
-        <geometry>
-            <box size="1 1 1"/>
-        </geometry>
-        <material name="white"/>
-    </visual>
-
-    <collision name='collision'>
-        <geometry>
-            <box size="1 1 1"/>
-        </geometry>
-    </collision>
-    </link-->
+    </SOMESENSOR-->   
 
 </robot>
