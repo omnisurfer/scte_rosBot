@@ -218,8 +218,8 @@ http://wiki.ros.org/xacro
     <!--SENSORS-->
     <!---->
     <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
-    <xacro:logitech_c270_camera parent_link="main_computer_enclosure" camera_link="driver_side_camera" joint_xyz="0 -0.05 0.5" joint_rpy="0 ${M_PI/-6} 0"/>
-    <xacro:logitech_c270_camera parent_link="main_computer_enclosure" camera_link="passenger_side_camera" joint_xyz="0 0.05 0.5" joint_rpy="0 ${M_PI/-6} 0"/>
+    <xacro:logitech_c270_camera parent_link="main_computer_enclosure" camera_link="driver_side_camera" joint_xyz="0 0.05 0.5" joint_rpy="0 ${M_PI/-6} 0"/>
+    <xacro:logitech_c270_camera parent_link="main_computer_enclosure" camera_link="passenger_side_camera" joint_xyz="0 -0.05 0.5" joint_rpy="0 ${M_PI/-6} 0"/>
     <!---->
     
     <!--LIDAR-->
