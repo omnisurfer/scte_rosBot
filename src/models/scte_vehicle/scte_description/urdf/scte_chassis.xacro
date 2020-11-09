@@ -197,7 +197,7 @@ http://wiki.ros.org/xacro
         <visual name='visual'>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <box size="0.263 0.185 0.06"/>
+                <box size="0.26 0.185 0.06"/>
             </geometry>
             <material name="none">
                 <color rgba="${122/255} ${125/255} ${121/255} 0.5"/>
@@ -206,7 +206,7 @@ http://wiki.ros.org/xacro
         <collision name='collision'>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <box size="0.263 0.185 0.06"/>
+                <box size="0.26 0.185 0.06"/>
             </geometry>
         </collision>
     </link>    
@@ -244,7 +244,7 @@ http://wiki.ros.org/xacro
         </collision>
     </link>
     <joint name="stereo_camera_bar_support_LINKED_main_computer_enclosure" type="fixed">
-        <origin xyz="${0.263 * -0.45} 0 ${0.06 * 1.0}" rpy="0 0 0"/>
+        <origin xyz="${0.260 * -0.45} 0 ${0.06 * 1.0}" rpy="0 0 0"/>
         <parent link="main_computer_enclosure"/>
         <child link="stereo_camera_bar_support"/>
     </joint>
