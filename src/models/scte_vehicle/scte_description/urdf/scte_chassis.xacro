@@ -199,7 +199,9 @@ http://wiki.ros.org/xacro
             <geometry>
                 <box size="0.263 0.185 0.06"/>
             </geometry>
-            <material name="blue"/>
+            <material name="none">
+                <color rgba="${122/255} ${125/255} ${121/255} 0.5"/>
+            </material>
         </visual>
         <collision name='collision'>
             <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -217,15 +219,75 @@ http://wiki.ros.org/xacro
 
     <!--SENSORS-->
     <!---->
+    <link name="stereo_camera_bar_support">
+        <inertial>
+            <mass value="${scte_total_mass * 0.01}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.01" length="0.06"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.01" length="0.06"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="stereo_camera_bar_support_LINKED_main_computer_enclosure" type="fixed">
+        <origin xyz="${0.263 * -0.45} 0 ${0.06 * 1.0}" rpy="0 0 0"/>
+        <parent link="main_computer_enclosure"/>
+        <child link="stereo_camera_bar_support"/>
+    </joint>
+
+    <link name="stereo_camera_bar">
+        <inertial>
+            <mass value="${scte_total_mass * 0.01}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.202 0.004"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.03 0.202 0.004"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="stereo_camera_bar_LINKED_stereo_camera_bar_support" type="fixed">
+        <origin xyz="0 0 ${0.06 * 0.5}" rpy="0 0 0"/>
+        <parent link="stereo_camera_bar_support"/>
+        <child link="stereo_camera_bar"/>
+    </joint>
+
     <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
-    <xacro:logitech_c270_camera parent_link="main_computer_enclosure" camera_link="driver_side_camera" joint_xyz="0.105 0.05 0.05" joint_rpy="0 0 0"/>
-    <xacro:logitech_c270_camera parent_link="main_computer_enclosure" camera_link="passenger_side_camera" joint_xyz="0.105 -0.05 0.05" joint_rpy="0 0 0"/>
+    <xacro:logitech_c270_camera parent_link="stereo_camera_bar" camera_link="driver_side_camera" joint_xyz="0.0 0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
+    <xacro:logitech_c270_camera parent_link="stereo_camera_bar" camera_link="passenger_side_camera" joint_xyz="0.0 -0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
     <!---->
     
     <!--LIDAR-->
     <xacro:include filename="$(find ydlidar_ros)/urdf/ydlidar.urdf"/>    
     <joint name="main_computer_enclosure_LINKED_ydlidar_base" type="fixed">
-        <origin xyz="0 0 0.0305" rpy="0 0 0"/>
+        <origin xyz="0.090 0 0.0305" rpy="0 0 0"/>
         <parent link="main_computer_enclosure"/>
         <child link="base_laser"/>
     </joint>
