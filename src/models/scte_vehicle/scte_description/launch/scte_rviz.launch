@@ -3,29 +3,6 @@
     <!-- main vehicle urdf file-->
     <param name="robot_description" command="$(find xacro)/xacro '$(find scte_description)/urdf/scte_chassis.xacro'"/>
 
-    <!-- joint values-->
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-        <param name="use_gui" value="False"/>
-    </node>
-
-    <!-- Combine joint values -->
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-
-    <!-- transform publsiher-->
-    <node pkg="tf" type="static_transform_publisher" name="odom_to_base_tf" args="0 0 0 0 0 0 base_link odom 10" />
-
-    <!-- IMU tie in/robot localization
-     https://github.com/udacity/robot_pose_ekf
-     https://answers.ros.org/question/259084/basic-robot_localization-example/
-     https://github.com/cra-ros-pkg/robot_localization/blob/kinetic-devel/params/ekf_template.yaml
-    -->
-
-    <!--USB camera-->
-    <!--
-    https://rosindustrial.org/3d-camera-survey/
-    https://msadowski.github.io/ros-web-tutorial-pt2-cameras/
-    http://wiki.ros.org/libuvc_camera
-    -->
     <!-- launch RViz-->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find scte_description)/rviz/scteBot.rviz"/>
 

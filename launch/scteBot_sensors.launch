@@ -4,6 +4,8 @@
         <!--params are in the stereo_cameras.launch file-->
     </include>
 
-    <!--include file="$(find ydlidar_ros)/launch/G2.launch"/-->
+    <include file="$(find ydlidar_ros)/launch/G2.launch"/>
+
+    <include file="$(dirname)/scteBot_transform_and_localization.launch"/>
 
 </launch>

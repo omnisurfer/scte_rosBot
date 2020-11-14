@@ -1,0 +1,26 @@
+<launch>
+
+    <!-- joint values-->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <param name="use_gui" value="False"/>
+    </node>
+
+    <!-- Combine joint values -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+    <!-- IMU tie in/robot localization
+     https://github.com/udacity/robot_pose_ekf
+     https://answers.ros.org/question/259084/basic-robot_localization-example/
+     https://github.com/cra-ros-pkg/robot_localization/blob/kinetic-devel/params/ekf_template.yaml
+    -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true">
+        <rosparam command="load" file="$(dirname)/params/ekf_settings.yaml"/>
+
+        <!--  Placeholder for output topic remapping
+         <remap from="odometry/filtered" to=""/>
+         <remap from="accel/filtered" to=""/>
+         -->
+
+    </node>
+
+</launch>

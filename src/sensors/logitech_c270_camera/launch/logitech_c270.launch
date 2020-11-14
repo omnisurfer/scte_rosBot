@@ -1,10 +1,12 @@
-<!--
+<!--USB camera:
 https://stackoverflow.com/questions/56735438/get-the-current-frame-from-usb-camera-using-opencv
 https://answers.ros.org/question/283225/how-to-develop-ros-camera-driver/
 https://answers.ros.org/question/212847/how-to-get-usb-camera-frame/
 https://github.com/behnamasadi/ROS_monocular_camera
+https://rosindustrial.org/3d-camera-survey/
+https://msadowski.github.io/ros-web-tutorial-pt2-cameras/
+http://wiki.ros.org/libuvc_camera
 -->
-<!--rosparam command="load" file="/home/daniel/.ros/camera_info/$(arg cameraName).yaml"/-->
 
 <launch>
 

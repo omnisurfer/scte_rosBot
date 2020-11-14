@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "demo_odometry_publisher");
 
     ros::NodeHandle nodeHandle;
-    ros::Publisher odomPublisher = nodeHandle.advertise<nav_msgs::Odometry>("demo_odom", 50);
+    ros::Publisher odomPublisher = nodeHandle.advertise<nav_msgs::Odometry>("demo_odom/odom", 50);
     tf::TransformBroadcaster odomBroadcaster;
 
     double x = 0.0;
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     currentTime = ros::Time::now();
     lastTime = ros::Time::now();
 
-    ros::Rate rosRate(1.0);
+    ros::Rate rosRate(100.0);
 
     ROS_INFO("Starting Demo Odometry Publisher");
 
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 
         geometry_msgs::TransformStamped odomTransformed;
         odomTransformed.header.stamp = currentTime;
-        odomTransformed.header.frame_id = "demo_odom";
+        odomTransformed.header.frame_id = "odom";
         odomTransformed.child_frame_id = "base_link";
 
         odomTransformed.transform.translation.x = x;
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
         //publish odometry message
         nav_msgs::Odometry odomMsg;
         odomMsg.header.stamp = currentTime;
-        odomMsg.header.frame_id = "demo_odom";
+        odomMsg.header.frame_id = "odom";
 
         //set position
         odomMsg.pose.pose.position.x = x;
