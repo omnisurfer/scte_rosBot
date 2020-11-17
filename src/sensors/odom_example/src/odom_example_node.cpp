@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
     double vy = -0.1;
     double vth = 0.1;
 
+    std::string childFrameId = "base_link";
+
     ros::Time currentTime, lastTime;
     currentTime = ros::Time::now();
     lastTime = ros::Time::now();
@@ -55,7 +57,7 @@ int main(int argc, char** argv) {
         geometry_msgs::TransformStamped odomTransformed;
         odomTransformed.header.stamp = currentTime;
         odomTransformed.header.frame_id = "odom";
-        odomTransformed.child_frame_id = "base_link";
+        odomTransformed.child_frame_id = childFrameId;
 
         odomTransformed.transform.translation.x = x;
         odomTransformed.transform.translation.y = y;
@@ -77,7 +79,7 @@ int main(int argc, char** argv) {
         odomMsg.pose.pose.orientation = odomQuaternion;
 
         //set velocity
-        odomMsg.child_frame_id = "base_link";
+        odomMsg.child_frame_id = childFrameId;
         odomMsg.twist.twist.linear.x = vx;
         odomMsg.twist.twist.linear.y = vy;
         odomMsg.twist.twist.linear.z = vth;

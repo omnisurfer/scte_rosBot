@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- main vehicle urdf file-->
-    <param name="robot_description" command="$(find xacro)/xacro '$(find scte_description)/urdf/scte_chassis.xacro'"/>
-
     <!-- launch RViz-->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find scte_description)/rviz/scteBot.rviz"/>
 
