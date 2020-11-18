@@ -19,6 +19,8 @@ int main(int argc, char** argv) {
     ros::Publisher odomPublisher = nodeHandle.advertise<nav_msgs::Odometry>("demo_odom/odom", 50);
     tf::TransformBroadcaster odomBroadcaster;
 
+    bool publish_odom_tf = false;
+
     double x = 0.0;
     double y = 0.0;
     double th = 0.0;
@@ -65,7 +67,12 @@ int main(int argc, char** argv) {
         odomTransformed.transform.rotation = odomQuaternion;
 
         //send the transform
-        odomBroadcaster.sendTransform(odomTransformed);
+        if(publish_odom_tf) {
+            odomBroadcaster.sendTransform(odomTransformed);
+        }
+        else {
+            //do nothing
+        }
 
         //publish odometry message
         nav_msgs::Odometry odomMsg;
