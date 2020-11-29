@@ -1,0 +1,13 @@
+# https://www.reddit.com/r/Ubuntu/comments/al7x9p/running_a_bash_script_at_shutdownreboot/
+[Unit]
+Description=Shuts down the raspberry pi ROS node before turning off the PC node which provides it power.
+Before=shutdown.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/true
+ExecStop=/usr/local/sbin/shutdown_pi.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
