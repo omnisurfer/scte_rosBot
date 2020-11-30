@@ -4,7 +4,9 @@
     <arg name="hostIP" default="localhost"/>
     <arg name="hostPort" default="2947"/>
 
-    <node name="$(arg gpsName)" pkg="gpsd_client" type="gpsd_client" output="screen">
+    <machine name="rosPi_node" user="user" address="rosPi" default="never" env-loader="/opt/ros/noetic/env.sh" timeout="10"/>
+
+    <node name="$(arg gpsName)" pkg="gpsd_client" type="gpsd_client" output="screen" machine="rosPi_node">
         <param name="_host" value="$(arg hostIP)"/>
         <param name="_port" value="$(arg hostPort)"/>
     </node>
