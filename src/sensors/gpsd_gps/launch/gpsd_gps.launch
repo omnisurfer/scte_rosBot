@@ -1,0 +1,12 @@
+<launch>
+
+    <arg name="gpsName" default="garmin18_gps"/>
+    <arg name="hostIP" default="localhost"/>
+    <arg name="hostPort" default="2947"/>
+
+    <node name="$(arg gpsName)" pkg="gpsd_client" type="gpsd_client" output="screen">
+        <param name="_host" value="$(arg hostIP)"/>
+        <param name="_port" value="$(arg hostPort)"/>
+    </node>
+
+</launch>
