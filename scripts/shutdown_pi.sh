@@ -4,7 +4,7 @@ HOSTS="rosPI"
 SCRIPT="sudo poweroff"
 SSHTIMEOUT="ConnectTimeout=10"
 
-delayCount=15
+delayCount=60
 
 for HOSTNAME in ${HOSTS} ; do
 
