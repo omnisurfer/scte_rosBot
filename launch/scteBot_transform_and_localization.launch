@@ -28,4 +28,20 @@
     </node>
     -->
 
+    <!--
+    http://docs.ros.org/en/melodic/api/robot_localization/html/integrating_gps.html
+    -->
+    <!--rosparam param="datum">[55.944904, -3.186693, 0.0, map, base_link]</rosparam-->
+    <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" respawn="true">
+
+        <param name="magnetic_declination_radians" value="0"/>
+
+        <param name="yaw_offset" value="0"/>
+
+        <remap from="/imu/data" to="/your/imu/topic" />
+        <remap from="/gps/fix" to="/ada_ultimate_gps/fix" />
+        <remap from="/odometry/filtered" to="/your/robot_localization/output/topic" />
+
+    </node>
+
 </launch>
