@@ -255,11 +255,13 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name='left_wheel_${suffix}_JOINT_axle_${suffix}' type='fixed'>
+        <joint name='left_wheel_${suffix}_JOINT_axle_${suffix}' type='revolute'>
             <origin xyz="${left_wheel_joint_origin}" rpy="${left_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
             <child link="left_wheel_${suffix}"/>
-            <axis xyz="0 0 0" rpy="0 0 0"/>
+            <axis xyz="0 0 1" rpy="0 0 0"/>
+            <limit effort="-1" velocity="-1" lower="-2147483647" upper="2147483647"/>
+            <axis xyz="0 0 1"/>
         </joint>
 
         <!---->
@@ -284,11 +286,13 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name='right_wheel_${suffix}_JOINT_axle_${suffix}' type='fixed'>
+        <joint name='right_wheel_${suffix}_JOINT_axle_${suffix}' type='revolute'>
             <origin xyz="${right_wheel_joint_origin}" rpy="${right_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
             <child link="right_wheel_${suffix}"/>
-            <axis xyz="0 0 0" rpy="0 0 0"/>
+            <axis xyz="0 0 1" rpy="0 0 0"/>
+            <limit effort="-1" velocity="-1" lower="-2147483647" upper="2147483647"/>
+            <axis xyz="0 0 1"/>
         </joint>
         <!---->
     </xacro:macro>

@@ -1,0 +1,127 @@
+<?xml version='1.0'?>
+
+<robot name="scteBot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <link name="base_link">
+
+    </link>
+
+    <joint name="base_link" type="fixed">
+        <origin xyz="0 0 1.5" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="scte_chassis"/>
+    </joint>
+
+    <link name='scte_chassis'>
+        <inertial>
+            <mass value="10"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size=".4 .2 .1"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size=".4 .2 .1"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <link name='caster'>
+        <inertial>
+            <mass value="1"/>
+            <inertia
+                    ixx="0.1" ixy="0" ixz="0"
+                    iyy="0.1" iyz="0"
+                    izz="0.1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <sphere radius="0.05"/>
+            </geometry>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <sphere radius="0.05"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="caster_JOIN_scte_chassis" type="fixed">
+        <origin xyz="-0.15 0 -0.05" rpy="0 0 0"/>
+        <parent link="scte_chassis"/>
+        <child link="caster"/>
+    </joint>
+
+    <!---->
+    <link name="right_wheel">
+        <inertial>
+            <mass value="0.5"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name="visual">
+            <geometry>
+                <cylinder radius="0.1" length="0.05"/>
+            </geometry>
+        </visual>
+        <collision name='collision'>
+            <geometry>
+                <cylinder radius="0.1" length="0.05"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="right_wheel_JOIN_scte_chassis" type="revolute">
+        <origin xyz="0.1 -0.15 0" rpy="0 1.5707 1.5707"/>
+        <limit effort="-1" velocity="-1" lower="-2147483647" upper="2147483647"/>
+        <axis xyz="0 0 1"/>
+        <child link="right_wheel"/>
+        <parent link="scte_chassis"/>
+    </joint>
+
+    <link name="left_wheel">
+        <inertial>
+            <mass value="0.5"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name="visual">
+            <geometry>
+                <cylinder radius="0.1" length="0.05"/>
+            </geometry>
+        </visual>
+        <collision name='collision'>
+            <geometry>
+                <cylinder radius="0.1" length="0.05"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="left_wheel_JOIN_scte_chassis" type="revolute">
+        <origin xyz="0.1 0.15 0" rpy="0 1.5707 1.5707"/>
+        <limit effort="-1" velocity="-1" lower="-2147483647" upper="2147483647"/>
+        <axis xyz="0 0 1"/>
+        <child link="left_wheel"/>
+        <parent link="scte_chassis"/>
+    </joint>
+    <!---->
+</robot>
