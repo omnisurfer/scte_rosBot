@@ -1,0 +1,5 @@
+- Remember to set ROS_MASTER_URI on all nodes including the master node. It uses this variable to tell the other nodes
+where to connect to roscore.
+
+- Remember to not set a gateway on the DHCP server that is hosted on the rosnode node. This should allow the rospi node
+to connect to my router as a gateway to route traffic while still routing traffic between the nodes.
