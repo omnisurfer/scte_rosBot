@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
+
+    <!-- VMWare env variable workaround to keep gazebo from crashing due to OpenGL issues-->
+    <env name="SVGA_VGPU10" value="0"/>
+
     <arg name="world" default="empty"/>
     <arg name="paused" default="true"/>
     <arg name="use_sim_time" default="true"/>

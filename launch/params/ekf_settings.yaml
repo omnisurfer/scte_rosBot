@@ -129,7 +129,7 @@ odom0_twist_rejection_threshold: 1
 # Based on the docs (Fusing Unmeasured Variables), setting vy as true, but publishing a 0 yaw value since this sensor can't report
 # that kind of measurement, prevents the localization from trying to extrapolate a yaw
 # from the sensor readings from this sensor. Not 100% sure I am understanding this correctly, but seems to work better...
-odom1: test_real/odom
+odom1: /odom
 odom1_config: [false,  false,  false,   # x, y , z
                false, false, false,   # r, p, y
                true, true, true,   # vx, vy, vz
