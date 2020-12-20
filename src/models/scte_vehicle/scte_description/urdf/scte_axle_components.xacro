@@ -43,7 +43,7 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name="diff_${suffix}_JOINT_${parent_link}" type="fixed">
+        <joint name="diff_${suffix}_JOINED_${parent_link}" type="fixed">
             <axis xyz="0 0 0"/>
             <origin xyz="${diff_joint_xyz}" rpy="${diff_joint_rpy}"/>
             <parent link="${parent_link}"/>
@@ -73,7 +73,7 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name="diff_bumper_${suffix}_JOINT_${parent_link}" type="fixed">
+        <joint name="diff_bumper_${suffix}_JOINED_${parent_link}" type="fixed">
             <axis xyz="0 0 0"/>
             <origin xyz="${0.07} 0 ${0.07 * 0.30}" rpy="0 ${M_PI/-6}  0"/>
             <parent link="diff_base_plate_${suffix}"/>
@@ -101,7 +101,7 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name="bumper_${suffix}_JOINT_${parent_link}" type="fixed">
+        <joint name="bumper_${suffix}_JOINED_${parent_link}" type="fixed">
             <axis xyz="0 0 0"/>
             <origin xyz="${0.07 * 0.70} 0 ${0.07 * 0.35}" rpy="0 ${M_PI/6} 0"/>
             <parent link="diff_base_bumper_plate_${suffix}"/>
@@ -133,7 +133,7 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name="diff_bumper_${suffix}_JOINT_${parent_link}" type="fixed">
+        <joint name="diff_bumper_${suffix}_JOINED_${parent_link}" type="fixed">
             <axis xyz="0 0 0"/>
             <origin xyz="${0.09 * -0.5} 0 0" rpy="0 0 0"/>
             <parent link="shock_tower_${suffix}"/>
@@ -161,7 +161,7 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name="bumper_${suffix}_JOINT_${parent_link}" type="fixed">
+        <joint name="bumper_${suffix}_JOINED_${parent_link}" type="fixed">
             <axis xyz="0 0 0"/>
             <origin xyz="${0.09 * -0.5} 0 0.015" rpy="0 0 0"/>
             <parent link="diff_base_bumper_plate_${suffix}"/>
@@ -193,7 +193,7 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name='shock_tower_${suffix}_JOINT_diff_${suffix}' type='fixed'>
+        <joint name='shock_tower_${suffix}_JOINED_diff_${suffix}' type='fixed'>
             <origin xyz="${shock_tower_joint_origin}" rpy="${shock_tower_joint_rpy}"/>
             <parent link="diff_base_plate_${suffix}"/>
             <child link="shock_tower_${suffix}"/>
@@ -224,7 +224,7 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name='diff_${suffix}_JOINT_axle_${suffix}' type='fixed'>
+        <joint name='diff_${suffix}_JOINED_axle_${suffix}' type='fixed'>
             <origin xyz="${drive_axle_joint_origin}" rpy="${drive_axle_joint_rpy}"/>
             <parent link="diff_base_plate_${suffix}"/>
             <child link="axle_${suffix}"/>
@@ -255,7 +255,7 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name='left_wheel_${suffix}_JOINT_axle_${suffix}' type='continuous'>
+        <joint name='left_wheel_${suffix}_JOINED_axle_${suffix}' type='continuous'>
             <origin xyz="${left_wheel_joint_origin}" rpy="${left_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
             <child link="left_wheel_${suffix}"/>
@@ -265,7 +265,7 @@ right_wheel_joint_rpy">
         </joint>
         <transmission name="tran_left_wheel_${suffix}">
             <type>transmission_interface/SimpleTransmission</type>
-            <joint name="left_wheel_${suffix}_JOINT_axle_${suffix}">
+            <joint name="left_wheel_${suffix}_JOINED_axle_${suffix}">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
             </joint>
             <actuator name="motor_left_wheel_${suffix}">
@@ -296,7 +296,7 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name='right_wheel_${suffix}_JOINT_axle_${suffix}' type='continuous'>
+        <joint name='right_wheel_${suffix}_JOINED_axle_${suffix}' type='continuous'>
             <origin xyz="${right_wheel_joint_origin}" rpy="${right_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
             <child link="right_wheel_${suffix}"/>
@@ -306,7 +306,7 @@ right_wheel_joint_rpy">
         </joint>
         <transmission name="tran_right_wheel_${suffix}">
             <type>transmission_interface/SimpleTransmission</type>
-            <joint name="right_wheel_${suffix}_JOINT_axle_${suffix}">
+            <joint name="right_wheel_${suffix}_JOINED_axle_${suffix}">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
             </joint>
             <actuator name="motor_right_wheel_${suffix}">

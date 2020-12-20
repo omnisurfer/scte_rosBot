@@ -188,7 +188,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>    
-    <joint name="shock_tower_front_LINKED_driver_side_mounting_bar" type="fixed">
+    <joint name="shock_tower_front_JOINED_driver_side_mounting_bar" type="fixed">
         <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * 0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
         <parent link="shock_tower_front"/>
         <child link="driver_side_mounting_bar"/>
@@ -218,7 +218,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>    
-    <joint name="shock_tower_front_LINKED_passenger_side_mounting_bar" type="fixed">
+    <joint name="shock_tower_front_JOINED_passenger_side_mounting_bar" type="fixed">
         <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * -0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
         <parent link="shock_tower_front"/>
         <child link="passenger_side_mounting_bar"/>
@@ -253,7 +253,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>    
-    <joint name="main_computer_enclosure_LINKED_driver_side_mounting_bar" type="fixed">
+    <joint name="main_computer_enclosure_JOINED_driver_side_mounting_bar" type="fixed">
         <origin xyz="0 ${(scte_chassis_width * -0.5) + (mounting_bars_width * 0.5)} ${0.06 * 0.5}" rpy="0 0 0"/>
         <parent link="driver_side_mounting_bar"/>
         <child link="main_computer_enclosure"/>
@@ -286,7 +286,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>
-    <joint name="stereo_camera_bar_support_LINKED_main_computer_enclosure" type="fixed">
+    <joint name="stereo_camera_bar_support_JOINED_main_computer_enclosure" type="fixed">
         <origin xyz="${0.260 * -0.45} 0 ${0.06 * 1.0}" rpy="0 0 0"/>
         <parent link="main_computer_enclosure"/>
         <child link="stereo_camera_bar_support"/>
@@ -316,7 +316,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>
-    <joint name="stereo_camera_bar_LINKED_stereo_camera_bar_support" type="fixed">
+    <joint name="stereo_camera_bar_JOINED_stereo_camera_bar_support" type="fixed">
         <origin xyz="0 0 ${0.06 * 0.5}" rpy="0 0 0"/>
         <parent link="stereo_camera_bar_support"/>
         <child link="stereo_camera_bar"/>
@@ -356,7 +356,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>
-    <joint name="debug_stereo_perception_camera_LINKED_stereo_camera_bar" type="fixed">
+    <joint name="debug_stereo_perception_camera_JOINED_stereo_camera_bar" type="fixed">
         <origin xyz="0 0.5 0" rpy="${M_PI/-2} 0 ${M_PI/-2}"/>
         <parent link="stereo_camera_bar"/>
         <child link="debug_stereo_perception_camera"/>
@@ -365,7 +365,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     
     <!--LIDAR-->
     <xacro:include filename="$(find ydlidar_ros)/urdf/ydlidar.urdf"/>    
-    <joint name="main_computer_enclosure_LINKED_ydlidar_base" type="fixed">
+    <joint name="main_computer_enclosure_JOINED_ydlidar_base" type="fixed">
         <origin xyz="0.090 0 0.0305" rpy="0 0 0"/>
         <parent link="main_computer_enclosure"/>
         <child link="base_laser"/>
