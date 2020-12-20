@@ -1,13 +1,15 @@
 <?xml version='1.0'?>
 
-<robot name="scteBot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <link name="base_link">
+    <xacro:include filename="$(find scte_description)/urdf/scte.gazebo" />
 
-    </link>
+    <!--naming this link world will fix the model in space-->
+
+    <link name="base_link"/>
 
     <joint name="base_link" type="fixed">
-        <origin xyz="0 0 1.5" rpy="0 0 0"/>
+        <origin xyz="0 0 1" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="scte_chassis"/>
     </joint>
@@ -26,7 +28,6 @@
             <geometry>
                 <box size=".4 .2 .1"/>
             </geometry>
-            <material name="blue"/>
         </visual>
         <collision name='collision'>
             <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -65,7 +66,6 @@
         <child link="caster"/>
     </joint>
 
-    <!---->
     <link name="right_wheel">
         <inertial>
             <mass value="0.5"/>
@@ -87,12 +87,12 @@
         </collision>
     </link>
 
-    <joint name="right_wheel_JOIN_scte_chassis" type="revolute">
-        <origin xyz="0.1 -0.15 0" rpy="0 1.5707 1.5707"/>
-        <limit effort="-1" velocity="-1" lower="-2147483647" upper="2147483647"/>
-        <axis xyz="0 0 1"/>
+    <joint name="right_wheel_JOIN_scte_chassis" type="continuous">
         <child link="right_wheel"/>
         <parent link="scte_chassis"/>
+        <origin xyz="0.1 -0.15 0" rpy="0 1.5707 1.5707"/>
+        <dynamics damping="0.7"/>
+        <axis xyz="0 0 1"/>
     </joint>
 
     <link name="left_wheel">
@@ -116,12 +116,34 @@
         </collision>
     </link>
 
-    <joint name="left_wheel_JOIN_scte_chassis" type="revolute">
-        <origin xyz="0.1 0.15 0" rpy="0 1.5707 1.5707"/>
-        <limit effort="-1" velocity="-1" lower="-2147483647" upper="2147483647"/>
-        <axis xyz="0 0 1"/>
+    <joint name="left_wheel_JOIN_scte_chassis" type="continuous">
         <child link="left_wheel"/>
         <parent link="scte_chassis"/>
+        <origin xyz="0.1 0.15 0" rpy="0 1.5707 1.5707"/>
+        <dynamics damping="0.7"/>
+        <axis xyz="0 0 1"/>
     </joint>
-    <!---->
+
+    <transmission name="tran1">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="left_wheel_JOIN_scte_chassis">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="motor1">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="tran2">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="right_wheel_JOIN_scte_chassis">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="motor2">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
 </robot>
+

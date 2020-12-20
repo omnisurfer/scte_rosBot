@@ -4,6 +4,7 @@
 
     <!--include file="$(find ydlidar_ros)/launch/G2.launch"/-->
 
-    <include file="$(dirname)/scteBot_transform_and_localization.launch"/>
+    <include file="$(dirname)/scteBot_description_and_joints.launch"/>
+    <include file="$(dirname)/scteBot_localization.launch"/>
 
 </launch>

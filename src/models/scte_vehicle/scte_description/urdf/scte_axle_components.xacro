@@ -51,7 +51,7 @@ right_wheel_joint_rpy">
         </joint>
         
         <!--front bumper plate-->
-        <xacro:if value="${suffix == 'scte_front'}">
+        <xacro:if value="${suffix == 'front'}">
         <link name="diff_base_bumper_plate_${suffix}">            
             <intertial>
                 <mass value="${scte_total_mass * 0.05}"/>
@@ -111,7 +111,7 @@ right_wheel_joint_rpy">
         </xacro:if>
         
         <!--rear bumper assembly-->
-        <xacro:if value="${suffix == 'scte_rear'}">
+        <xacro:if value="${suffix == 'rear'}">
         <link name="diff_base_bumper_plate_${suffix}">            
             <intertial>
                 <mass value="${scte_total_mass * 0.05}"/>
@@ -255,14 +255,24 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name='left_wheel_${suffix}_JOINT_axle_${suffix}' type='revolute'>
+        <joint name='left_wheel_${suffix}_JOINT_axle_${suffix}' type='continuous'>
             <origin xyz="${left_wheel_joint_origin}" rpy="${left_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
             <child link="left_wheel_${suffix}"/>
             <axis xyz="0 0 1" rpy="0 0 0"/>
-            <limit effort="-1" velocity="-1" lower="-2147483647" upper="2147483647"/>
             <axis xyz="0 0 1"/>
+            <dynamics damping="0.7"/>
         </joint>
+        <transmission name="tran_left_wheel_${suffix}">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="left_wheel_${suffix}_JOINT_axle_${suffix}">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="motor_left_wheel_${suffix}">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
 
         <!---->
         <link name="right_wheel_${suffix}">
@@ -286,14 +296,24 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
-        <joint name='right_wheel_${suffix}_JOINT_axle_${suffix}' type='revolute'>
+        <joint name='right_wheel_${suffix}_JOINT_axle_${suffix}' type='continuous'>
             <origin xyz="${right_wheel_joint_origin}" rpy="${right_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
             <child link="right_wheel_${suffix}"/>
             <axis xyz="0 0 1" rpy="0 0 0"/>
-            <limit effort="-1" velocity="-1" lower="-2147483647" upper="2147483647"/>
             <axis xyz="0 0 1"/>
+            <dynamics damping="0.7"/>
         </joint>
+        <transmission name="tran_right_wheel_${suffix}">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="right_wheel_${suffix}_JOINT_axle_${suffix}">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="motor_right_wheel_${suffix}">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
         <!---->
     </xacro:macro>
 

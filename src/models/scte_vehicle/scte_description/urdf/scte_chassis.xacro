@@ -11,8 +11,8 @@ http://wiki.ros.org/urdf/Tutorials/Building%20a%20Movable%20Robot%20Model%20with
 http://wiki.ros.org/urdf/XML/joint#Elements
 
 -->
-
-<robot name="scteBot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<!--Gazebo does not seem to like capital letters in the robot namespace-->
+<robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
 
@@ -106,7 +106,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:property name="shock_tower_height" value="0.105"/>
     <xacro:property name="shock_tower_width" value="0.14"/>
     
-    <xacro:scte_axle_components suffix="scte_front"        
+    <xacro:scte_axle_components suffix="front"
         parent_link="scte_chassis" 
         diff_joint_xyz="${scte_chassis_length * 0.63} 0 0" 
         diff_joint_rpy="0 0 0" 
@@ -131,7 +131,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         right_wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
         right_wheel_joint_rpy="0 0 0"
     />
-    <xacro:scte_axle_components suffix="scte_rear"        
+    <xacro:scte_axle_components suffix="rear"
         parent_link="scte_chassis" 
         diff_joint_xyz="${scte_chassis_length * -0.63} 0 0" 
         diff_joint_rpy="0 0 0" 
@@ -188,9 +188,9 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>    
-    <joint name="shock_tower_scte_front_LINKED_driver_side_mounting_bar" type="fixed">
+    <joint name="shock_tower_front_LINKED_driver_side_mounting_bar" type="fixed">
         <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * 0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
-        <parent link="shock_tower_scte_front"/>
+        <parent link="shock_tower_front"/>
         <child link="driver_side_mounting_bar"/>
     </joint>
     
@@ -218,9 +218,9 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>    
-    <joint name="shock_tower_scte_front_LINKED_passenger_side_mounting_bar" type="fixed">
+    <joint name="shock_tower_front_LINKED_passenger_side_mounting_bar" type="fixed">
         <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * -0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
-        <parent link="shock_tower_scte_front"/>
+        <parent link="shock_tower_front"/>
         <child link="passenger_side_mounting_bar"/>
     </joint>      
     <!---->

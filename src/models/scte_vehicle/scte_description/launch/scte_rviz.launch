@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+
     <!-- launch RViz-->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find scte_description)/rviz/scteBot.rviz"/>
 
