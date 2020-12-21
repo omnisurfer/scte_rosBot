@@ -1,10 +1,30 @@
 <launch>
 
-    <!--include file="$(find stereo_cameras)/launch/stereo_cameras.launch"/-->
+    <arg name="enable_joystick" default="1"/>
+    <arg name="enable_stereo_cameras" default="1"/>
+    <arg name="enable_g2_ydlidar" default="1"/>
+    <arg name="enable_gpsd" default="1"/>
 
-    <!--include file="$(find ydlidar_ros)/launch/G2.launch"/-->
+    <group if="$(eval arg('enable_joystick') == 1)">
+        <node name="scte_joy" pkg="joy" type="joy_node" output="screen">
+            <param name="dev" type="string" value="/dev/input/js0"/>
+            <param name="deadzone" value="0.12"/>
+        </node>
+    </group>
 
-    <include file="$(dirname)/scteBot_description_and_joints.launch"/>
-    <include file="$(dirname)/scteBot_localization.launch"/>
+    <group if="$(eval arg('enable_stereo_cameras') == 1)">
+        <include file="$(find stereo_cameras)/launch/stereo_cameras.launch"/>
+    </group>
+
+    <group if="$(eval arg('enable_g2_ydlidar') == 1)">
+        <include file="$(find ydlidar_ros)/launch/G2.launch"/>
+    </group>
+
+    <group if="$(eval arg('enable_gpsd') == 1)">
+        <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
+            <arg name="nodeName" value="rosVM_node"/>
+            <arg name="gpsName" value="garmin18x"/>
+        </include>
+    </group>
 
 </launch>
