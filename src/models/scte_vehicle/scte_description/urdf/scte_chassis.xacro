@@ -14,12 +14,14 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 <!--Gazebo does not seem to like capital letters in the robot namespace-->
 <robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+    <xacro:arg name="robot_namespace" default="/" />
+
     <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
 
-    <xacro:include filename="$(find scte_description)/urdf/scte.gazebo" />
+    <!--xacro:include filename="$(find scte_description)/urdf/scte.gazebo" /-->
     <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
     <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />
-        
+
     <link name="base_link">
         
     </link>
@@ -68,20 +70,21 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <!--DEBUG test link for odom testing-->
 
     <!--CHASSIS-->
-    <xacro:property name="scte_total_mass" value="3.8"/>
+    <xacro:property name="scte_total_mass" value="50"/>
 
     <xacro:property name="scte_chassis_length" value="0.292"/>
     <xacro:property name="scte_chassis_width" value="0.165"/>
     <xacro:property name="scte_chassis_depth" value="0.00635"/>            
     
     <link name='scte_chassis'>
+        <!-- borrowed from husky for debug-->
         <inertial>
             <mass value="${scte_total_mass * 0.86}"/>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="-0.00065 -0.085 0.062" rpy="0 0 0"/>
             <inertia
-                    ixx="1" ixy="0" ixz="0"
-                    iyy="1" iyz="0"
-                    izz="1"
+                    ixx="0.6022" ixy="-0.02364" ixz="-0.1197"
+                    iyy="1.7386" iyz="-0.001544"
+                    izz="2.0296"
             />
         </inertial>
         <visual name='visual'>
@@ -370,5 +373,12 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         <parent link="main_computer_enclosure"/>
         <child link="base_laser"/>
     </joint>
+
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <!--robotNamespace>$(arg robot_namespace)</robotNamespace-->
+            <legacyModeNS>true</legacyModeNS>
+        </plugin>
+    </gazebo>
 
 </robot>

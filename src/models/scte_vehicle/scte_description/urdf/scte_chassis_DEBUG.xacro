@@ -2,7 +2,7 @@
 
 <robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:include filename="$(find scte_description)/urdf/scte.gazebo" />
+    <!--xacro:include filename="$(find scte_description)/urdf/scte.gazebo" /-->
 
     <!--naming this link world will fix the model in space-->
 
@@ -124,18 +124,28 @@
         <axis xyz="0 0 1"/>
     </joint>
 
-    <transmission name="tran1">
+    <!--transmission name="tran1">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="left_wheel_JOIN_scte_chassis">
-            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
         </joint>
         <actuator name="motor1">
             <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>
+    </transmission-->
+
+    <transmission name="tran_left" type="SimpleTransmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="motor_left_wheel">
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+        <joint name="left_wheel_JOIN_scte_chassis">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>
     </transmission>
 
-    <transmission name="tran2">
+    <!--transmission name="tran2">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="right_wheel_JOIN_scte_chassis">
             <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
@@ -144,6 +154,24 @@
             <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>
+    </transmission-->
+
+    <transmission name="tran_right" type="SimpleTransmission">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="motor_right_wheel">
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+        <joint name="right_wheel_JOIN_scte_chassis">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>
     </transmission>
+
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <!--robotNamespace>$(arg robot_namespace)</robotNamespace-->
+            <legacyModeNS>true</legacyModeNS>
+        </plugin>
+    </gazebo>
+
 </robot>
 

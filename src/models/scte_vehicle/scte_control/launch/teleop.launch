@@ -1,0 +1,15 @@
+<launch>
+
+    <arg name="enable_joystick" default="1"/>
+
+    <group if="$(eval arg('enable_joystick') == 1)" ns="joy_teleop">
+
+        <rosparam command="load" file="$(find scte_control)/config/asus_gamepad.yaml"/>
+
+        <node name="scte_joy" pkg="joy" type="joy_node" output="screen">
+        </node>
+
+        <node name="teleop_twist_joy" pkg="teleop_twist_joy" type="teleop_node"/>
+
+    </group>
+</launch>

@@ -263,7 +263,7 @@ right_wheel_joint_rpy">
             <axis xyz="0 0 1"/>
             <dynamics damping="0.7"/>
         </joint>
-        <transmission name="tran_left_wheel_${suffix}">
+        <!--transmission name="tran_left_wheel_${suffix}">
             <type>transmission_interface/SimpleTransmission</type>
             <joint name="left_wheel_${suffix}_JOINED_axle_${suffix}">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
@@ -272,6 +272,16 @@ right_wheel_joint_rpy">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
+        </transmission-->
+
+        <transmission name="tran_left_wheel_${suffix}" type="SimpleTransmission">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="motor_left_wheel_${suffix}">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+            <joint name="left_wheel_${suffix}_JOINED_axle_${suffix}">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
         </transmission>
 
         <!---->
@@ -304,7 +314,7 @@ right_wheel_joint_rpy">
             <axis xyz="0 0 1"/>
             <dynamics damping="0.7"/>
         </joint>
-        <transmission name="tran_right_wheel_${suffix}">
+        <!--transmission name="tran_right_wheel_${suffix}">
             <type>transmission_interface/SimpleTransmission</type>
             <joint name="right_wheel_${suffix}_JOINED_axle_${suffix}">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
@@ -313,6 +323,16 @@ right_wheel_joint_rpy">
                 <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>
+        </transmission-->
+
+        <transmission name="tran_right_wheel_${suffix}" type="SimpleTransmission">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="motor_right_wheel_${suffix}">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+            <joint name="right_wheel_${suffix}_JOINED_axle_${suffix}">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
         </transmission>
         <!---->
     </xacro:macro>

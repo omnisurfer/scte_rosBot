@@ -1,16 +1,11 @@
 <launch>
 
-    <arg name="enable_joystick" default="1"/>
+    <!--
+    https://github.com/husky/husky/blob/ea1c27f2b2e5e0f106c19aae65ec7bc5023dda64/husky_control/launch/teleop.launch
+    -->
     <arg name="enable_stereo_cameras" default="1"/>
     <arg name="enable_g2_ydlidar" default="1"/>
     <arg name="enable_gpsd" default="1"/>
-
-    <group if="$(eval arg('enable_joystick') == 1)">
-        <node name="scte_joy" pkg="joy" type="joy_node" output="screen">
-            <param name="dev" type="string" value="/dev/input/js0"/>
-            <param name="deadzone" value="0.12"/>
-        </node>
-    </group>
 
     <group if="$(eval arg('enable_stereo_cameras') == 1)">
         <include file="$(find stereo_cameras)/launch/stereo_cameras.launch"/>

@@ -1,41 +1,29 @@
 <launch>
 
     <arg name="simulation_on" default="0"/>
+    <arg name="enable_joystick" default="1"/>
 
     <group if="$(eval arg('simulation_on') == 0)">
         <include file="$(dirname)/scteBot_sensors.launch">
-            <arg name="enable_joystick" value="1"/>
             <arg name="enable_stereo_cameras" value="1"/>
             <arg name="enable_g2_ydlidar" value="1"/>
             <arg name="enable_gpsd" value="1"/>
         </include>
 
-        <include file="$(dirname)/scteBot_description_and_joints.launch">
+        <include file="$(find scte_description)/launch/description.launch">
 
-        </include>
-
-        <include file="$(dirname)/scteBot_localization.launch">
-            <arg name="enable_ekf_localization" value="1"/>
-            <arg name="enable_navsat_odom" value="0"/>
         </include>
     </group>
 
     <group if="$(eval arg('simulation_on') == 1)">
         <include file="$(dirname)/scteBot_sensors.launch">
-            <arg name="enable_joystick" value="1"/>
             <arg name="enable_stereo_cameras" value="0"/>
             <arg name="enable_g2_ydlidar" value="0"/>
             <arg name="enable_gpsd" value="1"/>
         </include>
 
-        <include file="$(dirname)/scteBot_description_and_joints.launch">
+        <include file="$(find scte_description)/launch/description.launch">
 
-        </include>
-
-        <include file="$(dirname)/scteBot_localization.launch">
-            <arg name="simulation_on" value="$(arg simulation_on)"/>
-            <arg name="enable_ekf_localization" value="1"/>
-            <arg name="enable_navsat_odom" value="0"/>
         </include>
     </group>
 

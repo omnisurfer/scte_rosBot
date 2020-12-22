@@ -1,10 +1,35 @@
 <launch>
 
+    <!--
+    Look into multimaster launch
+    https://github.com/husky/husky/blob/melodic-devel/husky_control/launch/control.launch
+    -->
+
     <arg name="simulation_on" default="0"/>
 
-    <arg name="enable_ekf_localization" default="1"/>
-    <arg name="enable_navsat_odom" default="1"/>
+    <arg name="enable_ekf_localization" default="0"/>
+    <arg name="enable_navsat_odom" default="0"/>
 
+    <!-- load robot description-->
+    <include file="$(find scte_description)/launch/description.launch">
+    </include>
+
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find scte_control)/config/scte_control.yaml" command="load"/>
+
+    <!-- load the controllers -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+          output="screen" ns="/" args="joint_state_controller velocity_controller"/>
+
+    <!-- convert joint states to TF transforms for rviz, etc -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+          respawn="false" output="screen" ns="/">
+        <!--remap from="/joint_states" to="/sctebot/joint_states" /-->
+    </node>
+
+    <!--node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" ns="/sctebot"/-->
+
+    <!-- start EKF for localization -->
     <!--https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/-->
     <arg name="ekf_settings_file" default="ekf_settings.yaml" unless="$(arg simulation_on)"/>
     <arg name="ekf_settings_file" default="ekf_settings_simulation.yaml" if="$(arg simulation_on)"/>
@@ -22,7 +47,7 @@
     -->
     <group if="$(eval arg('enable_ekf_localization') == 1)">
         <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true">
-            <rosparam command="load" file="$(dirname)/params/$(arg ekf_settings_file)"/>
+            <rosparam command="load" file="$(find scte_control)/config/$(arg ekf_settings_file)"/>
         </node>
     </group>
 
@@ -43,5 +68,12 @@
 
         </node>
     </group>
+
+    <node pkg="twist_mux" type="twist_mux" name="twist_mux" ns="/">
+        <rosparam command="load" file="$(find scte_control)/config/twist_mux.yaml" />
+        <remap from="cmd_vel_out" to="velocity_controller/cmd_vel"/>
+    </node>
+
+
 
 </launch>

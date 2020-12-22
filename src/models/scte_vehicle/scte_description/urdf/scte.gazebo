@@ -1,15 +1,23 @@
 <?xml version="1.0"?>
 <robot>
 
-    <gazebo>
+    <!--gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-          <robotNamespace>/sctebot</robotNamespace>
+          <robotNamespace>$(arg robot_namespace)</robotNamespace>
           <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
         </plugin>
-    </gazebo>
+    </gazebo-->
 
     <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+          <robotNamespace>$(arg robot_namespace)</robotNamespace>
+          <legacyModeNS>true</legacyModeNS>
+        </plugin>
+      </gazebo>
+
+    <!--gazebo>
         <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+          <robotNamespace>$(arg robot_namespace)</robotNamespace>
           <alwaysOn>true</alwaysOn>
           <updateRate>50.0</updateRate>
           <bodyName>base_link</bodyName>
@@ -19,9 +27,11 @@
           <xyzOffsets>0 0 0</xyzOffsets>
           <rpyOffsets>0 0 0</rpyOffsets>
         </plugin>
-    </gazebo>
+    </gazebo-->
 
-    <gazebo reference="base_link"> <!--this is the link the sensor is attached to-->
+    <!--gazebo reference is the link the sensor is attached to it seems-->
+    <!--
+    <gazebo reference="base_link">
         <gravity>true</gravity>
         <sensor name="imu_sensor" type="imu">
           <always_on>true</always_on>
@@ -29,6 +39,7 @@
           <visualize>true</visualize>
           <topic>__default_topic__</topic>
           <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+            <robotNamespace>$(arg robot_namespace)</robotNamespace>
             <topicName>imu</topicName>
             <bodyName>imu_link</bodyName>
             <updateRateHZ>10.0</updateRateHZ>
@@ -41,7 +52,17 @@
           <pose>0 0 0 0 0 0</pose>
         </sensor>
       </gazebo>
+      -->
 
+    <!--
+        - Noise is sampled independently per pixel on each frame.
+        That pixel's noise value is added to each of its color
+        channels, which at that point lie in the range [0,1].
+
+        - ROS and gazebo use different camera axis conventions,
+        this may cause the virtual camera to point in the wrong direction
+    -->
+    <!--
     <gazebo reference="driver_side_camera_optical">
         <sensor type="camera" name="driver_camera">
           <update_rate>30.0</update_rate>
@@ -58,20 +79,18 @@
             </clip>
             <noise>
               <type>gaussian</type>
-              <!-- Noise is sampled independently per pixel on each frame.
-                   That pixel's noise value is added to each of its color
-                   channels, which at that point lie in the range [0,1]. -->
               <mean>0.0</mean>
               <stddev>0.007</stddev>
             </noise>
           </camera>
           <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <robotNamespace>$(arg robot_namespace)</robotNamespace>
             <alwaysOn>true</alwaysOn>
             <updateRate>10.0</updateRate>
             <cameraName>driver_camera</cameraName>
             <imageTopicName>image_raw</imageTopicName>
             <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>driver_side_camera_optical</frameName> <!-- note ROS and gazebo use different camera axis conventions, this may cause the virtual camera to point in the wrong direction-->
+            <frameName>driver_side_camera_optical</frameName>
             <hackBaseline>0.07</hackBaseline>
             <distortionK1>0.0</distortionK1>
             <distortionK2>0.0</distortionK2>
@@ -81,7 +100,9 @@
           </plugin>
         </sensor>
     </gazebo>
+    -->
 
+    <!--
     <gazebo reference="passenger_side_camera_optical">
         <sensor type="camera" name="passenger_camera">
           <update_rate>30.0</update_rate>
@@ -98,14 +119,12 @@
             </clip>
             <noise>
               <type>gaussian</type>
-              <!-- Noise is sampled independently per pixel on each frame.
-                   That pixel's noise value is added to each of its color
-                   channels, which at that point lie in the range [0,1]. -->
               <mean>0.0</mean>
               <stddev>0.007</stddev>
             </noise>
           </camera>
           <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <robotNamespace>$(arg robot_namespace)</robotNamespace>
             <alwaysOn>true</alwaysOn>
             <updateRate>10.0</updateRate>
             <cameraName>passenger_camera</cameraName>
@@ -121,6 +140,7 @@
           </plugin>
         </sensor>
     </gazebo>
+    -->
 
     <gazebo reference="chassis">
         <material>Gazebo/Red</material>

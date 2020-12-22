@@ -5,11 +5,18 @@
     <env name="SVGA_VGPU10" value="0"/>
 
     <arg name="world" default="empty"/>
-    <arg name="paused" default="true"/>
+    <arg name="paused" default="false"/>
     <arg name="use_sim_time" default="true"/>
     <arg name="gui" default="true"/>
     <arg name="headless" default="false"/>
     <arg name="debug" default="false"/>
+
+    <arg name="robot_namespace" default="/"/>
+
+    <arg name="x" default="0.0"/>
+    <arg name="y" default="0.0"/>
+    <arg name="z" default="0.0"/>
+    <arg name="yaw" default="0.0"/>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" value="$(find scte_gazebo)/worlds/scte.world"/>
@@ -20,8 +27,23 @@
         <arg name="debug" value="$(arg debug)"/>
     </include>
 
-    <param name="robot_description" command="$(find xacro)/xacro '$(find scte_description)/urdf/scte_chassis.xacro'"/>
+    <!-- control and teleop launch -->
+    <include file="$(find scte_control)/launch/control.launch">
 
-    <node name="vehicle_spawn" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -param robot_description -model vehicle"/>
+    </include>
+    <include file="$(find scte_control)/launch/teleop.launch">
+
+    </include>
+
+    <!-- Spawn robot in gazebo -->
+    <node name="spawn_scte_model" pkg="gazebo_ros" type="spawn_model"
+          args="-x $(arg x)
+              -y $(arg y)
+              -z $(arg z)
+              -Y $(arg yaw)
+              -unpause
+              -urdf
+              -param robot_description
+              -model $(arg robot_namespace)" />
 
 </launch>
