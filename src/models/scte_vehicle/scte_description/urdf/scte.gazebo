@@ -8,12 +8,12 @@
         </plugin>
     </gazebo-->
 
-    <gazebo>
+    <!--gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
           <robotNamespace>$(arg robot_namespace)</robotNamespace>
           <legacyModeNS>true</legacyModeNS>
         </plugin>
-      </gazebo>
+      </gazebo-->
 
     <!--gazebo>
         <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
@@ -62,7 +62,7 @@
         - ROS and gazebo use different camera axis conventions,
         this may cause the virtual camera to point in the wrong direction
     -->
-    <!--
+    <!---->
     <gazebo reference="driver_side_camera_optical">
         <sensor type="camera" name="driver_camera">
           <update_rate>30.0</update_rate>
@@ -84,7 +84,6 @@
             </noise>
           </camera>
           <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-            <robotNamespace>$(arg robot_namespace)</robotNamespace>
             <alwaysOn>true</alwaysOn>
             <updateRate>10.0</updateRate>
             <cameraName>driver_camera</cameraName>
@@ -100,7 +99,7 @@
           </plugin>
         </sensor>
     </gazebo>
-    -->
+    <!---->
 
     <!--
     <gazebo reference="passenger_side_camera_optical">
