@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="scte_rear_bumper" params="link_name parent_link
+rear_bumper_size
+rear_bumper_mount_size
+rear_bumper_mount_joint_xyz
+rear_bumper_mount_joint_rpy">
+
+        <!--rear bumper assembly-->
+        <link name="${link_name}_mount">
+            <intertial>
+                <mass value="${scte_total_mass * 0.05}"/>
+                <inertia
+                        ixx="1" ixy="0" ixz="0"
+                        iyy="1" iyz="0"
+                        izz="1"
+                />
+            </intertial>
+            <visual>
+                <geometry>
+                    <box size="${rear_bumper_mount_size}"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${rear_bumper_mount_size}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${link_name}_TO_${parent_link}" type="fixed">
+            <origin xyz="${rear_bumper_mount_joint_xyz}" rpy="${rear_bumper_mount_joint_rpy}"/>
+            <parent link="${parent_link}"/>
+            <child link="${link_name}_mount"/>
+        </joint>
+
+        <!---->
+        <link name="${link_name}">
+            <intertial>
+                <mass value="${scte_total_mass * 0.05}"/>
+                <inertia
+                        ixx="1" ixy="0" ixz="0"
+                        iyy="1" iyz="0"
+                        izz="1"
+                />
+            </intertial>
+            <visual>
+                <geometry>
+                    <box size="${rear_bumper_size}"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${rear_bumper_size}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${link_name}_TO_${link_name}_mount" type="fixed">
+            <origin xyz="${0.09 * -0.5} 0 0.015" rpy="0 0 0"/>
+            <parent link="${link_name}_mount"/>
+            <child link="${link_name}"/>
+        </joint>
+        <!---->
+    </xacro:macro>
+
+</robot>
+

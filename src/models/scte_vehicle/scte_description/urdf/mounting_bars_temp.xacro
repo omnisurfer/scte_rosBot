@@ -1,0 +1,78 @@
+    <!--MOUNTING BARS-->
+    <!---->
+    <xacro:property name="mounting_bars_length" value="0.45"/>
+    <xacro:property name="mounting_bars_width" value="0.025"/>
+    <xacro:property name="mounting_bars_depth" value="0.005"/>
+
+    <link name="driver_side_mounting_bar">
+        <inertial>
+            <mass value="${scte_total_mass * 0.02}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="shock_tower_front_JOINED_driver_side_mounting_bar" type="fixed">
+        <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * 0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
+        <parent link="shock_tower_front"/>
+        <child link="driver_side_mounting_bar"/>
+    </joint>
+
+    <link name="passenger_side_mounting_bar">
+        <inertial>
+            <mass value="${scte_total_mass * 0.02}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name='visual'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="shock_tower_front_JOINED_passenger_side_mounting_bar" type="fixed">
+        <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * -0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
+        <parent link="shock_tower_front"/>
+        <child link="passenger_side_mounting_bar"/>
+    </joint>
+    <!---->
+    <!--/MOUNTING BARS-->
+
+    <!--LIDAR-->
+    <!--
+    <xacro:include filename="$(find ydlidar_ros)/urdf/ydlidar.urdf"/>
+    <joint name="main_computer_enclosure_JOINED_ydlidar_base" type="fixed">
+        <origin xyz="0.090 0 0.0305" rpy="0 0 0"/>
+        <parent link="main_computer_enclosure"/>
+        <child link="base_laser"/>
+    </joint>
+    -->
+

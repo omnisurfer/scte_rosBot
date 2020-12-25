@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="scte_wheel" params="link_name parent_link
+    wheel_radius
+    wheel_length
+    wheel_joint_origin
+    wheel_joint_rpy
+    ">
+            <link name="${link_name}">
+                <inertial>
+                    <mass value="${scte_total_mass * 0.25 * 0.05}"/>
+                    <inertia  ixx="0.02467" ixy="0" ixz="0" iyy="0.04411" iyz="0" izz="0.02467" />
+                </inertial>
+                <visual name='visual'>
+                    <geometry>
+                        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+                    </geometry>
+                    <material name="green"/>
+                </visual>
+                <collision name='collision'>
+                    <geometry>
+                        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+                    </geometry>
+                </collision>
+            </link>
+
+            <joint name='${link_name}_TO_${parent_link}' type='continuous'>
+                <origin xyz="${wheel_joint_origin}" rpy="${wheel_joint_rpy}"/>
+                <parent link="${parent_link}"/>
+                <child link="${link_name}"/>
+                <axis xyz="0 0 1" rpy="0 0 0"/>
+                <axis xyz="0 0 1"/>
+                <dynamics damping="0.7"/>
+            </joint>
+
+            <!---->
+            <gazebo reference="${link_name}">
+                <mu1 value="1.0"/>
+                <mu2 value="1.0"/>
+                <kp value="10000000.0" />
+                <kd value="1.0" />
+                <fdir1 value="1 0 0"/>
+            </gazebo>
+
+            <!---->
+            <transmission name="${link_name}_transmission" type="SimpleTransmission">
+                <type>transmission_interface/SimpleTransmission</type>
+                <actuator name="${link_name}_motor">
+                    <mechanicalReduction>1</mechanicalReduction>
+                </actuator>
+                <joint name="${link_name}_TO_${parent_link}">
+                    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+                </joint>
+            </transmission>
+            <!---->
+
+        </xacro:macro>
+</robot>

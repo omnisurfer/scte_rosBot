@@ -29,6 +29,21 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
     <!--Wheel Properties-->
     <xacro:property name="wheel_radius" value="0.05"/>
+    <xacro:property name="wheel_length" value="0.045"/>
+
+    <xacro:property name="shock_tower_height" value="0.105"/>
+    <xacro:property name="shock_tower_width" value="0.14"/>
+
+    <xacro:property name="drive_axle_length" value="0.25"/>
+    <xacro:property name="drive_axle_radius" value="0.005"/>
+
+    <link name='base_footprint'/>
+
+    <joint name="base_footprint_joint" type="fixed">
+        <origin xyz="0 0 ${scte_chassis_depth - wheel_radius}" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="base_footprint"/>
+    </joint>
 
     <link name='base_link'>
         <visual name='visual'>
@@ -45,14 +60,6 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>
-
-    <link name='base_footprint'/>
-
-    <joint name="base_footprint_joint" type="fixed">
-        <origin xyz="0 0 ${scte_chassis_depth - wheel_radius}" rpy="0 0 0"/>
-        <parent link="base_link"/>
-        <child link="base_footprint"/>
-    </joint>
 
     <!-- Inertial link stores the robot's inertial information -->
     <link name="inertial_link">
@@ -78,14 +85,101 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         <child link="scte_chassis"/>
     </joint>
 
+    <xacro:include filename="$(find scte_description)/urdf/scte_diff_and_shock_tower.xacro"/>
+    <xacro:scte_diff_and_shock_tower link_name="front_diff_tower"
+                                parent_link="scte_chassis"
+                                diff_joint_xyz="${scte_chassis_length * 0.63} 0 0"
+                                diff_joint_rpy="0 0 0"
+                                diff_plate_size="0.07 0.07 ${scte_chassis_depth}"
 
-    <xacro:include filename="$(find scte_description)/urdf/scte_axle_components.xacro"/>
+                                shock_tower_size="0.015 ${shock_tower_width} ${shock_tower_height}"
+                                shock_tower_joint_origin="0 0 ${shock_tower_height * 0.5}"
+                                shock_tower_joint_rpy="0 0 0"
+    />
+    <xacro:scte_diff_and_shock_tower link_name="rear_diff_tower"
+                                     parent_link="scte_chassis"
+                                     diff_joint_xyz="${scte_chassis_length * -0.63} 0 0"
+                                     diff_joint_rpy="0 0 0"
+                                     diff_plate_size="0.07 0.07 ${scte_chassis_depth}"
+
+                                     shock_tower_size="0.015 ${shock_tower_width} ${shock_tower_height}"
+                                     shock_tower_joint_origin="0 0 ${shock_tower_height * 0.5}"
+                                     shock_tower_joint_rpy="0 0 0"
+    />
+
+    <xacro:include filename="$(find scte_description)/urdf/scte_front_bumper.xacro"/>
+    <xacro:scte_front_bumper link_name="front_bumper"
+                             parent_link="front_diff_tower"
+                             front_skid_plate_size="0.07 0.07 ${scte_chassis_depth}"
+                             front_skid_plate_joint_xyz="${0.07} 0 ${0.07 * 0.30}"
+                             front_skid_plate_joint_rpy="0 ${M_PI/-6}  0"
+                             front_bumper_size="0.01 0.175 0.05"
+    />
+
+    <xacro:include filename="$(find scte_description)/urdf/scte_rear_bumper.xacro"/>
+    <xacro:scte_rear_bumper link_name="rear_bumper"
+                            parent_link="rear_diff_tower"
+                            rear_bumper_size="0.01 0.255 0.05"
+                            rear_bumper_mount_size="0.09 0.05 0.05"
+                            rear_bumper_mount_joint_xyz="${0.09 * -0.6} 0 ${shock_tower_height * 0.5}"
+                            rear_bumper_mount_joint_rpy="0 0 0"
+    />
+
+    <link name="front_axle">
+        <visual name='visual'>
+            <geometry>
+                <cylinder radius="${drive_axle_radius}" length="${drive_axle_length}"/>
+            </geometry>
+            <material name="red"/>
+        </visual>
+        <collision name='collision'>
+            <geometry>
+                <cylinder radius="${drive_axle_radius}" length="${drive_axle_length}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name='front_axle_TO_front_diff_tower' type='fixed'>
+        <origin xyz="0 0 ${0.03 * 0.5}" rpy="${M_PI * 0.5} 0 0"/>
+        <parent link="front_diff_tower"/>
+        <child link="front_axle"/>
+    </joint>
+
+    <link name="rear_axle">
+        <visual name='visual'>
+            <geometry>
+                <cylinder radius="${drive_axle_radius}" length="${drive_axle_length}"/>
+            </geometry>
+            <material name="red"/>
+        </visual>
+        <collision name='collision'>
+            <geometry>
+                <cylinder radius="${drive_axle_radius}" length="${drive_axle_length}"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name='rear_axle_TO_front_diff_tower' type='fixed'>
+        <origin xyz="0 0 ${0.03 * 0.5}" rpy="${M_PI * 0.5} 0 0"/>
+        <parent link="rear_diff_tower"/>
+        <child link="rear_axle"/>
+    </joint>
+
+    <xacro:include filename="$(find scte_description)/urdf/scte_wheel.xacro"/>
+    <xacro:scte_wheel link_name="front_left_wheel"
+                      parent_link="front_axle"
+                      wheel_radius="${wheel_radius}"
+                      wheel_length="${wheel_length}"
+                      wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
+                      wheel_joint_rpy="0 0 0"
+    />
+    <!--
+
     <xacro:property name="drive_axle_length" value="0.25"/>
     <xacro:property name="drive_axle_radius" value="0.005"/>
-    
+
     <xacro:property name="shock_tower_height" value="0.105"/>
     <xacro:property name="shock_tower_width" value="0.14"/>
-    
+
+    <xacro:include filename="$(find scte_description)/urdf/scte_axle_components.xacro"/>
     <xacro:scte_axle_components suffix="front"
         parent_link="scte_chassis" 
         diff_joint_xyz="${scte_chassis_length * 0.63} 0 0" 
@@ -135,227 +229,8 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         right_wheel_length="0.045"
         right_wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
         right_wheel_joint_rpy="0 0 0"
-    />         
+    />
+    -->
     <!--/CHASSIS-->
-    
-    <!--MOUNTING BARS-->
-    <!---->
-    <xacro:property name="mounting_bars_length" value="0.45"/>
-    <xacro:property name="mounting_bars_width" value="0.025"/>
-    <xacro:property name="mounting_bars_depth" value="0.005"/>
-    
-    <link name="driver_side_mounting_bar">
-        <inertial>
-            <mass value="${scte_total_mass * 0.02}"/>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <inertia
-                    ixx="1" ixy="0" ixz="0"
-                    iyy="1" iyz="0"
-                    izz="1"
-            />
-        </inertial>
-        <visual name='visual'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
-            </geometry>
-            <material name="green"/>
-        </visual>
-        <collision name='collision'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
-            </geometry>
-        </collision>
-    </link>    
-    <joint name="shock_tower_front_JOINED_driver_side_mounting_bar" type="fixed">
-        <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * 0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
-        <parent link="shock_tower_front"/>
-        <child link="driver_side_mounting_bar"/>
-    </joint>
-    
-    <link name="passenger_side_mounting_bar">
-        <inertial>
-            <mass value="${scte_total_mass * 0.02}"/>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <inertia
-                    ixx="1" ixy="0" ixz="0"
-                    iyy="1" iyz="0"
-                    izz="1"
-            />
-        </inertial>
-        <visual name='visual'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
-            </geometry>
-            <material name="green"/>
-        </visual>
-        <collision name='collision'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
-            </geometry>
-        </collision>
-    </link>    
-    <joint name="shock_tower_front_JOINED_passenger_side_mounting_bar" type="fixed">
-        <origin xyz="${scte_chassis_length * -0.63} ${shock_tower_width * -0.5} ${shock_tower_height * 0.5}" rpy="0 -0 0"/>
-        <parent link="shock_tower_front"/>
-        <child link="passenger_side_mounting_bar"/>
-    </joint>      
-    <!---->
-    <!--/MOUNTING BARS-->
-    
-    <!--COMPUTER ENCLOSURE-->
-    <link name="main_computer_enclosure">
-        <inertial>
-            <mass value="${scte_total_mass * 0.02}"/>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <inertia
-                    ixx="1" ixy="0" ixz="0"
-                    iyy="1" iyz="0"
-                    izz="1"
-            />
-        </inertial>
-        <visual name='visual'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.26 0.185 0.06"/>
-            </geometry>
-            <material name="none">
-                <color rgba="${122/255} ${125/255} ${121/255} 0.5"/>
-            </material>
-        </visual>
-        <collision name='collision'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.26 0.185 0.06"/>
-            </geometry>
-        </collision>
-    </link>    
-    <joint name="main_computer_enclosure_JOINED_driver_side_mounting_bar" type="fixed">
-        <origin xyz="0 ${(scte_chassis_width * -0.5) + (mounting_bars_width * 0.5)} ${0.06 * 0.5}" rpy="0 0 0"/>
-        <parent link="driver_side_mounting_bar"/>
-        <child link="main_computer_enclosure"/>
-    </joint>
-    <!--/COMPUTER ENCLOSURE-->
-
-    <!--SENSORS-->
-    <!---->
-    <link name="stereo_camera_bar_support">
-        <inertial>
-            <mass value="${scte_total_mass * 0.01}"/>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <inertia
-                    ixx="1" ixy="0" ixz="0"
-                    iyy="1" iyz="0"
-                    izz="1"
-            />
-        </inertial>
-        <visual name='visual'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <cylinder radius="0.01" length="0.06"/>
-            </geometry>
-            <material name="blue"/>
-        </visual>
-        <collision name='collision'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <cylinder radius="0.01" length="0.06"/>
-            </geometry>
-        </collision>
-    </link>
-    <joint name="stereo_camera_bar_support_JOINED_main_computer_enclosure" type="fixed">
-        <origin xyz="${0.260 * -0.45} 0 ${0.06 * 1.0}" rpy="0 0 0"/>
-        <parent link="main_computer_enclosure"/>
-        <child link="stereo_camera_bar_support"/>
-    </joint>
-
-    <link name="stereo_camera_bar">
-        <inertial>
-            <mass value="${scte_total_mass * 0.01}"/>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <inertia
-                    ixx="1" ixy="0" ixz="0"
-                    iyy="1" iyz="0"
-                    izz="1"
-            />
-        </inertial>
-        <visual name='visual'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.03 0.202 0.004"/>
-            </geometry>
-            <material name="blue"/>
-        </visual>
-        <collision name='collision'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.03 0.202 0.004"/>
-            </geometry>
-        </collision>
-    </link>
-    <joint name="stereo_camera_bar_JOINED_stereo_camera_bar_support" type="fixed">
-        <origin xyz="0 0 ${0.06 * 0.5}" rpy="0 0 0"/>
-        <parent link="stereo_camera_bar_support"/>
-        <child link="stereo_camera_bar"/>
-    </joint>
-
-    <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
-    <!--https://answers.ros.org/question/9840/how-do-you-get-stereo_image_proc-to-include-a-frame_id-so-that-rviz-will-accept-the-point-cloud-messages/-->
-    <!--stereo projection/point cloud uses the left cameras frame_id to determine how to draw the image-->
-    <!-- may need to use image_rect for the video to align with the model
-    https://berndpfrommer.github.io/tagslam_web/visualization/
-    -->
-    <xacro:logitech_c270_camera parent_link="stereo_camera_bar" camera_link="driver_side_camera" joint_xyz="0.0 0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
-    <xacro:logitech_c270_camera parent_link="stereo_camera_bar" camera_link="passenger_side_camera" joint_xyz="0.0 -0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
-
-    <!--
-    <link name="debug_stereo_perception_camera">
-        <inertial>
-            <mass value="${scte_total_mass * 0.0001}"/>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <inertia
-                    ixx="1" ixy="0" ixz="0"
-                    iyy="1" iyz="0"
-                    izz="1"
-            />
-        </inertial>
-        <visual name='visual'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.05 0.05 0.05"/>
-            </geometry>
-            <material name="blue"/>
-        </visual>
-        <collision name='collision'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.05 0.05 0.05"/>
-            </geometry>
-        </collision>
-    </link>
-    <joint name="debug_stereo_perception_camera_JOINED_stereo_camera_bar" type="fixed">
-        <origin xyz="0 0.5 0" rpy="${M_PI/-2} 0 ${M_PI/-2}"/>
-        <parent link="stereo_camera_bar"/>
-        <child link="debug_stereo_perception_camera"/>
-    </joint>
-    -->
-    
-    <!--LIDAR-->
-    <xacro:include filename="$(find ydlidar_ros)/urdf/ydlidar.urdf"/>    
-    <joint name="main_computer_enclosure_JOINED_ydlidar_base" type="fixed">
-        <origin xyz="0.090 0 0.0305" rpy="0 0 0"/>
-        <parent link="main_computer_enclosure"/>
-        <child link="base_laser"/>
-    </joint>
-
-    <!--gazebo>
-        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"-->
-            <!--robotNamespace>$(arg robot_namespace)</robotNamespace-->
-            <!--legacyModeNS>true</legacyModeNS>
-        </plugin>
-    </gazebo-->
 
 </robot>
