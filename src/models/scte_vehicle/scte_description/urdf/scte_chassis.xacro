@@ -22,71 +22,15 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
     <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />
 
-    <link name="base_link">
-        
-    </link>
-
-    <joint name="base_link" type="fixed">
-        <origin xyz="0 0.0 0.0" rpy="0 -0 0"/>
-        <parent link="base_link"/>
-        <child link="scte_chassis"/>
-    </joint>
-
-    <!--DEBUG test link for odom testing-->
-    <!--
-    <link name="test_real_link">
-        <inertial>
-            <mass value="1.0"/>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <inertia
-                    ixx="1" ixy="0" ixz="0"
-                    iyy="1" iyz="0"
-                    izz="1"
-            />
-        </inertial>
-        <visual name='visual'>
-            <transparency>1</transparency>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.075 0.075 0.075"/>
-            </geometry>
-            <material name="none1">
-                <color rgba="${255/255} ${0/255} ${0/255} 1.0"/>
-            </material>
-        </visual>
-        <collision name='collision'>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.075 0.075 0.075"/>
-            </geometry>
-        </collision>
-    </link>
-    <joint name="odom_test" type="fixed">
-        <origin xyz="0 0.0 1.0" rpy="0 0 0"/>
-        <parent link="scte_chassis"/>
-        <child link="test_real_link"/>
-    </joint>
-    -->
-    <!--DEBUG test link for odom testing-->
-
-    <!--CHASSIS-->
     <xacro:property name="scte_total_mass" value="50"/>
-
     <xacro:property name="scte_chassis_length" value="0.292"/>
     <xacro:property name="scte_chassis_width" value="0.165"/>
-    <xacro:property name="scte_chassis_depth" value="0.00635"/>            
-    
-    <link name='scte_chassis'>
-        <!-- borrowed from husky for debug-->
-        <inertial>
-            <mass value="${scte_total_mass * 0.86}"/>
-            <origin xyz="-0.00065 -0.085 0.062" rpy="0 0 0"/>
-            <inertia
-                    ixx="0.6022" ixy="-0.02364" ixz="-0.1197"
-                    iyy="1.7386" iyz="-0.001544"
-                    izz="2.0296"
-            />
-        </inertial>
+    <xacro:property name="scte_chassis_depth" value="0.00635"/>
+
+    <!--Wheel Properties-->
+    <xacro:property name="wheel_radius" value="0.05"/>
+
+    <link name='base_link'>
         <visual name='visual'>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
@@ -101,6 +45,39 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             </geometry>
         </collision>
     </link>
+
+    <link name='base_footprint'/>
+
+    <joint name="base_footprint_joint" type="fixed">
+        <origin xyz="0 0 ${scte_chassis_depth - wheel_radius}" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="base_footprint"/>
+    </joint>
+
+    <!-- Inertial link stores the robot's inertial information -->
+    <link name="inertial_link">
+        <inertial>
+            <mass value="${scte_total_mass * 0.90}" />
+            <origin xyz="0 0 0" />
+            <inertia ixx="0.6022" ixy="-0.02364" ixz="-0.1197" iyy="1.7386" iyz="-0.001544" izz="2.0296" />
+        </inertial>
+    </link>
+
+    <joint name="inertial_to_base_link_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="inertial_link" />
+    </joint>
+
+    <!--CHASSIS-->
+    <link name="scte_chassis"/>
+
+    <joint name="scte_chassis_to_base_link_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="scte_chassis"/>
+    </joint>
+
 
     <xacro:include filename="$(find scte_description)/urdf/scte_axle_components.xacro"/>
     <xacro:property name="drive_axle_length" value="0.25"/>
@@ -124,7 +101,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         shock_tower_joint_origin="0 0 ${shock_tower_height * 0.5}"
         shock_tower_joint_rpy="0 0 0"
         
-        left_wheel_radius="0.05"
+        left_wheel_radius="${wheel_radius}"
         left_wheel_length="0.045"
         left_wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
         left_wheel_joint_rpy="0 0 0"
@@ -374,11 +351,11 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         <child link="base_laser"/>
     </joint>
 
-    <gazebo>
-        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <!--gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"-->
             <!--robotNamespace>$(arg robot_namespace)</robotNamespace-->
-            <legacyModeNS>true</legacyModeNS>
+            <!--legacyModeNS>true</legacyModeNS>
         </plugin>
-    </gazebo>
+    </gazebo-->
 
 </robot>

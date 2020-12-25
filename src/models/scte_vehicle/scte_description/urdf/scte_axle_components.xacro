@@ -171,7 +171,6 @@ right_wheel_joint_rpy">
         </xacro:if>                         
         
         <!--shock tower-->
-        <!---->
         <link name="shock_tower_${suffix}">
             <inertial>
                 <mass value="${scte_total_mass * 0.25 * 0.05}"/>
@@ -199,10 +198,8 @@ right_wheel_joint_rpy">
             <child link="shock_tower_${suffix}"/>
             <axis xyz="0 0 0" rpy="0 0 0"/>
         </joint>
-        <!---->
 
         <!--axle-->
-        <!---->
         <link name="axle_${suffix}">
             <inertial>
                 <mass value="${scte_total_mass * 0.02}"/>
@@ -230,18 +227,12 @@ right_wheel_joint_rpy">
             <child link="axle_${suffix}"/>
             <axis xyz="0 0 0" rpy="0 0 0"/>
         </joint>
-        <!---->
-               
+
         <!--wheels-->
-        <!---->
         <link name="left_wheel_${suffix}">
             <inertial>
                 <mass value="${scte_total_mass * 0.25 * 0.05}"/>
-                <inertia
-                        ixx="1" ixy="0" ixz="0"
-                        iyy="1" iyz="0"
-                        izz="1"
-                />
+                <inertia  ixx="0.02467" ixy="0" ixz="0" iyy="0.04411" iyz="0" izz="0.02467" />
             </inertial>
             <visual name='visual'>
                 <geometry>
@@ -255,6 +246,13 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
+        <gazebo reference="left_wheel_${suffix}">
+            <mu1 value="1.0"/>
+            <mu2 value="1.0"/>
+            <kp value="10000000.0" />
+            <kd value="1.0" />
+            <fdir1 value="1 0 0"/>
+        </gazebo>
         <joint name='left_wheel_${suffix}_JOINED_axle_${suffix}' type='continuous'>
             <origin xyz="${left_wheel_joint_origin}" rpy="${left_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
@@ -263,17 +261,6 @@ right_wheel_joint_rpy">
             <axis xyz="0 0 1"/>
             <dynamics damping="0.7"/>
         </joint>
-        <!--transmission name="tran_left_wheel_${suffix}">
-            <type>transmission_interface/SimpleTransmission</type>
-            <joint name="left_wheel_${suffix}_JOINED_axle_${suffix}">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-            </joint>
-            <actuator name="motor_left_wheel_${suffix}">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-                <mechanicalReduction>1</mechanicalReduction>
-            </actuator>
-        </transmission-->
-
         <transmission name="tran_left_wheel_${suffix}" type="SimpleTransmission">
             <type>transmission_interface/SimpleTransmission</type>
             <actuator name="motor_left_wheel_${suffix}">
@@ -284,15 +271,10 @@ right_wheel_joint_rpy">
             </joint>
         </transmission>
 
-        <!---->
         <link name="right_wheel_${suffix}">
             <inertial>
                 <mass value="${scte_total_mass * 0.25 * 0.05}"/>
-                <inertia
-                        ixx="1" ixy="0" ixz="0"
-                        iyy="1" iyz="0"
-                        izz="1"
-                />
+                <inertia  ixx="0.02467" ixy="0" ixz="0" iyy="0.04411" iyz="0" izz="0.02467" />
             </inertial>
             <visual name='visual'>
                 <geometry>
@@ -306,6 +288,13 @@ right_wheel_joint_rpy">
                 </geometry>
             </collision>
         </link>
+        <gazebo reference="right_wheel_${suffix}">
+            <mu1 value="1.0"/>
+            <mu2 value="1.0"/>
+            <kp value="10000000.0" />
+            <kd value="1.0" />
+            <fdir1 value="1 0 0"/>
+        </gazebo>
         <joint name='right_wheel_${suffix}_JOINED_axle_${suffix}' type='continuous'>
             <origin xyz="${right_wheel_joint_origin}" rpy="${right_wheel_joint_rpy}"/>
             <parent link="axle_${suffix}"/>
@@ -314,17 +303,6 @@ right_wheel_joint_rpy">
             <axis xyz="0 0 1"/>
             <dynamics damping="0.7"/>
         </joint>
-        <!--transmission name="tran_right_wheel_${suffix}">
-            <type>transmission_interface/SimpleTransmission</type>
-            <joint name="right_wheel_${suffix}_JOINED_axle_${suffix}">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-            </joint>
-            <actuator name="motor_right_wheel_${suffix}">
-                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-                <mechanicalReduction>1</mechanicalReduction>
-            </actuator>
-        </transmission-->
-
         <transmission name="tran_right_wheel_${suffix}" type="SimpleTransmission">
             <type>transmission_interface/SimpleTransmission</type>
             <actuator name="motor_right_wheel_${suffix}">
@@ -334,7 +312,6 @@ right_wheel_joint_rpy">
                 <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
             </joint>
         </transmission>
-        <!---->
     </xacro:macro>
 
 </robot>
