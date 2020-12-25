@@ -125,6 +125,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                             rear_bumper_mount_joint_rpy="0 0 0"
     />
 
+    <gazebo reference="front_axle"/>
     <link name="front_axle">
         <visual name='visual'>
             <geometry>
@@ -163,14 +164,52 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         <child link="rear_axle"/>
     </joint>
 
-    <xacro:include filename="$(find scte_description)/urdf/scte_wheel.xacro"/>
+    <!--xacro:include filename="$(find scte_description)/urdf/scte_wheel.xacro"/>
     <xacro:scte_wheel link_name="front_left_wheel"
                       parent_link="front_axle"
                       wheel_radius="${wheel_radius}"
                       wheel_length="${wheel_length}"
                       wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
                       wheel_joint_rpy="0 0 0"
-    />
+    /-->
+
+    <link name="left_wheel">
+        <inertial>
+            <mass value="0.5"/>
+            <inertia
+                    ixx="1" ixy="0" ixz="0"
+                    iyy="1" iyz="0"
+                    izz="1"
+            />
+        </inertial>
+        <visual name="visual">
+            <geometry>
+                <cylinder radius="0.1" length="0.05"/>
+            </geometry>
+        </visual>
+        <collision name='collision'>
+            <geometry>
+                <cylinder radius="0.1" length="0.05"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <gazebo reference="left_wheel">
+        <mu1 value="1.0"/>
+        <mu2 value="1.0"/>
+        <kp value="10000000.0" />
+        <kd value="1.0" />
+        <fdir1 value="1 0 0"/>
+    </gazebo>
+
+    <joint name="left_wheel_JOIN_scte_chassis" type="continuous">
+        <child link="left_wheel"/>
+        <parent link="front_axle"/>
+        <origin xyz="0.1 0.15 0" rpy="0 1.5707 1.5707"/>
+        <dynamics damping="0.7"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+
     <!--
 
     <xacro:property name="drive_axle_length" value="0.25"/>
