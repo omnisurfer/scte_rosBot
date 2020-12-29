@@ -35,6 +35,14 @@
 
     </include>
 
+    <!-- ackermann steering config
+    http://wiki.ros.org/ackermann_steering_controller
+    http://wiki.ros.org/steer_bot_hardware_gazebo
+    https://github.com/CIR-KIT-Unit03
+    -->
+    <rosparam file="$(find scte_gazebo)/config/scte_gazebo.yaml" command="load"/>
+    <rosparam file="$(find scte_gazebo)/config/pids.yaml" command="load"/>
+
     <!-- Spawn robot in gazebo -->
     <node name="spawn_scte_model" pkg="gazebo_ros" type="spawn_model"
           args="-x $(arg x)

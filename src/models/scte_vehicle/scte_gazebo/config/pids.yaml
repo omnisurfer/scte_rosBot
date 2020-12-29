@@ -1,0 +1,4 @@
+#these params may refer to the SimpleTransmission gazebo hardware interfaces inside the scte_description.xacro
+gains:
+  base_to_right_rear_wheel  :  {p: 100000.0, d: 10.0, i: 0.50, i_clamp: 3.0}
+  base_to_left_rear_wheel   :  {p: 100000.0, d: 10.0, i: 0.50, i_clamp: 3.0}
