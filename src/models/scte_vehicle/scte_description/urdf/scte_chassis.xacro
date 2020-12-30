@@ -39,10 +39,10 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
     <link name='base_footprint'/>
 
-    <joint name="base_footprint_joint" type="fixed">
+    <joint name="base_link_TO_base_footprint" type="fixed">
         <origin xyz="0 0 ${scte_chassis_depth - wheel_radius}" rpy="0 0 0"/>
-        <parent link="base_link"/>
-        <child link="base_footprint"/>
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
     </joint>
 
     <link name='base_link'>

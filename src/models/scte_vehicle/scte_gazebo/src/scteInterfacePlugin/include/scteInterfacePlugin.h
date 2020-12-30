@@ -94,7 +94,7 @@ private:
     physics::JointPtr wheel_rl_joint;
     physics::JointPtr wheel_rr_joint;
 
-    physics::JointPtr footprint_link;
+    physics::LinkPtr footprint_link;
 
     common::Time lastUpdateTime;
 

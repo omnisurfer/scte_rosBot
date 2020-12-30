@@ -27,15 +27,25 @@ namespace gazebo {
         std::cout << "DEBUG: " << i++ << "\r\n";
 
         // Gazebo init
-        steer_fl_joint = model->GetJoint("steer_fl");
-        steer_fr_joint = model->GetJoint("steer_fr");
+        footprint_link = model->GetLink("base_footprint");
 
-        wheel_fl_joint = model->GetJoint("wheel_fl");
-        wheel_fr_joint = model->GetJoint("wheel_fr");
-        wheel_rl_joint = model->GetJoint("wheel_rl");
-        wheel_rr_joint = model->GetJoint("wheel_rr");
+        steer_fl_joint = model->GetJoint("front_left_wheel_steer_TO_front_axle");
+        steer_fr_joint = model->GetJoint("front_right_wheel_steer_TO_front_axle");
 
-        footprint_link = model->GetJoint("base_footprint");
+        wheel_fl_joint = model->GetJoint("front_left_wheel_TO_front_axle");
+        wheel_fr_joint = model->GetJoint("front_right_wheel_TO_front_axle");
+        wheel_rl_joint = model->GetJoint("rear_left_wheel_TO_rear_axle");
+        wheel_rr_joint = model->GetJoint("rear_right_wheel_TO_rear_axle");
+
+        std::cout << "base_footprint_joint: " << footprint_link << "\r\n";
+
+        std::cout << "steer_fl_joint: " << steer_fl_joint << "\r\n";
+        std::cout << "steer_fr_joint: " << steer_fr_joint << "\r\n";
+
+        std::cout << "wheel_fl_joint: " << wheel_fl_joint << "\r\n";
+        std::cout << "wheel_fr_joint: " << wheel_fr_joint << "\r\n";
+        std::cout << "wheel_rl_joint: " << wheel_rl_joint << "\r\n";
+        std::cout << "wheel_rr_joint: " << wheel_rr_joint << "\r\n";
 
         std::cout << "DEBUG: " << i++ << "\r\n";
 
@@ -112,15 +122,83 @@ namespace gazebo {
     }
 
     void ScteBotInterfacePlugin::twistStateUpdate() {
-
+#if GAZEBO_MAJOR_VERSION >= 9
+        gazeboWorldPose = footprint_link->WorldPose();
+        rosTwistMessage.linear.x = footprint_link->RelativeLinearVel().X();
+        rosTwistMessage.angular.z = footprint_link->RelativeAngularAccel().Z();
+        vehicleRollover = (fabs(gazeboWorldPose.Rot().X()) > 0.2 || fabs(gazeboWorldPose.Rot().Y() > 0.2));
+#else
+        gazeboWorldPose = footprint_link->GetWorldPose();
+        rosTwistMessage.linear.x = footprint_link->GetRelativeLinearVel().x;
+        rosTwistMessage.angular.z = footprint_link->GetRelativeAngularVel().z;
+        vehicleRollover =(fabs(gazeboWorldPose.rot.x) > 0.2 || fabs(gazeboWorldPose.rot.y) > 0.2);
+#endif
     }
 
     void ScteBotInterfacePlugin::driveUdpate() {
+        if(vehicleRollover) {
+            stopWheels();
+            return;
+        }
 
+        // brakes have precedence over throttle
+        ros::Time currentTimeStamp = ros::Time::now();
+
+        if((brakeCmd > 0) && ((currentTimeStamp - rosBrakeTimeStamp).toSec() < 0.25)) {
+            double brakeTorqueFactor = 1.0;
+            if(rosTwistMessage.linear.x < -0.1) {
+                brakeTorqueFactor = -1.0;
+            } else if (rosTwistMessage.linear.x < 0.1){
+                brakeTorqueFactor = 1.0 + (rosTwistMessage.linear.x - 0.1) / 0.1;
+            }
+
+            setAllWheelTorque(-brakeTorqueFactor * brakeCmd);
+        } else {
+            if((currentTimeStamp - rosThrottleTimeStamp).toSec() < 0.25) {
+                double throttleTorque;
+                if(gearCmd == DRIVE) {
+                    throttleTorque = throttleCmd * 4000.0 - 40.1 * rosTwistMessage.linear.x;
+                    if(throttleTorque < 0.0) {
+                        throttleTorque = 0.0;
+                    }
+                } else { // REVERSE
+                    throttleTorque = -throttleCmd * 4000.0 - 250.0 * rosTwistMessage.linear.x;
+                    if(throttleTorque > 0.0) {
+                        throttleTorque = 0.0;
+                    }
+                }
+
+                setRearWheelTorque(throttleTorque);
+            }
+        }
     }
 
     void ScteBotInterfacePlugin::steeringUpdate(const common::UpdateInfo &info) {
+        double timeStep = (info.simTime - lastUpdateTime).Double();
+        lastUpdateTime = info.simTime;
 
+        // arbitrarily set maximum steering rate 800 deg/s
+        const double maxRate = 800.0 * M_PI / 180.0 / SCTEBOT_STEERING_RATIO;
+        double maxIncrement = timeStep * maxRate;
+
+        if((targetAngle - currentSteeringAngle) > maxIncrement) {
+            currentSteeringAngle += maxIncrement;
+        } else if((targetAngle - currentSteeringAngle) < -maxIncrement) {
+            currentSteeringAngle -= maxIncrement;
+        }
+
+        // compute ackermann steering angles for each wheel
+        double tAlpha = tan(currentSteeringAngle);
+        double leftSteer = atan(SCTEBOT_WHEELBASE * tAlpha / (SCTEBOT_WHEELBASE - 0.5 * SCTEBOT_TRACK_WIDTH * tAlpha));
+        double rightSteer = atan(SCTEBOT_WHEELBASE * tAlpha / (SCTEBOT_WHEELBASE + 0.5 * SCTEBOT_TRACK_WIDTH * tAlpha));
+
+#if GAZEBO_MAJOR_VERSION >= 9
+        steer_fl_joint->SetParam("vel", 0, 100 * (leftSteer - steer_fl_joint->Position(0)));
+        steer_fr_joint->SetParam("vel", 0, 100 * (rightSteer - steer_fr_joint->Position(0)));
+#else
+        steer_fl_joint->SetParam("vel", 0, 100 * (leftSteer - steer_fl_joint->GetAngle(0).Radian()));
+        steer_fr_joint->SetParam("vel", 0, 100 * (rightSteer - steer_fr_joint->GetAngle(0).Radian()));
+#endif
     }
 
     void ScteBotInterfacePlugin::dragUpdate() {

@@ -28,7 +28,12 @@
               <robotNamespace>$(arg robot_name)</robotNamespace>
             </xacro:if-->
             <jointName>
-                steer_fl, steer_fr, wheel_fl, wheel_fr, wheel_rl, wheel_rr
+                front_left_wheel_steer_TO_front_axle,
+                front_right_wheel_steer_TO_front_axle,
+                front_left_wheel_TO_front_axle,
+                front_right_wheel_TO_front_axle,
+                rear_left_wheel_TO_rear_axle,
+                rear_right_wheel_TO_rear_axle
             </jointName>
             <updateRate>100</updateRate>
             <alwaysOn>true</alwaysOn>
