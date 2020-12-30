@@ -100,7 +100,7 @@ private:
 
     // SDF parameters
     std::string robotName;
-    bool publishTF;
+    bool publishTf;
     double tfPublishFreq;
 
     // Steering values

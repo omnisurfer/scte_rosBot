@@ -18,6 +18,13 @@
     <arg name="z" default="0.0"/>
     <arg name="yaw" default="0.0"/>
 
+    <!--
+    DEBUG scteInterfacePlugin arguments
+    -->
+    <arg name="pub_Tf" default="true" />
+    <arg name="blue" default="false" />
+    <arg name="tf_freq" default="100.0" />
+
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" value="$(find scte_gazebo)/worlds/scte.world"/>
         <arg name="paused" value="$(arg paused)"/>
@@ -34,14 +41,6 @@
     <include file="$(find scte_control)/launch/teleop.launch">
 
     </include>
-
-    <!-- ackermann steering config
-    http://wiki.ros.org/ackermann_steering_controller
-    http://wiki.ros.org/steer_bot_hardware_gazebo
-    https://github.com/CIR-KIT-Unit03
-    -->
-    <rosparam file="$(find scte_gazebo)/config/scte_gazebo.yaml" command="load"/>
-    <rosparam file="$(find scte_gazebo)/config/pids.yaml" command="load"/>
 
     <!-- Spawn robot in gazebo -->
     <node name="spawn_scte_model" pkg="gazebo_ros" type="spawn_model"

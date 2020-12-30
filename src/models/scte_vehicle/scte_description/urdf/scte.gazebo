@@ -2,9 +2,36 @@
 <robot>
 
     <gazebo>
-        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <!--plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"-->
           <!--robotNamespace>$(arg robot_namespace)</robotNamespace-->
-          <legacyModeNS>true</legacyModeNS>
+          <!--legacyModeNS>true</legacyModeNS>
+        </plugin-->
+    </gazebo>
+
+    <!--
+    DEBUG scteInterfacePlugin
+    Simulated vehicle interface
+    -->
+
+    <gazebo>
+        <plugin name="scte_interface_plugin" filename="libscte_interface_plugin.so">
+          <!--robotName>$(arg robot_name)</robotName-->
+          <!--pubTf>$(arg pub_Tf)</pubTf-->
+          <!--tfFreq>100.0</tfFreq-->
+        </plugin>
+    </gazebo>
+
+    <!-- Publish current joint angles -->
+    <gazebo>
+        <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+            <!--xacro:if value="${robot_name_prop != ''}" >
+              <robotNamespace>$(arg robot_name)</robotNamespace>
+            </xacro:if-->
+            <jointName>
+                steer_fl, steer_fr, wheel_fl, wheel_fr, wheel_rl, wheel_rr
+            </jointName>
+            <updateRate>100</updateRate>
+            <alwaysOn>true</alwaysOn>
         </plugin>
     </gazebo>
 
