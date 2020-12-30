@@ -5,4 +5,7 @@ https://www.xarg.org/book/kinematics/ackerman-steering/
 
 ROS/Gazebo:
 http://wiki.ros.org/ackermann_steering_controller
-http://wiki.ros.org/steer_bot_hardware_gazebo
+http://wiki.ros.org/steer_bot_hardware_gazebo - Only for indigo.
+https://github.com/ros-controls/ros_control/wiki/hardware_interface
+
+https://medium.com/@waleedmansoor/how-i-built-ros-odometry-for-differential-drive-vehicle-without-encoder-c9f73fe63d87
