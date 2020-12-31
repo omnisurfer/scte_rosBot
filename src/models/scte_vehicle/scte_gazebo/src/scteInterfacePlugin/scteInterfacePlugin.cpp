@@ -29,13 +29,13 @@ namespace gazebo {
         // Gazebo init
         footprint_link = model->GetLink("base_footprint");
 
-        steer_fl_joint = model->GetJoint("front_left_wheel_steer_TO_base_link");
-        steer_fr_joint = model->GetJoint("front_right_wheel_steer_TO_base_link");
+        steer_fl_joint = model->GetJoint("front_left_wheel_steer_TO_front_axle");
+        steer_fr_joint = model->GetJoint("front_right_wheel_steer_TO_front_axle");
 
-        wheel_fl_joint = model->GetJoint("front_left_wheel_TO_base_link");
-        wheel_fr_joint = model->GetJoint("front_right_wheel_TO_base_link");
-        wheel_rl_joint = model->GetJoint("rear_left_wheel_TO_base_link");
-        wheel_rr_joint = model->GetJoint("rear_right_wheel_TO_base_link");
+        wheel_fl_joint = model->GetJoint("front_left_wheel_TO_front_axle");
+        wheel_fr_joint = model->GetJoint("front_right_wheel_TO_front_axle");
+        wheel_rl_joint = model->GetJoint("rear_left_wheel_TO_rear_axle");
+        wheel_rr_joint = model->GetJoint("rear_right_wheel_TO_rear_axle");
 
         std::cout << "base_footprint_joint: " << footprint_link << "\r\n";
 

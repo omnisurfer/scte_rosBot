@@ -6,6 +6,7 @@
     wheel_length
     wheel_joint_origin
     wheel_joint_rpy
+    is_steerable
     ">
             <gazebo reference="${link_name}">
                 <mu1 value="1.0"/>
@@ -14,7 +15,7 @@
                 <kd value="1.0" />
                 <fdir1 value="1 0 0"/>
             </gazebo>
-            <!---->
+
             <link name="${link_name}_steer">
                 <inertial>
                     <origin xyz="-0.013054 -0.0295 0" rpy="0 0 0"/>
@@ -22,15 +23,24 @@
                     <inertia ixx="2" ixy="0" ixz="0" iyy="2" iyz="0" izz="2"/>
                 </inertial>
             </link>
-            <joint name="${link_name}_steer_TO_${parent_link}" type="revolute">
-                <parent link="${parent_link}" />
-                <child link="${link_name}_steer" />
-                <origin xyz="${wheel_joint_origin}" rpy="0 0 0" />
-                <axis xyz="0 0 1" />
-                <limit upper="0.6" lower="-0.6" effort="0.0" velocity="0.0" />
-            </joint>
-            <!---->
-            <!---->
+            <xacro:if value="${is_steerable == 1}">
+                <joint name="${link_name}_steer_TO_${parent_link}" type="revolute">
+                    <parent link="${parent_link}" />
+                    <child link="${link_name}_steer" />
+                    <origin xyz="${wheel_joint_origin}" rpy="${M_PI * 0.5} 0 0" />
+                    <axis xyz="0 0 1" />
+                    <limit upper="0.6" lower="-0.6" effort="0.0" velocity="0.0" />
+                </joint>
+            </xacro:if>
+            <xacro:if value="${is_steerable == 0}">
+                <joint name="${link_name}_steer_TO_${parent_link}" type="fixed">
+                    <parent link="${parent_link}" />
+                    <child link="${link_name}_steer" />
+                    <origin xyz="${wheel_joint_origin}" rpy="${M_PI * 0.5} 0 0" />
+                    <axis xyz="0 0 1" />
+                </joint>
+            </xacro:if>
+
             <link name="${link_name}">
                 <inertial>
                     <mass value="${scte_total_mass * 0.25 * 0.05}"/>
@@ -66,7 +76,6 @@
                     <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
                 </joint>
             </transmission>
-            <!---->
 
         </xacro:macro>
 </robot>
