@@ -125,6 +125,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                             rear_bumper_mount_joint_rpy="0 0 0"
     />
 
+    <!--
     <xacro:include filename="$(find scte_description)/urdf/scte_drive_axle.xacro"/>
     <xacro:scte_drive_axle link_name="front_axle"
                      parent_link="front_diff_tower"
@@ -141,35 +142,36 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                            drive_axle_joint_xyz="0 0 ${0.03 * 0.5}"
                            drive_axle_joint_rpy="${M_PI * -0.5} 0 0"
     />
+    -->
 
     <xacro:include filename="$(find scte_description)/urdf/scte_wheel.xacro"/>
     <xacro:scte_wheel link_name="front_left_wheel"
-                      parent_link="front_axle"
+                      parent_link="base_link"
                       wheel_radius="${wheel_radius}"
                       wheel_length="${wheel_length}"
-                      wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
-                      wheel_joint_rpy="0 0 0"
+                      wheel_joint_origin="${scte_chassis_length * 0.63} ${drive_axle_length * 0.5} 0"
+                      wheel_joint_rpy="${M_PI * -0.5} 0 0"
     />
     <xacro:scte_wheel link_name="front_right_wheel"
-                      parent_link="front_axle"
+                      parent_link="base_link"
                       wheel_radius="${wheel_radius}"
                       wheel_length="${wheel_length}"
-                      wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
-                      wheel_joint_rpy="0 0 0"
+                      wheel_joint_origin="${scte_chassis_length * 0.63} ${drive_axle_length * -0.5} 0"
+                      wheel_joint_rpy="${M_PI * -0.5} 0 0"
     />
     <xacro:scte_wheel link_name="rear_left_wheel"
-                      parent_link="rear_axle"
+                      parent_link="base_link"
                       wheel_radius="${wheel_radius}"
                       wheel_length="${wheel_length}"
-                      wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
-                      wheel_joint_rpy="0 0 0"
+                      wheel_joint_origin="${scte_chassis_length * -0.63} ${drive_axle_length * 0.5} 0"
+                      wheel_joint_rpy="${M_PI * -0.5} 0 0"
     />
     <xacro:scte_wheel link_name="rear_right_wheel"
-                      parent_link="rear_axle"
+                      parent_link="base_link"
                       wheel_radius="${wheel_radius}"
                       wheel_length="${wheel_length}"
-                      wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
-                      wheel_joint_rpy="0 0 0"
+                      wheel_joint_origin="${scte_chassis_length * -0.63} ${drive_axle_length * -0.5} 0"
+                      wheel_joint_rpy="${M_PI * -0.5} 0 0"
     />
 
 </robot>

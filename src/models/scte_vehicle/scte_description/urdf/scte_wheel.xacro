@@ -7,6 +7,30 @@
     wheel_joint_origin
     wheel_joint_rpy
     ">
+            <gazebo reference="${link_name}">
+                <mu1 value="1.0"/>
+                <mu2 value="1.0"/>
+                <kp value="10000000.0" />
+                <kd value="1.0" />
+                <fdir1 value="1 0 0"/>
+            </gazebo>
+            <!---->
+            <link name="${link_name}_steer">
+                <inertial>
+                    <origin xyz="-0.013054 -0.0295 0" rpy="0 0 0"/>
+                    <mass value="20.0"/>
+                    <inertia ixx="2" ixy="0" ixz="0" iyy="2" iyz="0" izz="2"/>
+                </inertial>
+            </link>
+            <joint name="${link_name}_steer_TO_${parent_link}" type="revolute">
+                <parent link="${parent_link}" />
+                <child link="${link_name}_steer" />
+                <origin xyz="${wheel_joint_origin}" rpy="0 0 0" />
+                <axis xyz="0 0 1" />
+                <limit upper="0.6" lower="-0.6" effort="0.0" velocity="0.0" />
+            </joint>
+            <!---->
+            <!---->
             <link name="${link_name}">
                 <inertial>
                     <mass value="${scte_total_mass * 0.25 * 0.05}"/>
@@ -24,22 +48,13 @@
                     </geometry>
                 </collision>
             </link>
-
-            <gazebo reference="${link_name}">
-                <mu1 value="1.0"/>
-                <mu2 value="1.0"/>
-                <kp value="10000000.0" />
-                <kd value="1.0" />
-                <fdir1 value="1 0 0"/>
-            </gazebo>
-
             <joint name='${link_name}_TO_${parent_link}' type='continuous'>
-                <origin xyz="${wheel_joint_origin}" rpy="${wheel_joint_rpy}"/>
-                <parent link="${parent_link}"/>
+                <parent link="${link_name}_steer"/>
                 <child link="${link_name}"/>
-                <axis xyz="0 0 1" rpy="0 0 0"/>
+                <origin xyz="0 0 0" rpy="${wheel_joint_rpy}"/>
                 <axis xyz="0 0 1"/>
                 <dynamics damping="0.7"/>
+                <limit effort="1000.0" velocity="22.0"/>
             </joint>
 
             <transmission name="${link_name}_transmission" type="SimpleTransmission">
@@ -51,21 +66,7 @@
                     <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
                 </joint>
             </transmission>
-
-            <link name="${link_name}_steer">
-                <inertial>
-                    <origin xyz="-0.013054 -0.0295 0" rpy="0 0 0"/>
-                    <mass value="20.0"/>
-                    <inertia ixx="2" ixy="0" ixz="0" iyy="2" iyz="0" izz="2"/>
-                </inertial>
-            </link>
-            <joint name="${link_name}_steer_TO_${parent_link}" type="revolute">
-                <parent link="base_link" />
-                <child link="${link_name}_steer" />
-                <origin xyz="0 0 0" rpy="0 0 0" />
-                <axis xyz="0 0 1" />
-                <limit upper="0.6" lower="-0.6" effort="0.0" velocity="0.0" />
-            </joint>
+            <!---->
 
         </xacro:macro>
 </robot>

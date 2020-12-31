@@ -54,7 +54,7 @@ private:
     void recvGearCmd(const std_msgs::UInt8ConstPtr& msg);
 
     void twistStateUpdate();
-    void driveUdpate();
+    void driveUpdate();
     void steeringUpdate(const common::UpdateInfo& info);
     void dragUpdate();
     void stopWheels();

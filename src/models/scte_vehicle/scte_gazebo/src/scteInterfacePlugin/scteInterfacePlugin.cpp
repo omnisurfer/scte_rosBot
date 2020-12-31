@@ -29,13 +29,13 @@ namespace gazebo {
         // Gazebo init
         footprint_link = model->GetLink("base_footprint");
 
-        steer_fl_joint = model->GetJoint("front_left_wheel_steer_TO_front_axle");
-        steer_fr_joint = model->GetJoint("front_right_wheel_steer_TO_front_axle");
+        steer_fl_joint = model->GetJoint("front_left_wheel_steer_TO_base_link");
+        steer_fr_joint = model->GetJoint("front_right_wheel_steer_TO_base_link");
 
-        wheel_fl_joint = model->GetJoint("front_left_wheel_TO_front_axle");
-        wheel_fr_joint = model->GetJoint("front_right_wheel_TO_front_axle");
-        wheel_rl_joint = model->GetJoint("rear_left_wheel_TO_rear_axle");
-        wheel_rr_joint = model->GetJoint("rear_right_wheel_TO_rear_axle");
+        wheel_fl_joint = model->GetJoint("front_left_wheel_TO_base_link");
+        wheel_fr_joint = model->GetJoint("front_right_wheel_TO_base_link");
+        wheel_rl_joint = model->GetJoint("rear_left_wheel_TO_base_link");
+        wheel_rr_joint = model->GetJoint("rear_right_wheel_TO_base_link");
 
         std::cout << "base_footprint_joint: " << footprint_link << "\r\n";
 
@@ -116,7 +116,7 @@ namespace gazebo {
         }
 
         twistStateUpdate();
-        driveUdpate();
+        driveUpdate();
         steeringUpdate(info);
         dragUpdate();
     }
@@ -135,7 +135,7 @@ namespace gazebo {
 #endif
     }
 
-    void ScteBotInterfacePlugin::driveUdpate() {
+    void ScteBotInterfacePlugin::driveUpdate() {
         if(vehicleRollover) {
             stopWheels();
             return;
@@ -206,19 +206,40 @@ namespace gazebo {
     }
 
     void ScteBotInterfacePlugin::setAllWheelTorque(double torque) {
+        wheel_rl_joint->SetForce(0, 0.25 * torque);
+        wheel_rr_joint->SetForce(0, 0.25 * torque);
 
+        wheel_fl_joint->SetForce(0, 0.25 * torque);
+        wheel_fr_joint->SetForce(0, 0.25 * torque);
     }
 
     void ScteBotInterfacePlugin::setRearWheelTorque(double torque) {
-
+        wheel_rl_joint->SetForce(0, 0.25 * torque);
+        wheel_rr_joint->SetForce(0, 0.25 * torque);
     }
 
     void ScteBotInterfacePlugin::stopWheels() {
+        wheel_rl_joint->SetForce(0, -1000.0 * wheel_rl_joint->GetVelocity(0));
+        wheel_rr_joint->SetForce(0, -1000.0 * wheel_rr_joint->GetVelocity(0));
 
+        wheel_fl_joint->SetForce(0, -1000.0 * wheel_fl_joint->GetVelocity(0));
+        wheel_fr_joint->SetForce(0, -1000.0 * wheel_fr_joint->GetVelocity(0));
     }
 
     void ScteBotInterfacePlugin::recvSteeringCmd(const std_msgs::Float64ConstPtr &msg) {
         std::cout << "Got steering cmd! \r\n";
+
+        if(!std::isfinite(msg->data)) {
+            targetAngle = 0.0;
+            return;
+        }
+
+        targetAngle = msg->data / SCTEBOT_STEERING_RATIO;
+        if(targetAngle > SCTEBOT_MAX_STEER_ANGLE) {
+            targetAngle = SCTEBOT_MAX_STEER_ANGLE;
+        } else if (targetAngle < -SCTEBOT_MAX_STEER_ANGLE) {
+            targetAngle = -SCTEBOT_MAX_STEER_ANGLE;
+        }
     }
 
     void ScteBotInterfacePlugin::recvThrottleCmd(const std_msgs::Float64ConstPtr &msg) {
