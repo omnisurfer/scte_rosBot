@@ -1,10 +1,10 @@
 <launch>
 
-    <arg name="namespace" default="test"/>
+    <arg name="robot_namespace" default="/DefaultNamespace_description"/>
 
     <!-- main vehicle urdf file with vehicle transforms-->
     <param name="robot_description" command="$(find xacro)/xacro '$(find scte_description)/urdf/scte_chassis.xacro'
-        robot_namespace:='sctebot'
+        robot_namespace:=$(arg robot_namespace)
     "/>
 
 </launch>

@@ -22,9 +22,6 @@ namespace gazebo {
     }
 
     void ScteBotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) {
-        int i = 0;
-
-        std::cout << "DEBUG: " << i++ << "\r\n";
 
         // Gazebo init
         footprint_link = model->GetLink("base_footprint");
@@ -37,35 +34,22 @@ namespace gazebo {
         wheel_rl_joint = model->GetJoint("rear_left_wheel_TO_rear_axle");
         wheel_rr_joint = model->GetJoint("rear_right_wheel_TO_rear_axle");
 
-        std::cout << "base_footprint_joint: " << footprint_link << "\r\n";
-
-        std::cout << "steer_fl_joint: " << steer_fl_joint << "\r\n";
-        std::cout << "steer_fr_joint: " << steer_fr_joint << "\r\n";
-
-        std::cout << "wheel_fl_joint: " << wheel_fl_joint << "\r\n";
-        std::cout << "wheel_fr_joint: " << wheel_fr_joint << "\r\n";
-        std::cout << "wheel_rl_joint: " << wheel_rl_joint << "\r\n";
-        std::cout << "wheel_rr_joint: " << wheel_rr_joint << "\r\n";
-
-        std::cout << "DEBUG: " << i++ << "\r\n";
-
         // Load SDF parameters
-        if (sdf->HasElement("pubTf")) {
-            sdf->GetElement("pubTf")->GetValue()->Get(publishTf);
-        }
-        else {
-            publishTf = false;
-        }
-
         if (sdf->HasElement("robotName")) {
             sdf::ParamPtr sdf_robot_name = sdf->GetElement("robotName")->GetValue();
             if(sdf_robot_name) {
                 sdf_robot_name->Get(robotName);
+
+                std::cout << "robotNameA: " << robotName << "\r\n";
             } else {
                 robotName = std::string("");
+
+                std::cout << "robotNameB: " << robotName << "\r\n";
             }
         } else {
             robotName = std::string("");
+
+            std::cout << "robotNameC: " << robotName << "\r\n";
         }
 
         if(sdf->HasElement("pubTf")) {
@@ -75,19 +59,15 @@ namespace gazebo {
         }
 
         if(sdf->HasElement("tfFreq")) {
-            sdf->GetElement("tffreq")->GetValue()->Get(tfPublishFreq);
+            sdf->GetElement("tfFreq")->GetValue()->Get(tfPublishFreq);
         } else {
             tfPublishFreq = 100.0;
         }
-
-        std::cout << "DEBUG: " << i++ << "\r\n";
 
         updateConnection = event::Events::ConnectWorldUpdateBegin(std::bind(&ScteBotInterfacePlugin::OnUpdate, this, std::placeholders::_1));
 
         steer_fl_joint->SetParam("fmax", 0, 99999.0);
         steer_fr_joint->SetParam("fmax", 0, 99999.0);
-
-        std::cout << "DEBUG: " << i++ << "\r\n";
 
         // ROS init
         rosNodeHandle = new ros::NodeHandle(robotName);
@@ -99,13 +79,12 @@ namespace gazebo {
 
         rosTwistPublisher = rosNodeHandle->advertise<geometry_msgs::TwistStamped>("twist", 1);
         rosGearStatePublisher = rosNodeHandle->advertise<std_msgs::UInt8>("gear_state", 1);
-        rosFeedbackTimer = rosNodeHandle->createTimer(ros::Duration(0.02), &ScteBotInterfacePlugin::feedBackTimerCallback, this);
+        rosFeedbackTimer = rosNodeHandle->createTimer(ros::Duration(0.02),
+                                                      &ScteBotInterfacePlugin::feedbackTimerCallback, this);
 
         if(publishTf) {
             rosTFTimer = rosNodeHandle->createTimer(ros::Duration(1.0 / tfPublishFreq), &ScteBotInterfacePlugin::tfTimerCallBack, this);
         }
-
-        std::cout << "DEBUG END: " << i++ << "\r\n";
 
     }
 
@@ -202,7 +181,18 @@ namespace gazebo {
     }
 
     void ScteBotInterfacePlugin::dragUpdate() {
+        // apply rolling resistance and aerodynamic drag forces
+        double rollingResistanceTorque = ROLLING_RESISTANCE_COEFF * VEHICLE_MASS * GRAVITY_ACCEL;
+        double dragForce = AERO_DRAG_COEFF * rosTwistMessage.linear.x * rosTwistMessage.linear.x;
+        double dragTorque = dragForce * WHEEL_RADIUS; // implemented as a torque disturbance
 
+        if(rosTwistMessage.linear.x > 0.0 ) {
+            setAllWheelTorque(-rollingResistanceTorque);
+            setAllWheelTorque(-dragTorque);
+        } else {
+            setAllWheelTorque(rollingResistanceTorque);
+            setAllWheelTorque(dragTorque);
+        }
     }
 
     void ScteBotInterfacePlugin::setAllWheelTorque(double torque) {
@@ -227,8 +217,6 @@ namespace gazebo {
     }
 
     void ScteBotInterfacePlugin::recvSteeringCmd(const std_msgs::Float64ConstPtr &msg) {
-        std::cout << "Got steering cmd! \r\n";
-
         if(!std::isfinite(msg->data)) {
             targetAngle = 0.0;
             return;
@@ -243,27 +231,75 @@ namespace gazebo {
     }
 
     void ScteBotInterfacePlugin::recvThrottleCmd(const std_msgs::Float64ConstPtr &msg) {
-        std::cout << "Got throttle cmd! \r\n";
+        throttleCmd = msg->data;
+
+        if(throttleCmd < 0.0) {
+            throttleCmd = 0.0;
+        } else if (throttleCmd > 1.0) {
+            throttleCmd = 1.0;
+        }
+
+        rosThrottleTimeStamp = ros::Time::now();
     }
 
     void ScteBotInterfacePlugin::recvBreakCmd(const std_msgs::Float64ConstPtr &msg) {
+        brakeCmd = msg->data;
 
+        if(brakeCmd < 0) {
+            brakeCmd = 0;
+        } else if (brakeCmd > MAX_BRAKE_TORQUE) {
+            brakeCmd = MAX_BRAKE_TORQUE;
+        }
+        rosBrakeTimeStamp = ros::Time::now();
     }
 
     void ScteBotInterfacePlugin::recvGearCmd(const std_msgs::UInt8ConstPtr &msg) {
 
+        if(msg->data > REVERSE) {
+            ROS_WARN("Invalid gear command received [%u]", gearCmd);
+        } else {
+            gearCmd = msg->data;
+        }
     }
 
-    void ScteBotInterfacePlugin::feedBackTimerCallback(const ros::TimerEvent &event) {
+    void ScteBotInterfacePlugin::feedbackTimerCallback(const ros::TimerEvent &event) {
+        geometry_msgs::TwistStamped twistStampedMessage;
+        twistStampedMessage.header.frame_id = tf::resolve(robotName, footprint_link->GetName());
+        twistStampedMessage.header.stamp = event.current_real;
+        twistStampedMessage.twist = rosTwistMessage;
 
+        rosTwistPublisher.publish(twistStampedMessage);
+
+        std_msgs::UInt8 gearStateMessage;
+        gearStateMessage.data = gearCmd;
+
+        rosGearStatePublisher.publish(gearStateMessage);
     }
 
     void ScteBotInterfacePlugin::tfTimerCallBack(const ros::TimerEvent &event) {
+        tf::StampedTransform stampedTransform;
 
+        stampedTransform.frame_id_ = "world";
+        //drowan_NOTE_20210102: the prefix robotName allows for multiple vehicles to be simulated BUT
+        //this requires a separate tf_prefixer script to be used since the functionality to allow
+        //multiple tf frames was silently removed in recent ROS updates:
+        //https://github.com/robustify/audibot/blob/noetic-devel/audibot_gazebo/scripts/tf_prefixer.py
+        stampedTransform.child_frame_id_ = tf::resolve(robotName, footprint_link->GetName());
+        stampedTransform.stamp_ = event.current_real;
+
+#if GAZEBO_MAJOR_VERSION >= 9
+        stampedTransform.setOrigin(tf::Vector3(gazeboWorldPose.Pos().X(), gazeboWorldPose.Pos().Y(), gazeboWorldPose.Pos().Z()));
+        stampedTransform.setRotation(tf::Quaternion(gazeboWorldPose.Rot().X(), gazeboWorldPose.Rot().Y(), gazeboWorldPose.Rot().Z(), gazeboWorldPose.Rot().W()));
+#else
+        stampedTransform.setOrigin(tf::Vector3(gazeboWorldPose.pos.x, gazeboWorldPose.pos.y, gazeboWorldPose.z));
+        stampedTransform.setRotation(tf::Quaternion(gazeboWorldPose.rot.x, gazeboWorldPose.rot.y, gazeboWorldPose.rot.z, gazeboWorldPose.rot.w));
+#endif
+        rosTransformBroadcaster.sendTransform(stampedTransform);
     }
 
     void ScteBotInterfacePlugin::Reset() {
         //does nothing...
+        ROS_INFO("Reset currently not implemented...");
     }
 
     ScteBotInterfacePlugin::~ScteBotInterfacePlugin() noexcept {

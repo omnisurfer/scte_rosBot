@@ -44,7 +44,7 @@ protected:
     virtual void Reset();
 
 private:
-    void feedBackTimerCallback(const ros::TimerEvent& event);
+    void feedbackTimerCallback(const ros::TimerEvent& event);
     void tfTimerCallBack(const ros::TimerEvent& event);
     void OnUpdate(const common::UpdateInfo& info);
 

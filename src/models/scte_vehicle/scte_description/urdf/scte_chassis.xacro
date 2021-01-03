@@ -14,7 +14,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 <!--Gazebo does not seem to like capital letters in the robot namespace-->
 <robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:arg name="robot_namespace" default="/" />
+    <xacro:arg name="robot_namespace" default="/DEFAULTNAMESPACE2"/>
 
     <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
 

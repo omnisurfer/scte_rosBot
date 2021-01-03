@@ -12,23 +12,18 @@
     DEBUG scteInterfacePlugin
     Simulated vehicle interface
     -->
-
     <gazebo>
         <plugin name="scte_interface_plugin" filename="libscte_interface_plugin.so">
-          <!--robotName>$(arg robot_name)</robotName-->
-          <!--pubTf>$(arg pub_Tf)</pubTf-->
-          <!--tfFreq>100.0</tfFreq-->
+          <robotName>$(arg robot_namespace)</robotName>
+          <pubTf>true</pubTf>
+          <tfFreq>100.0</tfFreq>
         </plugin>
     </gazebo>
-
-
 
     <!-- Publish current joint angles -->
     <gazebo>
         <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
-            <!--xacro:if value="${robot_name_prop != ''}" >
-              <robotNamespace>$(arg robot_name)</robotNamespace>
-            </xacro:if-->
+            <robotNamespace>$(arg robot_namespace)</robotNamespace>
             <jointName>
                 front_left_wheel_steer_TO_front_axle,
                 front_right_wheel_steer_TO_front_axle,

@@ -11,6 +11,13 @@
     <arg name="headless" default="false"/>
     <arg name="debug" default="false"/>
 
+    <!--
+    Naming the robot with the audibot code as implemented will append
+    the robot namespace to the tf topic which would then require
+    the tf_prefixer script to correct. This is because of the issue described
+    in the following link:
+    https://github.com/ros/robot_state_publisher/pull/139
+    -->
     <arg name="robot_namespace" default="/"/>
 
     <arg name="x" default="0.0"/>
@@ -21,7 +28,7 @@
     <!--
     DEBUG scteInterfacePlugin arguments
     -->
-    <arg name="pub_Tf" default="true" />
+    <arg name="pub_tf" default="true" />
     <arg name="blue" default="false" />
     <arg name="tf_freq" default="100.0" />
 
@@ -36,10 +43,10 @@
 
     <!-- control and teleop launch -->
     <include file="$(find scte_control)/launch/control.launch">
-
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
     </include>
     <include file="$(find scte_control)/launch/teleop.launch">
-
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
     </include>
 
     <!-- Spawn robot in gazebo -->

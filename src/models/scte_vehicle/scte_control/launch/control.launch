@@ -5,6 +5,8 @@
     https://github.com/husky/husky/blob/melodic-devel/husky_control/launch/control.launch
     -->
 
+    <arg name="robot_namespace" default="/DefaultNamespace_control"/>
+
     <arg name="simulation_on" default="0"/>
 
     <arg name="enable_ekf_localization" default="0"/>
@@ -12,22 +14,23 @@
 
     <!-- load robot description-->
     <include file="$(find scte_description)/launch/description.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
     </include>
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
     <rosparam file="$(find scte_control)/config/scte_control.yaml" command="load"/>
 
     <!-- load the controllers -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-          output="screen" ns="/" args="joint_state_controller velocity_controller"/>
+    <!--node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+          output="screen" ns="$(arg robot_namespace)" args="joint_state_controller velocity_controller"/-->
 
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
-          respawn="false" output="screen" ns="/">
+          respawn="false" output="screen" ns="$(arg robot_namespace)">
         <!--remap from="/joint_states" to="/sctebot/joint_states" /-->
     </node>
 
-    <!--node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" ns="/sctebot"/-->
+    <!--node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" ns="$(arg robot_namespace)"/-->
 
     <!-- start EKF for localization
         https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/
@@ -46,16 +49,18 @@
         http://wiki.ros.org/robot_localization/Troubleshooting
         https://answers.ros.org/questions/scope:all/sort:activity-desc/tags:robot_localization/page:1/
     -->
+    <!--
     <group if="$(eval arg('enable_ekf_localization') == 1)">
         <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true">
             <rosparam command="load" file="$(find scte_control)/config/$(arg ekf_settings_file)"/>
         </node>
     </group>
-
+    -->
     <!--
     http://docs.ros.org/en/melodic/api/robot_localization/html/integrating_gps.html
     -->
     <!--rosparam param="datum">[55.944904, -3.186693, 0.0, map, base_link]</rosparam-->
+    <!--
     <group if="$(eval arg('enable_navsat_odom') == 1)">
         <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" respawn="true">
 
@@ -69,11 +74,14 @@
 
         </node>
     </group>
+    -->
 
+    <!--
     <node pkg="twist_mux" type="twist_mux" name="twist_mux" ns="/">
         <rosparam command="load" file="$(find scte_control)/config/twist_mux.yaml" />
         <remap from="cmd_vel_out" to="velocity_controller/cmd_vel"/>
     </node>
+    -->
 
 
 
