@@ -25,13 +25,6 @@
     <arg name="z" default="1.0"/>
     <arg name="yaw" default="0.0"/>
 
-    <!--
-    DEBUG scteInterfacePlugin arguments
-    -->
-    <arg name="pub_tf" default="true" />
-    <arg name="blue" default="false" />
-    <arg name="tf_freq" default="100.0" />
-
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" value="$(find scte_gazebo)/worlds/scte.world"/>
         <arg name="paused" value="$(arg paused)"/>
@@ -44,6 +37,9 @@
     <!-- control and teleop launch -->
     <include file="$(find scte_control)/launch/control.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+        <arg name="tf_freq" value="100.0"/>
+        <arg name="pub_tf" default="true" />
+        <!--arg name="blue" default="false" /-->
     </include>
     <include file="$(find scte_control)/launch/teleop.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>

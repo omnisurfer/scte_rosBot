@@ -1,10 +1,12 @@
 <launch>
 
     <arg name="robot_namespace" default="/DefaultNamespace_description"/>
+    <arg name="tf_freq" default="100.0"/>
+    <arg name="pub_tf" default="false"/>
 
     <!-- main vehicle urdf file with vehicle transforms-->
     <param name="robot_description" command="$(find xacro)/xacro '$(find scte_description)/urdf/scte_chassis.xacro'
-        robot_namespace:=$(arg robot_namespace)
+        robot_namespace:=$(arg robot_namespace) tf_freq:=$(arg tf_freq) pub_tf:=$(arg pub_tf)
     "/>
 
 </launch>

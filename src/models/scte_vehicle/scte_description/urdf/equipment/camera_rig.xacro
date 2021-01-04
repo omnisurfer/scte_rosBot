@@ -2,7 +2,7 @@
 <!---->
 <link name="stereo_camera_bar_support">
     <inertial>
-        <mass value="${scte_total_mass * 0.01}"/>
+        <mass value="${scte_chassis_mass * 0.01}"/>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <inertia
                 ixx="1" ixy="0" ixz="0"
@@ -32,7 +32,7 @@
 
 <link name="stereo_camera_bar">
 <inertial>
-    <mass value="${scte_total_mass * 0.01}"/>
+    <mass value="${scte_chassis_mass * 0.01}"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <inertia
             ixx="1" ixy="0" ixz="0"
@@ -73,7 +73,7 @@
         <!--
         <link name="debug_stereo_perception_camera">
             <inertial>
-                <mass value="${scte_total_mass * 0.0001}"/>
+                <mass value="${scte_chassis_mass * 0.0001}"/>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <inertia
                         ixx="1" ixy="0" ixz="0"

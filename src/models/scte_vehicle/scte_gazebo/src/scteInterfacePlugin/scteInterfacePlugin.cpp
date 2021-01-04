@@ -277,6 +277,12 @@ namespace gazebo {
     }
 
     void ScteBotInterfacePlugin::tfTimerCallBack(const ros::TimerEvent &event) {
+
+        // Don't publish redundant TF within the delta
+        if((event.current_real - event.last_real).toSec() < 1e-6) {
+            return;
+        }
+
         tf::StampedTransform stampedTransform;
 
         stampedTransform.frame_id_ = "world";
@@ -288,8 +294,17 @@ namespace gazebo {
         stampedTransform.stamp_ = event.current_real;
 
 #if GAZEBO_MAJOR_VERSION >= 9
-        stampedTransform.setOrigin(tf::Vector3(gazeboWorldPose.Pos().X(), gazeboWorldPose.Pos().Y(), gazeboWorldPose.Pos().Z()));
-        stampedTransform.setRotation(tf::Quaternion(gazeboWorldPose.Rot().X(), gazeboWorldPose.Rot().Y(), gazeboWorldPose.Rot().Z(), gazeboWorldPose.Rot().W()));
+        stampedTransform.setOrigin(tf::Vector3(
+                gazeboWorldPose.Pos().X(),
+                gazeboWorldPose.Pos().Y(),
+                gazeboWorldPose.Pos().Z())
+                );
+        stampedTransform.setRotation(tf::Quaternion(
+                gazeboWorldPose.Rot().X(),
+                gazeboWorldPose.Rot().Y(),
+                gazeboWorldPose.Rot().Z(),
+                gazeboWorldPose.Rot().W())
+                );
 #else
         stampedTransform.setOrigin(tf::Vector3(gazeboWorldPose.pos.x, gazeboWorldPose.pos.y, gazeboWorldPose.z));
         stampedTransform.setRotation(tf::Quaternion(gazeboWorldPose.rot.x, gazeboWorldPose.rot.y, gazeboWorldPose.rot.z, gazeboWorldPose.rot.w));

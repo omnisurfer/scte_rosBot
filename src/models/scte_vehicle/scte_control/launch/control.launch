@@ -6,15 +6,18 @@
     -->
 
     <arg name="robot_namespace" default="/DefaultNamespace_control"/>
+    <arg name="tf_freq" default="100.0"/>
+    <arg name="pub_tf" default="false"/>
 
     <arg name="simulation_on" default="0"/>
-
     <arg name="enable_ekf_localization" default="0"/>
     <arg name="enable_navsat_odom" default="0"/>
 
     <!-- load robot description-->
     <include file="$(find scte_description)/launch/description.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+        <arg name="tf_freq" value="$(arg tf_freq)"/>
+        <arg name="pub_tf" value="$(arg pub_tf)"/>
     </include>
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
@@ -27,10 +30,11 @@
     <!-- convert joint states to TF transforms for rviz, etc -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
           respawn="false" output="screen" ns="$(arg robot_namespace)">
-        <!--remap from="/joint_states" to="/sctebot/joint_states" /-->
+        <param name="publish_frequency" type="double" value="$(arg tf_freq)"/>
     </node>
 
-    <!--node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" ns="$(arg robot_namespace)"/-->
+    <!--node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" ns="$(arg robot_namespace)"/>
+    <node pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" name="joint_state_publisher_gui" ns="$(arg robot_namespace)"/-->
 
     <!-- start EKF for localization
         https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/
@@ -82,7 +86,5 @@
         <remap from="cmd_vel_out" to="velocity_controller/cmd_vel"/>
     </node>
     -->
-
-
 
 </launch>

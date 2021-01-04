@@ -15,12 +15,14 @@
     <gazebo>
         <plugin name="scte_interface_plugin" filename="libscte_interface_plugin.so">
           <robotName>$(arg robot_namespace)</robotName>
-          <pubTf>true</pubTf>
-          <tfFreq>100.0</tfFreq>
+          <pubTf>$(arg pub_tf)</pubTf>
+          <tfFreq>$(arg tf_freq)</tfFreq>
         </plugin>
     </gazebo>
 
-    <!-- Publish current joint angles -->
+    <!--
+    Publish current joint angles
+    -->
     <gazebo>
         <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
             <robotNamespace>$(arg robot_namespace)</robotNamespace>
@@ -73,8 +75,8 @@
           </plugin>
           <pose>0 0 0 0 0 0</pose>
         </sensor>
-      </gazebo>
-      -->
+    </gazebo>
+    -->
 
     <!--
         - Noise is sampled independently per pixel on each frame.
@@ -84,7 +86,7 @@
         - ROS and gazebo use different camera axis conventions,
         this may cause the virtual camera to point in the wrong direction
     -->
-    <!---->
+    <!--
     <gazebo reference="driver_side_camera_optical">
         <sensor type="camera" name="driver_camera">
           <update_rate>30.0</update_rate>
@@ -121,7 +123,7 @@
           </plugin>
         </sensor>
     </gazebo>
-    <!---->
+    -->
 
     <!--
     <gazebo reference="passenger_side_camera_optical">

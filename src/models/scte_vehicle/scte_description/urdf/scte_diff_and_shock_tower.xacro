@@ -12,11 +12,11 @@ shock_tower_joint_rpy
         <!--diff base plate-->
         <link name="${link_name}">
             <intertial>
-                <mass value="${scte_total_mass * 0.05}"/>
+                <mass value="${scte_chassis_mass * 0.05}"/>
                 <inertia
-                        ixx="1" ixy="0" ixz="0"
-                        iyy="1" iyz="0"
-                        izz="1"
+                        ixx="1e-6" ixy="0" ixz="0"
+                        iyy="1e-6" iyz="0"
+                        izz="1e-6"
                 />
             </intertial>
             <visual>
@@ -40,11 +40,11 @@ shock_tower_joint_rpy
         <!--shock tower-->
         <link name="${link_name}_shock_tower">
             <inertial>
-                <mass value="${scte_total_mass * 0.25 * 0.05}"/>
+                <mass value="${scte_chassis_mass * 0.25 * 0.05}"/>
                 <inertia
-                        ixx="1" ixy="0" ixz="0"
-                        iyy="1" iyz="0"
-                        izz="1"
+                        ixx="1e-6" ixy="0" ixz="0"
+                        iyy="1e-6" iyz="0"
+                        izz="1e-6"
                 />
             </inertial>
             <visual name='visual'>

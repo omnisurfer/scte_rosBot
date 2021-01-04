@@ -6,7 +6,7 @@
 
     <link name="driver_side_mounting_bar">
         <inertial>
-            <mass value="${scte_total_mass * 0.02}"/>
+            <mass value="${scte_chassis_mass * 0.02}"/>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <inertia
                     ixx="1" ixy="0" ixz="0"
@@ -36,7 +36,7 @@
 
     <link name="passenger_side_mounting_bar">
         <inertial>
-            <mass value="${scte_total_mass * 0.02}"/>
+            <mass value="${scte_chassis_mass * 0.02}"/>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <inertia
                     ixx="1" ixy="0" ixz="0"

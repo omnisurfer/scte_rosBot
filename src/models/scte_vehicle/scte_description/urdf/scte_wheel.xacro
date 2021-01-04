@@ -6,6 +6,8 @@
     wheel_length
     wheel_joint_origin
     wheel_joint_rpy
+    wheel_joint_name
+    wheel_steer_joint_name
     is_steerable
     ">
             <gazebo reference="${link_name}">
@@ -16,11 +18,20 @@
                 <fdir1 value="1 0 0"/>
             </gazebo>
 
+            <xacro:property name="wheel_radius_sq" value="${wheel_radius * wheel_radius}"/>
+            <xacro:property name="wheel_length_sq" value="${wheel_length * wheel_length}"/>
+
             <link name="${link_name}_steer">
                 <inertial>
-                    <origin xyz="-0.013054 -0.0295 0" rpy="0 0 0"/>
-                    <mass value="20.0"/>
-                    <inertia ixx="2" ixy="0" ixz="0" iyy="2" iyz="0" izz="2"/>
+                    <origin xyz="-0.02 -0.03 0" rpy="0 0 0"/>
+                    <!-- not sure why this has arbitrary mass and inertial values in the example source-->
+                    <mass value="${wheel_mass * 2}"/>
+                    <!--inertia ixx="${(2/5 * wheel_mass) * wheel_radius_sq}" ixy="0" ixz="0"
+                             iyy="${(2/5 * wheel_mass) * wheel_radius_sq}" iyz="0"
+                             izz="${(2/5 * wheel_mass) * wheel_radius_sq}"/-->
+                    <inertia  ixx="${(1/12 * wheel_mass * 2) * (3 * wheel_radius_sq + wheel_length_sq)}" ixy="0" ixz="0"
+                              iyy="${(1/12 * wheel_mass * 2) * (3 * wheel_radius_sq + wheel_length_sq)}" iyz="0"
+                              izz="${(1/2 * wheel_mass * 2) * wheel_radius_sq}" />
                 </inertial>
             </link>
             <xacro:if value="${is_steerable == 1}">
@@ -33,7 +44,7 @@
                 </joint>
             </xacro:if>
             <xacro:if value="${is_steerable == 0}">
-                <joint name="${link_name}_steer_TO_${parent_link}" type="fixed">
+                <joint name="${wheel_steer_joint_name}" type="fixed">
                     <parent link="${parent_link}" />
                     <child link="${link_name}_steer" />
                     <origin xyz="${wheel_joint_origin}" rpy="${M_PI * 0.5} 0 0" />
@@ -43,8 +54,10 @@
 
             <link name="${link_name}">
                 <inertial>
-                    <mass value="${scte_total_mass * 0.25 * 0.05}"/>
-                    <inertia  ixx="0.02467" ixy="0" ixz="0" iyy="0.04411" iyz="0" izz="0.02467" />
+                    <mass value="${wheel_mass}"/>
+                    <inertia  ixx="${(1/12 * wheel_mass) * (3 * wheel_radius_sq + wheel_length_sq)}" ixy="0" ixz="0"
+                              iyy="${(1/12 * wheel_mass) * (3 * wheel_radius_sq + wheel_length_sq)}" iyz="0"
+                              izz="${(1/2 * wheel_mass) * wheel_radius_sq}" />
                 </inertial>
                 <visual name='visual'>
                     <geometry>
@@ -58,7 +71,7 @@
                     </geometry>
                 </collision>
             </link>
-            <joint name='${link_name}_TO_${parent_link}' type='continuous'>
+            <joint name='${wheel_joint_name}' type='continuous'>
                 <parent link="${link_name}_steer"/>
                 <child link="${link_name}"/>
                 <origin xyz="0 0 0" rpy="${wheel_joint_rpy}"/>

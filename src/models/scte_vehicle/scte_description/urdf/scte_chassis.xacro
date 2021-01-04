@@ -15,6 +15,8 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 <robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <xacro:arg name="robot_namespace" default="/DEFAULTNAMESPACE2"/>
+    <xacro:arg name="tf_freq" default="100.0"/>
+    <xacro:arg name="pub_tf" default="false"/>
 
     <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
 
@@ -22,13 +24,17 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
     <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />
 
-    <xacro:property name="scte_total_mass" value="50"/>
+    <xacro:property name="scte_chassis_mass" value="2.9"/>
     <xacro:property name="scte_chassis_length" value="0.292"/>
     <xacro:property name="scte_chassis_width" value="0.165"/>
     <xacro:property name="scte_chassis_depth" value="0.00635"/>
+    <xacro:property name="scte_chassis_length_sq" value="${scte_chassis_length * scte_chassis_length}"/>
+    <xacro:property name="scte_chassis_width_sq" value="${scte_chassis_width * scte_chassis_width}"/>
+    <xacro:property name="scte_chassis_depth_sq" value="${scte_chassis_depth * scte_chassis_depth}"/>
 
     <!--Wheel Properties-->
-    <xacro:property name="wheel_radius" value="0.05"/>
+    <xacro:property name="wheel_mass" value="0.5"/>
+    <xacro:property name="wheel_radius" value="0.0525"/>
     <xacro:property name="wheel_length" value="0.045"/>
 
     <xacro:property name="shock_tower_height" value="0.105"/>
@@ -64,9 +70,11 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <!-- Inertial link stores the robot's inertial information -->
     <link name="inertial_link">
         <inertial>
-            <mass value="${scte_total_mass * 0.90}" />
+            <mass value="${scte_chassis_mass}" />
             <origin xyz="0 0 0" />
-            <inertia ixx="0.6022" ixy="-0.02364" ixz="-0.1197" iyy="1.7386" iyz="-0.001544" izz="2.0296" />
+            <inertia ixx="${(1/12 * scte_chassis_mass) * (scte_chassis_depth_sq + scte_chassis_width_sq)}" ixy="0" ixz="0"
+                     iyy="${(1/12 * scte_chassis_mass) * (scte_chassis_depth_sq + scte_chassis_length_sq)}" iyz="0"
+                     izz="${(1/12 * scte_chassis_mass) * (scte_chassis_length_sq + scte_chassis_width_sq)}" />
         </inertial>
     </link>
 
@@ -85,6 +93,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         <child link="scte_chassis"/>
     </joint>
 
+    <!---->
     <xacro:include filename="$(find scte_description)/urdf/scte_diff_and_shock_tower.xacro"/>
     <xacro:scte_diff_and_shock_tower link_name="front_diff_tower"
                                 parent_link="scte_chassis"
@@ -149,6 +158,8 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                       wheel_length="${wheel_length}"
                       wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
                       wheel_joint_rpy="${M_PI * -0.5} 0 0"
+                      wheel_joint_name="front_left_wheel_TO_front_axle"
+                      wheel_steer_joint_name="front_left_wheel_steer_TO_front_axle"
                       is_steerable="true"
     />
     <xacro:scte_wheel link_name="front_right_wheel"
@@ -157,6 +168,8 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                       wheel_length="${wheel_length}"
                       wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
                       wheel_joint_rpy="${M_PI * -0.5} 0 0"
+                      wheel_joint_name="front_right_wheel_TO_front_axle"
+                      wheel_steer_joint_name="front_right_wheel_steer_TO_front_axle"
                       is_steerable="true"
     />
     <xacro:scte_wheel link_name="rear_left_wheel"
@@ -165,15 +178,21 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                       wheel_length="${wheel_length}"
                       wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
                       wheel_joint_rpy="${M_PI * -0.5} 0 0"
+                      wheel_joint_name="rear_left_wheel_TO_rear_axle"
+                      wheel_steer_joint_name="rear_left_wheel_steer_TO_rear_axle"
                       is_steerable="false"
     />
+
     <xacro:scte_wheel link_name="rear_right_wheel"
                       parent_link="rear_axle"
                       wheel_radius="${wheel_radius}"
                       wheel_length="${wheel_length}"
                       wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
                       wheel_joint_rpy="${M_PI * -0.5} 0 0"
+                      wheel_joint_name="rear_right_wheel_TO_rear_axle"
+                      wheel_steer_joint_name="rear_right_wheel_steer_TO_rear_axle"
                       is_steerable="false"
     />
+    -->
 
 </robot>
