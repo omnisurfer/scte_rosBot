@@ -161,6 +161,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                       wheel_joint_name="front_left_wheel_TO_front_axle"
                       wheel_steer_joint_name="front_left_wheel_steer_TO_front_axle"
                       is_steerable="true"
+                      flip="1"
     />
     <xacro:scte_wheel link_name="front_right_wheel"
                       parent_link="front_axle"
@@ -171,28 +172,30 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                       wheel_joint_name="front_right_wheel_TO_front_axle"
                       wheel_steer_joint_name="front_right_wheel_steer_TO_front_axle"
                       is_steerable="true"
+                      flip="-1"
     />
+
     <xacro:scte_wheel link_name="rear_left_wheel"
                       parent_link="rear_axle"
                       wheel_radius="${wheel_radius}"
                       wheel_length="${wheel_length}"
                       wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
-                      wheel_joint_rpy="${M_PI * -0.5} 0 0"
+                      wheel_joint_rpy="0 0 0"
                       wheel_joint_name="rear_left_wheel_TO_rear_axle"
                       wheel_steer_joint_name="rear_left_wheel_steer_TO_rear_axle"
                       is_steerable="false"
+                      flip="1"
     />
-
     <xacro:scte_wheel link_name="rear_right_wheel"
                       parent_link="rear_axle"
                       wheel_radius="${wheel_radius}"
                       wheel_length="${wheel_length}"
                       wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
-                      wheel_joint_rpy="${M_PI * -0.5} 0 0"
+                      wheel_joint_rpy="0 0 0"
                       wheel_joint_name="rear_right_wheel_TO_rear_axle"
                       wheel_steer_joint_name="rear_right_wheel_steer_TO_rear_axle"
                       is_steerable="false"
+                      flip="1"
     />
-    -->
 
 </robot>

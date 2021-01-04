@@ -9,6 +9,7 @@
     wheel_joint_name
     wheel_steer_joint_name
     is_steerable
+    flip
     ">
             <gazebo reference="${link_name}">
                 <mu1 value="1.0"/>
@@ -20,37 +21,6 @@
 
             <xacro:property name="wheel_radius_sq" value="${wheel_radius * wheel_radius}"/>
             <xacro:property name="wheel_length_sq" value="${wheel_length * wheel_length}"/>
-
-            <link name="${link_name}_steer">
-                <inertial>
-                    <origin xyz="-0.02 -0.03 0" rpy="0 0 0"/>
-                    <!-- not sure why this has arbitrary mass and inertial values in the example source-->
-                    <mass value="${wheel_mass * 2}"/>
-                    <!--inertia ixx="${(2/5 * wheel_mass) * wheel_radius_sq}" ixy="0" ixz="0"
-                             iyy="${(2/5 * wheel_mass) * wheel_radius_sq}" iyz="0"
-                             izz="${(2/5 * wheel_mass) * wheel_radius_sq}"/-->
-                    <inertia  ixx="${(1/12 * wheel_mass * 2) * (3 * wheel_radius_sq + wheel_length_sq)}" ixy="0" ixz="0"
-                              iyy="${(1/12 * wheel_mass * 2) * (3 * wheel_radius_sq + wheel_length_sq)}" iyz="0"
-                              izz="${(1/2 * wheel_mass * 2) * wheel_radius_sq}" />
-                </inertial>
-            </link>
-            <xacro:if value="${is_steerable == 1}">
-                <joint name="${link_name}_steer_TO_${parent_link}" type="revolute">
-                    <parent link="${parent_link}" />
-                    <child link="${link_name}_steer" />
-                    <origin xyz="${wheel_joint_origin}" rpy="${M_PI * 0.5} 0 0" />
-                    <axis xyz="0 0 1" />
-                    <limit upper="0.6" lower="-0.6" effort="0.0" velocity="0.0" />
-                </joint>
-            </xacro:if>
-            <xacro:if value="${is_steerable == 0}">
-                <joint name="${wheel_steer_joint_name}" type="fixed">
-                    <parent link="${parent_link}" />
-                    <child link="${link_name}_steer" />
-                    <origin xyz="${wheel_joint_origin}" rpy="${M_PI * 0.5} 0 0" />
-                    <axis xyz="0 0 1" />
-                </joint>
-            </xacro:if>
 
             <link name="${link_name}">
                 <inertial>
@@ -72,23 +42,53 @@
                 </collision>
             </link>
             <joint name='${wheel_joint_name}' type='continuous'>
-                <parent link="${link_name}_steer"/>
+                <xacro:if value="${is_steerable == 1}">
+                    <parent link="${link_name}_steer"/>
+                    <origin xyz="0 0 0" rpy="${wheel_joint_rpy}"/>
+                </xacro:if>
+                <xacro:if value="${is_steerable == 0}">
+                    <parent link="${parent_link}"/>
+                    <origin xyz="${wheel_joint_origin}" rpy="${wheel_joint_rpy}"/>
+                </xacro:if>
+
                 <child link="${link_name}"/>
-                <origin xyz="0 0 0" rpy="${wheel_joint_rpy}"/>
                 <axis xyz="0 0 1"/>
                 <dynamics damping="0.7"/>
                 <limit effort="1000.0" velocity="22.0"/>
             </joint>
 
-            <transmission name="${link_name}_transmission" type="SimpleTransmission">
+            <xacro:if value="${is_steerable == 1}">
+                <link name="${link_name}_steer">
+                    <inertial>
+                        <origin xyz="-0.02 ${-0.03 * flip} 0" rpy="0 0 0"/>
+                        <!-- not sure why this has arbitrary mass and inertial values in the example source-->
+                        <mass value="${wheel_mass * 2}"/>
+                        <!--inertia ixx="${(2/5 * wheel_mass) * wheel_radius_sq}" ixy="0" ixz="0"
+                                 iyy="${(2/5 * wheel_mass) * wheel_radius_sq}" iyz="0"
+                                 izz="${(2/5 * wheel_mass) * wheel_radius_sq}"/-->
+                        <inertia  ixx="${(1/12 * wheel_mass * 2) * (3 * wheel_radius_sq + wheel_length_sq)}" ixy="0" ixz="0"
+                                  iyy="${(1/12 * wheel_mass * 2) * (3 * wheel_radius_sq + wheel_length_sq)}" iyz="0"
+                                  izz="${(1/2 * wheel_mass * 2) * wheel_radius_sq}" />
+                    </inertial>
+                </link>
+                <joint name="${link_name}_steer_TO_${parent_link}" type="revolute">
+                    <parent link="${parent_link}" />
+                    <child link="${link_name}_steer" />
+                    <origin xyz="${wheel_joint_origin}" rpy="${M_PI * 0.5} 0 0" />
+                    <axis xyz="0 0 1" />
+                    <limit upper="0.6" lower="-0.6" effort="0.0" velocity="0.0" />
+                </joint>
+            </xacro:if>
+
+            <!--transmission name="${link_name}_transmission" type="SimpleTransmission">
                 <type>transmission_interface/SimpleTransmission</type>
                 <actuator name="${link_name}_motor">
                     <mechanicalReduction>1</mechanicalReduction>
                 </actuator>
-                <joint name="${link_name}_TO_${parent_link}">
+                <joint name="${wheel_joint_name}">
                     <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
                 </joint>
-            </transmission>
+            </transmission-->
 
         </xacro:macro>
 </robot>

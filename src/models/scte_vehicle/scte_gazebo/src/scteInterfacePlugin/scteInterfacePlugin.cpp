@@ -133,21 +133,24 @@ namespace gazebo {
 
             setAllWheelTorque(-brakeTorqueFactor * brakeCmd);
         } else {
-            if((currentTimeStamp - rosThrottleTimeStamp).toSec() < 0.25) {
+            if((currentTimeStamp - rosThrottleTimeStamp).toSec() < 0.25) { //original was 0.25
                 double throttleTorque;
+                double magicNumber = 4000.0; //was 4000 in example
                 if(gearCmd == DRIVE) {
-                    throttleTorque = throttleCmd * 4000.0 - 40.1 * rosTwistMessage.linear.x;
+                    throttleTorque = throttleCmd * magicNumber - 40.1 * rosTwistMessage.linear.x;
                     if(throttleTorque < 0.0) {
                         throttleTorque = 0.0;
                     }
                 } else { // REVERSE
-                    throttleTorque = -throttleCmd * 4000.0 - 250.0 * rosTwistMessage.linear.x;
+                    throttleTorque = -throttleCmd * magicNumber - 250.0 * rosTwistMessage.linear.x;
                     if(throttleTorque > 0.0) {
                         throttleTorque = 0.0;
                     }
                 }
 
-                setRearWheelTorque(throttleTorque);
+                //setRearWheelTorque(throttleTorque);
+                std::cout << "applying total torque of: " << throttleTorque << "\r\n";
+                setAllWheelTorque(throttleTorque);
             }
         }
     }
