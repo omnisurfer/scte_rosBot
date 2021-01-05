@@ -61,6 +61,10 @@ private:
     void setAllWheelTorque(double torque);
     void setRearWheelTorque(double torque);
 
+    void initLinksAndJoints(physics::ModelPtr model, sdf::ElementPtr sdf);
+    void initSteering(void);
+    void initPhysics(void);
+
     ros::NodeHandle* rosNodeHandle;
     ros::Publisher rosTwistPublisher;
     ros::Publisher rosGearStatePublisher;

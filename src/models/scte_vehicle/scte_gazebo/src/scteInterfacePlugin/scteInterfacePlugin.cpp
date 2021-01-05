@@ -23,16 +23,11 @@ namespace gazebo {
 
     void ScteBotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) {
 
-        // Gazebo init
-        footprint_link = model->GetLink("base_footprint");
+        initLinksAndJoints(model, sdf);
 
-        steer_fl_joint = model->GetJoint("front_left_wheel_steer_TO_front_axle");
-        steer_fr_joint = model->GetJoint("front_right_wheel_steer_TO_front_axle");
+        initSteering();
 
-        wheel_fl_joint = model->GetJoint("front_left_wheel_TO_front_axle");
-        wheel_fr_joint = model->GetJoint("front_right_wheel_TO_front_axle");
-        wheel_rl_joint = model->GetJoint("rear_left_wheel_TO_rear_axle");
-        wheel_rr_joint = model->GetJoint("rear_right_wheel_TO_rear_axle");
+        initPhysics();
 
         // Load SDF parameters
         if (sdf->HasElement("robotName")) {
@@ -48,8 +43,6 @@ namespace gazebo {
             }
         } else {
             robotName = std::string("");
-
-            std::cout << "robotNameC: " << robotName << "\r\n";
         }
 
         if(sdf->HasElement("pubTf")) {
@@ -318,6 +311,100 @@ namespace gazebo {
     void ScteBotInterfacePlugin::Reset() {
         //does nothing...
         ROS_INFO("Reset currently not implemented...");
+    }
+
+    void ScteBotInterfacePlugin::initLinksAndJoints(physics::ModelPtr model, sdf::ElementPtr sdf) {
+        if(sdf->HasElement("footprint_link")) {
+            std::string footprintLink;
+
+            sdf->GetElement("footprint_link")->GetValue()->Get(footprintLink);
+
+            footprint_link = model->GetLink(footprintLink);
+
+        } else {
+            ROS_ERROR("Missing or incorrectly named link for footprint_link.");
+            return;
+        }
+
+        if(sdf->HasElement("steer_fl_joint")) {
+            std::string steerJoint;
+
+            sdf->GetElement("steer_fl_joint")->GetValue()->Get(steerJoint);
+
+            steer_fl_joint = model->GetJoint(steerJoint);
+
+        } else {
+            ROS_ERROR("Missing or incorrectly named link for steer_fl_joint.");
+            return;
+        }
+
+        if(sdf->HasElement("steer_fr_joint")) {
+            std::string steerJoint;
+
+            sdf->GetElement("steer_fr_joint")->GetValue()->Get(steerJoint);
+
+            steer_fr_joint = model->GetJoint(steerJoint);
+
+        } else {
+            ROS_ERROR("Missing or incorrectly named link for steer_fr_joint.");
+            return;
+        }
+
+        if(sdf->HasElement("wheel_fl_joint")) {
+            std::string wheelJoint;
+
+            sdf->GetElement("wheel_fl_joint")->GetValue()->Get(wheelJoint);
+
+            wheel_fl_joint = model->GetJoint(wheelJoint);
+
+        } else {
+            ROS_ERROR("Missing or incorrectly named link for wheel_fr_joint.");
+            return;
+        }
+
+        if(sdf->HasElement("wheel_fr_joint")) {
+            std::string wheelJoint;
+
+            sdf->GetElement("wheel_fr_joint")->GetValue()->Get(wheelJoint);
+
+            wheel_fr_joint = model->GetJoint(wheelJoint);
+
+        } else {
+            ROS_ERROR("Missing or incorrectly named link for wheel_fr_joint.");
+            return;
+        }
+
+        if(sdf->HasElement("wheel_rl_joint")) {
+            std::string wheelJoint;
+
+            sdf->GetElement("wheel_rl_joint")->GetValue()->Get(wheelJoint);
+
+            wheel_rl_joint = model->GetJoint(wheelJoint);
+
+        } else {
+            ROS_ERROR("Missing or incorrectly named link for wheel_rl_joint.");
+            return;
+        }
+
+        if(sdf->HasElement("wheel_rr_joint")) {
+            std::string wheelJoint;
+
+            sdf->GetElement("wheel_rr_joint")->GetValue()->Get(wheelJoint);
+
+            wheel_rr_joint = model->GetJoint(wheelJoint);
+
+        } else {
+            ROS_ERROR("Missing or incorrectly named link for wheel_rr_joint.");
+            return;
+        }
+    }
+
+    void ScteBotInterfacePlugin::initSteering() {
+
+    }
+
+    void ScteBotInterfacePlugin::initPhysics() {
+        
     }
 
     ScteBotInterfacePlugin::~ScteBotInterfacePlugin() noexcept {

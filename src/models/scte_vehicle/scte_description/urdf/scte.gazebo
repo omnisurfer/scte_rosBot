@@ -14,9 +14,26 @@
     -->
     <gazebo>
         <plugin name="scte_interface_plugin" filename="libscte_interface_plugin.so">
-          <robotName>$(arg robot_namespace)</robotName>
-          <pubTf>$(arg pub_tf)</pubTf>
-          <tfFreq>$(arg tf_freq)</tfFreq>
+            <robotName>$(arg robot_namespace)</robotName>
+            <pubTf>$(arg pub_tf)</pubTf>
+            <tfFreq>$(arg tf_freq)</tfFreq>
+            <footprint_link>base_footprint</footprint_link>
+            <steer_fl_joint>front_left_wheel_steer_TO_front_axle</steer_fl_joint>
+            <steer_fr_joint>front_right_wheel_steer_TO_front_axle</steer_fr_joint>
+            <wheel_fl_joint>front_left_wheel_TO_front_axle</wheel_fl_joint>
+            <wheel_fr_joint>front_right_wheel_TO_front_axle</wheel_fr_joint>
+            <wheel_rl_joint>rear_left_wheel_TO_rear_axle</wheel_rl_joint>
+            <wheel_rr_joint>rear_right_wheel_TO_rear_axle</wheel_rr_joint>
+            <steering_ratio>1.0</steering_ratio>
+            <lock_to_lock_revolutions>1.0</lock_to_lock_revolutions>
+            <max_steering_angle>1.0</max_steering_angle>
+            <track_width>1.0</track_width>
+            <rolling_resistance_coeff>0.01</rolling_resistance_coeff>
+            <aero_drag_coeff>0.35</aero_drag_coeff>
+            <gravity_accel>9.81</gravity_accel>
+            <vehicle_mass>10.0</vehicle_mass>
+            <wheel_radius>0.05</wheel_radius>
+            <max_brake_torque>10.0</max_brake_torque>
         </plugin>
     </gazebo>
 

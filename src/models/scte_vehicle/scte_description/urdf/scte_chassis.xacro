@@ -182,7 +182,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                       wheel_joint_origin="0 0 ${drive_axle_length * 0.5}"
                       wheel_joint_rpy="0 0 0"
                       wheel_joint_name="rear_left_wheel_TO_rear_axle"
-                      wheel_steer_joint_name="rear_left_wheel_steer_TO_rear_axle"
+                      wheel_steer_joint_name=""
                       is_steerable="false"
                       flip="1"
     />
@@ -193,7 +193,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                       wheel_joint_origin="0 0 ${drive_axle_length * -0.5}"
                       wheel_joint_rpy="0 0 0"
                       wheel_joint_name="rear_right_wheel_TO_rear_axle"
-                      wheel_steer_joint_name="rear_right_wheel_steer_TO_rear_axle"
+                      wheel_steer_joint_name=""
                       is_steerable="false"
                       flip="1"
     />
