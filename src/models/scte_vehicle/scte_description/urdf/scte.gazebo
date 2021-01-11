@@ -26,13 +26,13 @@
             <wheel_rr_joint>rear_right_wheel_TO_rear_axle</wheel_rr_joint>
             <steering_ratio>1.0</steering_ratio>
             <lock_to_lock_revolutions>1.0</lock_to_lock_revolutions>
-            <max_steering_angle>1.0</max_steering_angle>
+            <wheelbase>1.0</wheelbase>
             <track_width>1.0</track_width>
+            <wheel_radius>0.05</wheel_radius>
             <rolling_resistance_coeff>0.01</rolling_resistance_coeff>
             <aero_drag_coeff>0.35</aero_drag_coeff>
             <gravity_accel>9.81</gravity_accel>
             <vehicle_mass>10.0</vehicle_mass>
-            <wheel_radius>0.05</wheel_radius>
             <max_brake_torque>10.0</max_brake_torque>
         </plugin>
     </gazebo>

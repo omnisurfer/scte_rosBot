@@ -25,25 +25,25 @@ namespace gazebo {
 
         initLinksAndJoints(model, sdf);
 
-        initSteering();
+        initSteeringKinematics(model, sdf);
 
-        initPhysics();
+        initPhysics(model, sdf);
 
         // Load SDF parameters
         if (sdf->HasElement("robotName")) {
             sdf::ParamPtr sdf_robot_name = sdf->GetElement("robotName")->GetValue();
             if(sdf_robot_name) {
                 sdf_robot_name->Get(robotName);
-
-                std::cout << "robotNameA: " << robotName << "\r\n";
             } else {
                 robotName = std::string("");
-
-                std::cout << "robotNameB: " << robotName << "\r\n";
             }
         } else {
             robotName = std::string("");
         }
+
+        std::stringstream outputStream;
+        outputStream << "Robot namespace is " << robotName;
+        ROS_INFO("%s", outputStream.str().c_str());
 
         if(sdf->HasElement("pubTf")) {
             sdf->GetElement("pubTf")->GetValue()->Get(publishTf);
@@ -129,20 +129,22 @@ namespace gazebo {
             if((currentTimeStamp - rosThrottleTimeStamp).toSec() < 0.25) { //original was 0.25
                 double throttleTorque;
                 double magicNumber = 4000.0; //was 4000 in example
+                double driveMagicNumber = 40.1;
+                double reverseMagicNumber = 255.0;
                 if(gearCmd == DRIVE) {
-                    throttleTorque = throttleCmd * magicNumber - 40.1 * rosTwistMessage.linear.x;
+                    throttleTorque = throttleCmd * magicNumber - driveMagicNumber * rosTwistMessage.linear.x;
                     if(throttleTorque < 0.0) {
                         throttleTorque = 0.0;
                     }
                 } else { // REVERSE
-                    throttleTorque = -throttleCmd * magicNumber - 250.0 * rosTwistMessage.linear.x;
+                    throttleTorque = -throttleCmd * magicNumber - reverseMagicNumber * rosTwistMessage.linear.x;
                     if(throttleTorque > 0.0) {
                         throttleTorque = 0.0;
                     }
                 }
 
                 //setRearWheelTorque(throttleTorque);
-                std::cout << "applying total torque of: " << throttleTorque << "\r\n";
+                // std::cout << "applying total torque of: " << throttleTorque << "\r\n";
                 setAllWheelTorque(throttleTorque);
             }
         }
@@ -153,7 +155,7 @@ namespace gazebo {
         lastUpdateTime = info.simTime;
 
         // arbitrarily set maximum steering rate 800 deg/s
-        const double maxRate = 800.0 * M_PI / 180.0 / SCTEBOT_STEERING_RATIO;
+        const double maxRate = 800.0 * M_PI / 180.0 / steeringRatio;
         double maxIncrement = timeStep * maxRate;
 
         if((targetAngle - currentSteeringAngle) > maxIncrement) {
@@ -164,8 +166,8 @@ namespace gazebo {
 
         // compute ackermann steering angles for each wheel
         double tAlpha = tan(currentSteeringAngle);
-        double leftSteer = atan(SCTEBOT_WHEELBASE * tAlpha / (SCTEBOT_WHEELBASE - 0.5 * SCTEBOT_TRACK_WIDTH * tAlpha));
-        double rightSteer = atan(SCTEBOT_WHEELBASE * tAlpha / (SCTEBOT_WHEELBASE + 0.5 * SCTEBOT_TRACK_WIDTH * tAlpha));
+        double leftSteer = atan(wheelbase * tAlpha / (wheelbase - 0.5 * trackWidth * tAlpha));
+        double rightSteer = atan(wheelbase * tAlpha / (wheelbase + 0.5 * trackWidth * tAlpha));
 
 #if GAZEBO_MAJOR_VERSION >= 9
         steer_fl_joint->SetParam("vel", 0, 100 * (leftSteer - steer_fl_joint->Position(0)));
@@ -178,9 +180,9 @@ namespace gazebo {
 
     void ScteBotInterfacePlugin::dragUpdate() {
         // apply rolling resistance and aerodynamic drag forces
-        double rollingResistanceTorque = ROLLING_RESISTANCE_COEFF * VEHICLE_MASS * GRAVITY_ACCEL;
-        double dragForce = AERO_DRAG_COEFF * rosTwistMessage.linear.x * rosTwistMessage.linear.x;
-        double dragTorque = dragForce * WHEEL_RADIUS; // implemented as a torque disturbance
+        double rollingResistanceTorque = rollingResistanceCoefficient * vehicleMass * gravityAcceleration;
+        double dragForce = aeroDragCoefficient * rosTwistMessage.linear.x * rosTwistMessage.linear.x;
+        double dragTorque = dragForce * wheelRadius; // implemented as a torque disturbance
 
         if(rosTwistMessage.linear.x > 0.0 ) {
             setAllWheelTorque(-rollingResistanceTorque);
@@ -218,11 +220,11 @@ namespace gazebo {
             return;
         }
 
-        targetAngle = msg->data / SCTEBOT_STEERING_RATIO;
-        if(targetAngle > SCTEBOT_MAX_STEER_ANGLE) {
-            targetAngle = SCTEBOT_MAX_STEER_ANGLE;
-        } else if (targetAngle < -SCTEBOT_MAX_STEER_ANGLE) {
-            targetAngle = -SCTEBOT_MAX_STEER_ANGLE;
+        targetAngle = msg->data / steeringRatio;
+        if(targetAngle > maxSteeringAngle) {
+            targetAngle = maxSteeringAngle;
+        } else if (targetAngle < -maxSteeringAngle) {
+            targetAngle = -maxSteeringAngle;
         }
     }
 
@@ -243,8 +245,8 @@ namespace gazebo {
 
         if(brakeCmd < 0) {
             brakeCmd = 0;
-        } else if (brakeCmd > MAX_BRAKE_TORQUE) {
-            brakeCmd = MAX_BRAKE_TORQUE;
+        } else if (brakeCmd > maxBrakeTorque) {
+            brakeCmd = maxBrakeTorque;
         }
         rosBrakeTimeStamp = ros::Time::now();
     }
@@ -314,6 +316,8 @@ namespace gazebo {
     }
 
     void ScteBotInterfacePlugin::initLinksAndJoints(physics::ModelPtr model, sdf::ElementPtr sdf) {
+        ROS_INFO("Loading model links and joints...");
+
         if(sdf->HasElement("footprint_link")) {
             std::string footprintLink;
 
@@ -399,12 +403,209 @@ namespace gazebo {
         }
     }
 
-    void ScteBotInterfacePlugin::initSteering() {
+    void ScteBotInterfacePlugin::initSteeringKinematics(physics::ModelPtr model, sdf::ElementPtr sdf) {
+        ROS_INFO("Loading steering geometry...");
 
+        if(sdf->HasElement("steering_ratio")) {
+            double value;
+
+            sdf->GetElement("steering_ratio")->GetValue()->Get(value);
+
+            steeringRatio = value;
+
+            if(steeringRatio != 0.0) {
+                std::stringstream outputStream;
+
+                outputStream << "\tsteering_ratio is " << steeringRatio;
+
+                ROS_INFO("%s", outputStream.str().c_str());
+            } else {
+                ROS_ERROR("steering_ratio must not equal 0");
+            }
+
+        }
+        else {
+            ROS_ERROR("Missing steering_ratio parameters");
+            return;
+        }
+
+        if(sdf->HasElement("lock_to_lock_revolutions")) {
+            double value;
+
+            sdf->GetElement("lock_to_lock_revolutions")->GetValue()->Get(value);
+
+            lockToLockRevolutions = value;
+
+            std::stringstream outputStream;
+
+            outputStream << "\tlock_to_lock_revolutions is " << lockToLockRevolutions;
+
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        }
+        else {
+            ROS_ERROR("Missing lock_to_lock_revolutions parameters");
+            return;
+        }
+
+        if(sdf->HasElement("wheelbase")) {
+            double value;
+
+            sdf->GetElement("wheelbase")->GetValue()->Get(value);
+
+            wheelbase = value;
+
+            std::stringstream outputStream;
+
+            outputStream << "\twheelbase is " << wheelbase;
+
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        }
+        else {
+            ROS_ERROR("Missing wheelbase parameters");
+            return;
+        }
+
+        if(sdf->HasElement("track_width")) {
+            double value;
+
+            sdf->GetElement("track_width")->GetValue()->Get(value);
+
+            trackWidth = value;
+
+            std::stringstream outputStream;
+
+            outputStream << "\ttrack_width is " << trackWidth;
+
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        }
+        else {
+            ROS_ERROR("Missing track_width parameters");
+            return;
+        }
+
+        if(sdf->HasElement("wheel_radius")) {
+            double value;
+
+            sdf->GetElement("wheel_radius")->GetValue()->Get(value);
+
+            wheelRadius = value;
+
+            std::stringstream outputStream;
+
+            outputStream << "\twheel_radius is " << wheelRadius;
+
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        }
+        else {
+            ROS_ERROR("Missing wheel_radius parameters");
+            return;
+        }
+
+        maxSteeringAngle =  M_PI * lockToLockRevolutions / (steeringRatio);
     }
 
-    void ScteBotInterfacePlugin::initPhysics() {
-        
+    void ScteBotInterfacePlugin::initPhysics(physics::ModelPtr model, sdf::ElementPtr sdf) {
+        ROS_INFO("Loading steering geometry...");
+
+        if(sdf->HasElement("rolling_resistance_coeff")) {
+            double value;
+
+            sdf->GetElement("rolling_resistance_coeff")->GetValue()->Get(value);
+
+            rollingResistanceCoefficient = value;
+
+            std::stringstream outputStream;
+
+            outputStream << "\trolling_resistance_coeff is " << rollingResistanceCoefficient;
+
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        }
+        else {
+            ROS_ERROR("Missing rolling_resistance_coeff parameters");
+            return;
+        }
+
+        if(sdf->HasElement("aero_drag_coeff")) {
+            double value;
+
+            sdf->GetElement("aero_drag_coeff")->GetValue()->Get(value);
+
+            aeroDragCoefficient = value;
+
+            std::stringstream outputStream;
+
+            outputStream << "\taero_drag_coeff is " << aeroDragCoefficient;
+
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        }
+        else {
+            ROS_ERROR("Missing aero_drag_coeff parameters");
+            return;
+        }
+
+        if(sdf->HasElement("gravity_accel")) {
+            double value;
+
+            sdf->GetElement("gravity_accel")->GetValue()->Get(value);
+
+            gravityAcceleration = value;
+
+            std::stringstream outputStream;
+
+            outputStream << "\tgravity_accel is " << gravityAcceleration;
+
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        }
+        else {
+            ROS_ERROR("Missing gravity_accel parameters");
+            return;
+        }
+
+        if(sdf->HasElement("vehicle_mass")) {
+            double value;
+
+            sdf->GetElement("vehicle_mass")->GetValue()->Get(value);
+
+            vehicleMass = value;
+
+            std::stringstream outputStream;
+
+            outputStream << "\tvehicle_mass is " << vehicleMass;
+
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        }
+        else {
+            ROS_ERROR("Missing vehicle_mass parameters");
+            return;
+        }
+
+        if(sdf->HasElement("max_brake_torque")) {
+            double value;
+
+            sdf->GetElement("max_brake_torque")->GetValue()->Get(value);
+
+            maxBrakeTorque = value;
+
+            std::stringstream outputStream;
+
+            outputStream << "\tmax_brake_torque is " << maxBrakeTorque;
+
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        }
+        else {
+            ROS_ERROR("Missing max_brake_torque parameters");
+            return;
+        }
+
     }
 
     ScteBotInterfacePlugin::~ScteBotInterfacePlugin() noexcept {

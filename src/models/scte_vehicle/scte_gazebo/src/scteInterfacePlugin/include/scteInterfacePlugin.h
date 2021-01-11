@@ -14,19 +14,23 @@
 namespace gazebo {
 
 // Kinematics parameters
+/*
 #define SCTEBOT_STEERING_RATIO      1.0     // ratio between steering wheel angle and tire angle
 #define SCTEBOT_LOCK_TO_LOCK_REVS   1.0     // number of steering wheel turns to go from lock to lock
 #define SCTEBOT_MAX_STEER_ANGLE     (M_PI * SCTEBOT_LOCK_TO_LOCK_REVS / SCTEBOT_STEERING_RATIO)
 #define SCTEBOT_WHEELBASE           1.0     // distance between front and rear axles
 #define SCTEBOT_TRACK_WIDTH         1.0     // distance between front wheels
+*/
 
 // Drag parameters
+/*
 #define ROLLING_RESISTANCE_COEFF    0.01
 #define AERO_DRAG_COEFF             0.35
 #define GRAVITY_ACCEL               9.81
 #define VEHICLE_MASS                10.0
 #define WHEEL_RADIUS                0.05
 #define MAX_BRAKE_TORQUE            10.0
+*/
 
 // Gear states
 enum {
@@ -62,8 +66,8 @@ private:
     void setRearWheelTorque(double torque);
 
     void initLinksAndJoints(physics::ModelPtr model, sdf::ElementPtr sdf);
-    void initSteering(void);
-    void initPhysics(void);
+    void initSteeringKinematics(physics::ModelPtr model, sdf::ElementPtr sdf);
+    void initPhysics(physics::ModelPtr model, sdf::ElementPtr sdf);
 
     ros::NodeHandle* rosNodeHandle;
     ros::Publisher rosTwistPublisher;
@@ -123,6 +127,23 @@ private:
 
     // Gear
     uint8_t gearCmd;
+
+    // Steering geometry
+    double steeringRatio;
+    double lockToLockRevolutions;
+    double wheelbase;
+    double trackWidth;
+    double wheelRadius;
+    double maxSteeringAngle; //(M_PI * SCTEBOT_LOCK_TO_LOCK_REVS / SCTEBOT_STEERING_RATIO)
+
+    // Physics
+    double rollingResistanceCoefficient;
+    double aeroDragCoefficient;
+    double gravityAcceleration;
+    double vehicleMass;
+    double maxBrakeTorque;
+
+
 };
 
 GZ_REGISTER_MODEL_PLUGIN(ScteBotInterfacePlugin)
