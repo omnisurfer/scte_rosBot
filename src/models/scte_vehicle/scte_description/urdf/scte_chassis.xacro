@@ -46,7 +46,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <link name='base_footprint'/>
 
     <joint name="base_link_TO_base_footprint" type="fixed">
-        <origin xyz="0 0 ${scte_chassis_depth - wheel_radius}" rpy="0 0 0"/>
+        <origin xyz="${scte_chassis_length * 0.63} 0 ${wheel_radius - scte_chassis_depth - 0.0075}" rpy="0 0 0"/>
         <parent link="base_footprint"/>
         <child link="base_link"/>
     </joint>
@@ -116,6 +116,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                                      shock_tower_joint_rpy="0 0 0"
     />
 
+    <!--TODO get rid of some of these magic number parameters -->
     <xacro:include filename="$(find scte_description)/urdf/scte_front_bumper.xacro"/>
     <xacro:scte_front_bumper link_name="front_bumper"
                              parent_link="front_diff_tower"

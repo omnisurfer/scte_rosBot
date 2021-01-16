@@ -39,6 +39,10 @@
             <child link="${link_name}"/>
         </joint>
 
+        <gazebo reference="${link_name}">
+            <selfCollide>false</selfCollide>
+        </gazebo>
+
     </xacro:macro>
 
 </robot>
