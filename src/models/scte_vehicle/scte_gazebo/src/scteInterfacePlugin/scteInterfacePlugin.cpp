@@ -164,6 +164,10 @@ namespace gazebo {
             currentSteeringAngle -= maxIncrement;
         }
 
+        std::stringstream outputStream;
+        outputStream << "targetAngle: " << targetAngle << " currentSteeringAngle: " << currentSteeringAngle << " maxRate: " << maxRate << " maxIncrement: " << maxIncrement;
+        //ROS_INFO("%s", outputStream.str().c_str());
+
         // compute ackermann steering angles for each wheel
         double tAlpha = tan(currentSteeringAngle);
         double leftSteer = atan(wheelbase * tAlpha / (wheelbase - 0.5 * trackWidth * tAlpha));
@@ -220,11 +224,30 @@ namespace gazebo {
             return;
         }
 
+        std::stringstream outputStream;
+
         targetAngle = msg->data / steeringRatio;
-        if(targetAngle > maxSteeringAngle) {
-            targetAngle = maxSteeringAngle;
-        } else if (targetAngle < -maxSteeringAngle) {
-            targetAngle = -maxSteeringAngle;
+
+        /*
+        TODO drowan_20210117_NOTES: limiting max steering angle to 90% of the calculated max until I can figure
+         out why the model crashes if I allow the full travel. Has something to do with the inertia probably as
+         adjusting the mass of the wheel seems to change the behavior (heavier = better behaved).
+         gzclient: /build/ogre-1.9-kiU5_5/ogre-1.9-1.9.0+dfsg1/OgreMain/include/OgreAxisAlignedBox.h:251: void Ogre::AxisAlignedBox::setExtents(const Ogre::Vector3&, const Ogre::Vector3&): Assertion `(min.x <= max.x && min.y <= max.y && min.z <= max.z) && "The minimum corner of the box must be less than or equal to maximum corner"' failed.
+        */
+        if(targetAngle > maxSteeringAngle * 0.9) {
+            targetAngle = maxSteeringAngle * 0.9;
+
+            outputStream << "pos greater than targetAngle: " << targetAngle << " maxSteeringAngle: " << maxSteeringAngle;
+            ROS_INFO("%s", outputStream.str().c_str());
+
+        } else if (targetAngle < -maxSteeringAngle * 0.9) {
+            targetAngle = -(maxSteeringAngle * 0.9);
+
+            outputStream << "neg greater than targetAngle: " << targetAngle << " maxSteeringAngle: " << maxSteeringAngle;
+            ROS_INFO("%s", outputStream.str().c_str());
+        } else {
+            outputStream << "targetAngle: " << targetAngle << " maxSteeringAngle: " << maxSteeringAngle;
+            ROS_INFO("%s", outputStream.str().c_str());
         }
     }
 

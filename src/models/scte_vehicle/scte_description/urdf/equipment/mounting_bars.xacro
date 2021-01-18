@@ -1,10 +1,15 @@
 <?xml version="1.0"?>
 <robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:macro name="computer_enclosure" params="link_name parent_link
-    enclosure_origin
-    enclosure_rpy
+    <xacro:macro name="mounting_bar" params="link_name
+    parent_link
+    bar_origin
+    bar_rpy
     ">
+
+        <xacro:property name="mounting_bars_length" value="0.45"/>
+        <xacro:property name="mounting_bars_width" value="0.025"/>
+        <xacro:property name="mounting_bars_depth" value="0.005"/>
 
         <link name="${link_name}">
             <inertial>
@@ -19,25 +24,26 @@
             <visual name='visual'>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <box size="0.26 0.185 0.06"/>
+                    <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
                 </geometry>
-                <material name="none">
-                    <color rgba="${122/255} ${125/255} ${121/255} 0.5"/>
-                </material>
+                <material name="green"/>
             </visual>
             <collision name='collision'>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <box size="0.26 0.185 0.06"/>
+                    <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
                 </geometry>
             </collision>
         </link>
         <joint name="${link_name}_TO_${parent_link}" type="fixed">
-            <origin xyz="${enclosure_origin}" rpy="${enclosure_rpy}"/>
+            <origin xyz="${bar_origin}" rpy="${bar_rpy}"/>
             <parent link="${parent_link}"/>
             <child link="${link_name}"/>
         </joint>
 
     </xacro:macro>
-
 </robot>
+
+
+
+

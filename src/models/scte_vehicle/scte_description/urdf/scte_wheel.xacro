@@ -11,13 +11,7 @@
     is_steerable
     flip
     ">
-            <gazebo reference="${link_name}">
-                <mu1 value="1.0"/>
-                <mu2 value="1.0"/>
-                <kp value="10000000.0" />
-                <kd value="1.0" />
-                <fdir1 value="1 0 0"/>
-            </gazebo>
+            <xacro:property name="wheel_friction" value="1.75" />
 
             <xacro:property name="wheel_radius_sq" value="${wheel_radius * wheel_radius}"/>
             <xacro:property name="wheel_length_sq" value="${wheel_length * wheel_length}"/>
@@ -55,6 +49,11 @@
                 <axis xyz="0 0 1"/>
                 <dynamics damping="0.7"/>
                 <limit effort="1000.0" velocity="22.0"/>
+
+                <gazebo reference="${wheel_joint_name}">
+                    <mu1>${wheel_friction}</mu1>
+                    <mu2>${wheel_friction}</mu2>
+                </gazebo>
             </joint>
 
             <xacro:if value="${is_steerable == 1}">
@@ -79,16 +78,6 @@
                     <limit upper="0.6" lower="-0.6" effort="0.0" velocity="0.0" />
                 </joint>
             </xacro:if>
-
-            <!--transmission name="${link_name}_transmission" type="SimpleTransmission">
-                <type>transmission_interface/SimpleTransmission</type>
-                <actuator name="${link_name}_motor">
-                    <mechanicalReduction>1</mechanicalReduction>
-                </actuator>
-                <joint name="${wheel_joint_name}">
-                    <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-                </joint>
-            </transmission-->
 
         </xacro:macro>
 </robot>

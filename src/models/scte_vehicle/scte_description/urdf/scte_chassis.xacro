@@ -24,6 +24,13 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
     <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />
 
+    <xacro:include filename="$(find ydlidar_ros)/urdf/ydlidar.urdf"/>
+    <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
+
+    <xacro:include filename="$(find scte_description)/urdf/equipment/mounting_bars.xacro"/>
+    <xacro:include filename="$(find scte_description)/urdf/equipment/computer_enclosure.xacro"/>
+    <xacro:include filename="$(find scte_description)/urdf/equipment/camera_rig.xacro"/>
+
     <xacro:property name="scte_chassis_mass" value="2.9"/>
     <xacro:property name="scte_chassis_length" value="0.292"/>
     <xacro:property name="scte_chassis_width" value="0.165"/>
@@ -33,7 +40,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:property name="scte_chassis_depth_sq" value="${scte_chassis_depth * scte_chassis_depth}"/>
 
     <!--Wheel Properties-->
-    <xacro:property name="wheel_mass" value="0.5"/>
+    <xacro:property name="wheel_mass" value="0.3"/>
     <xacro:property name="wheel_radius" value="0.0525"/>
     <xacro:property name="wheel_length" value="0.045"/>
 
@@ -198,5 +205,58 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                       is_steerable="false"
                       flip="1"
     />
+
+    <xacro:mounting_bar link_name="driver_mounting_bar"
+                        parent_link="front_diff_tower"
+                        bar_origin="${scte_chassis_length * -0.63} ${shock_tower_width * 0.5} ${shock_tower_height * 1.0}"
+                        bar_rpy="0 0 0"
+    />
+
+    <xacro:mounting_bar link_name="passenger_mounting_bar"
+                        parent_link="front_diff_tower"
+                        bar_origin="${scte_chassis_length * -0.63} ${shock_tower_width * -0.5} ${shock_tower_height * 1.0}"
+                        bar_rpy="0 0 0"
+    />
+
+    <xacro:computer_enclosure link_name="computer_enclosure"
+                              parent_link="driver_mounting_bar"
+                              enclosure_origin="0 ${(scte_chassis_width * -0.5) + (0.025 * 0.5)} ${0.06 * 0.5}"
+                              enclosure_rpy="0 0 0"
+    />
+
+    <xacro:camera_rig link_name="camera_rig"
+                      parent_link="computer_enclosure"
+                      camera_rig_origin="${0.260 * -0.45} 0 ${0.06 * 1.0}"
+                      camera_rig_rpy="0 0 0"
+    />
+
+    <!-- Sim IMU -->
+    <link name="imu_link"/>
+    <joint name="imu_link_TO_computer_enclosure" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="computer_enclosure"/>
+        <child link="imu_link"/>
+    </joint>
+
+    <!-- LIDAR -->
+    <!--link name="base_laser"/-->
+    <joint name="ydlidar_base_TO_computer_enclosure" type="fixed">
+        <origin xyz="0.090 0 0.0305" rpy="0 0 0"/>
+        <parent link="computer_enclosure"/>
+        <child link="base_laser"/>
+    </joint>
+
+    <!-- Cameras -->
+    <!--
+        https://answers.ros.org/question/9840/how-do-you-get-stereo_image_proc-to-include-a-frame_id-so-that-rviz-will-accept-the-point-cloud-messages/
+        - stereo projection/point cloud uses the left cameras frame_id to determine how to draw the image
+        may need to use image_rect for the video to align with the model
+        https://berndpfrommer.github.io/tagslam_web/visualization/
+    -->
+    <!--TODO drowan_20210117_BUG: The cameras are mounted sideways. Need to fix camera link and/or optical link...
+    <!---->
+    <xacro:logitech_c270_camera parent_link="camera_rig_bar" camera_link="driver_side_camera" joint_xyz="0.0 0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
+    <xacro:logitech_c270_camera parent_link="camera_rig_bar" camera_link="passenger_side_camera" joint_xyz="0.0 -0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
+    <!---->
 
 </robot>
