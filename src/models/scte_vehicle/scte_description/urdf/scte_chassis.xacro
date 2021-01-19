@@ -253,7 +253,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         may need to use image_rect for the video to align with the model
         https://berndpfrommer.github.io/tagslam_web/visualization/
     -->
-    <!--TODO drowan_20210117_BUG: The cameras are mounted sideways. Need to fix camera link and/or optical link...
+    <!--TODO drowan_20210117_BUG: The cameras are mounted sideways. Need to fix camera link and/or optical link...-->
     <!---->
     <xacro:logitech_c270_camera parent_link="camera_rig_bar" camera_link="driver_side_camera" joint_xyz="0.0 0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
     <xacro:logitech_c270_camera parent_link="camera_rig_bar" camera_link="passenger_side_camera" joint_xyz="0.0 -0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>

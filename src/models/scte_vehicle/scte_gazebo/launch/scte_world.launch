@@ -9,7 +9,7 @@
     <arg name="use_sim_time" default="true"/>
     <arg name="gui" default="true"/>
     <arg name="headless" default="false"/>
-    <arg name="debug" default="true"/>
+    <arg name="debug" default="false"/>
 
     <!--
     Naming the robot with the audibot code as implemented will append
