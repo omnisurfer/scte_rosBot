@@ -35,11 +35,11 @@
     </include>
 
     <!-- control and teleop launch -->
+    <!---->
     <include file="$(find scte_control)/launch/control.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
         <arg name="tf_freq" value="100.0"/>
         <arg name="pub_tf" default="true" />
-        <!--arg name="blue" default="false" /-->
     </include>
     <include file="$(find scte_control)/launch/teleop.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>

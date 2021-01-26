@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -98,7 +98,12 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        driver_side_camera:
+        driver_side_camera_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        driver_side_camera_body:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -107,7 +112,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         front_axle:
           Alpha: 1
           Show Axes: false
@@ -151,6 +155,10 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        front_steer_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         imu_link:
           Alpha: 1
           Show Axes: false
@@ -168,7 +176,12 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        passenger_side_camera:
+        passenger_side_camera_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        passenger_side_camera_body:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -177,7 +190,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         rear_axle:
           Alpha: 1
           Show Axes: false
@@ -213,6 +225,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        rear_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         scte_chassis:
           Alpha: 1
           Show Axes: false
@@ -242,7 +258,9 @@ Visualization Manager:
           Value: true
         driver_mounting_bar:
           Value: true
-        driver_side_camera:
+        driver_side_camera_base:
+          Value: true
+        driver_side_camera_body:
           Value: true
         driver_side_camera_optical:
           Value: true
@@ -256,14 +274,6 @@ Visualization Manager:
           Value: true
         front_diff_tower_shock_tower:
           Value: true
-        front_left_wheel:
-          Value: true
-        front_left_wheel_steer:
-          Value: true
-        front_right_wheel:
-          Value: true
-        front_right_wheel_steer:
-          Value: true
         imu_link:
           Value: true
         inertial_link:
@@ -272,7 +282,9 @@ Visualization Manager:
           Value: true
         passenger_mounting_bar:
           Value: true
-        passenger_side_camera:
+        passenger_side_camera_base:
+          Value: true
+        passenger_side_camera_body:
           Value: true
         passenger_side_camera_optical:
           Value: true
@@ -286,13 +298,9 @@ Visualization Manager:
           Value: true
         rear_diff_tower_shock_tower:
           Value: true
-        rear_left_wheel:
-          Value: true
-        rear_right_wheel:
+        rear_wheel_link:
           Value: true
         scte_chassis:
-          Value: true
-        world:
           Value: true
       Marker Alpha: 1
       Marker Scale: 0.4000000059604645
@@ -301,53 +309,47 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        world:
-          base_footprint:
-            base_link:
-              inertial_link:
-                {}
-              scte_chassis:
-                front_diff_tower:
-                  driver_mounting_bar:
-                    computer_enclosure:
-                      base_laser:
-                        laser_frame:
-                          {}
-                      camera_rig_support:
-                        camera_rig_bar:
-                          driver_side_camera:
+        base_footprint:
+          base_link:
+            inertial_link:
+              {}
+            scte_chassis:
+              front_diff_tower:
+                driver_mounting_bar:
+                  computer_enclosure:
+                    base_laser:
+                      laser_frame:
+                        {}
+                    camera_rig_support:
+                      camera_rig_bar:
+                        driver_side_camera_body:
+                          driver_side_camera_base:
                             driver_side_camera_optical:
                               {}
-                          passenger_side_camera:
+                        passenger_side_camera_body:
+                          passenger_side_camera_base:
                             passenger_side_camera_optical:
                               {}
-                      imu_link:
-                        {}
-                  front_axle:
-                    front_left_wheel_steer:
-                      front_left_wheel:
-                        {}
-                    front_right_wheel_steer:
-                      front_right_wheel:
-                        {}
-                  front_bumper_skid_plate:
-                    front_bumper:
+                    imu_link:
                       {}
-                  front_diff_tower_shock_tower:
+                front_axle:
+                  {}
+                front_bumper_skid_plate:
+                  front_bumper:
                     {}
-                  passenger_mounting_bar:
+                front_diff_tower_shock_tower:
+                  {}
+                passenger_mounting_bar:
+                  {}
+              rear_diff_tower:
+                rear_axle:
+                  rear_wheel_link:
                     {}
-                rear_diff_tower:
-                  rear_axle:
-                    rear_left_wheel:
-                      {}
-                    rear_right_wheel:
-                      {}
-                  rear_bumper_mount:
-                    rear_bumper:
-                      {}
-                  rear_diff_tower_shock_tower:
+                rear_bumper_mount:
+                  rear_bumper:
                     {}
+                rear_diff_tower_shock_tower:
+                  {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -462,7 +464,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: world
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -486,7 +488,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.227348804473877
+      Distance: 1.8979061841964722
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -494,17 +496,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 2.8696987628936768
-        Y: -4.253697395324707
-        Z: 3.2423815727233887
+        X: 0
+        Y: 0
+        Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.4503976106643677
-      Target Frame: <Fixed Frame>
-      Yaw: 3.210400104522705
+      Pitch: 0.7853981852531433
+      Target Frame: base_link
+      Yaw: 0.7853981852531433
     Saved: ~
 Window Geometry:
   Displays:
@@ -526,5 +528,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1462
-  X: 1534
+  X: 1495
   Y: 27

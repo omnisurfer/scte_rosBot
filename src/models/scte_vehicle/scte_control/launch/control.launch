@@ -14,11 +14,13 @@
     <arg name="enable_navsat_odom" default="0"/>
 
     <!-- load robot description-->
+    <!--
     <include file="$(find scte_description)/launch/description.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
         <arg name="tf_freq" value="$(arg tf_freq)"/>
         <arg name="pub_tf" value="$(arg pub_tf)"/>
     </include>
+    -->
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
     <rosparam file="$(find scte_control)/config/scte_control.yaml" command="load"/>

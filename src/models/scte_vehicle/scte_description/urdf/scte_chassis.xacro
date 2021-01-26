@@ -100,6 +100,30 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         <child link="scte_chassis"/>
     </joint>
 
+    <!-- TODO DEBUG drowan_20210119: ackermann link/joints -->
+    <link name="rear_wheel_linkX">
+        <collision>
+            <origin rpy="${pi/2} 0 0" xyz="0 0 0"/>
+            <geometry>
+                <cylinder length="1" radius="0.5"/>
+            </geometry>
+        </collision>
+    </link>
+    <joint name="rear_wheel_joint" type="fixed">
+        <axis xyz="0 1 0"/>
+        <parent link="rear_axle"/>
+        <child link="rear_wheel_linkX"/>
+        <origin xyz="0 0 0"/>
+    </joint>
+
+    <link name="front_steer_linkX"/>
+    <joint name="front_steer_joint" type="continuous">
+        <axis xyz="0 1 0"/>
+        <parent link="front_axle"/>
+        <child link="front_steer_linkX"/>
+        <origin xyz="0 0 0"/>
+    </joint>
+
     <!---->
     <xacro:include filename="$(find scte_description)/urdf/scte_diff_and_shock_tower.xacro"/>
     <xacro:scte_diff_and_shock_tower link_name="front_diff_tower"
