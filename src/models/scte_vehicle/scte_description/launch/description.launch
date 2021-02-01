@@ -1,26 +1,21 @@
 <launch>
 
-    <arg name="robot_namespace" default="/DefaultNamespace_description"/>
+    <arg name="robot_namespace" default=""/>
     <arg name="tf_freq" default="100.0"/>
-    <arg name="pub_tf" default="false"/>
 
-    <!-- TODO DEBUG drowan_20210119: attempting to use ROS ackermann plugin -->
-    <rosparam file="$(find scte_control)/config/ackermann_setup.yaml" command="load"/>
-
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
-          args="ackermann_steering_controller joint_state_controller" ns="$(arg robot_namespace)"
-    />
-
+    <!-- Robot and Joint state tf publishers -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
           respawn="false" output="screen" ns="$(arg robot_namespace)">
         <param name="publish_frequency" type="double" value="$(arg tf_freq)"/>
     </node>
 
-    <!-- TODO DEBUG drowan_20210119: attempting to use ROS ackermann plugin -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"
+          respawn="false" output="screen" ns="$(arg robot_namespace)">
+        <param name="publish_frequency" type="double" value="$(arg tf_freq)"/>
+    </node>
 
     <!-- main vehicle urdf file with vehicle transforms-->
     <param name="robot_description" command="$(find xacro)/xacro '$(find scte_description)/urdf/scte_chassis.xacro'
-        robot_namespace:=$(arg robot_namespace) tf_freq:=$(arg tf_freq) pub_tf:=$(arg pub_tf)
-    "/>
+        robot_namespace:=$(arg robot_namespace)"/>
 
 </launch>

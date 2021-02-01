@@ -11,19 +11,32 @@
     <arg name="headless" default="false"/>
     <arg name="debug" default="false"/>
 
-    <!--
-    Naming the robot with the audibot code as implemented will append
-    the robot namespace to the tf topic which would then require
-    the tf_prefixer script to correct. This is because of the issue described
-    in the following link:
-    https://github.com/ros/robot_state_publisher/pull/139
-    -->
-    <arg name="robot_namespace" default="/"/>
+    <arg name="enable_teleop" default="0"/>
+    <arg name="tf_freq" default="100.0"/>
+    <arg name="pub_tf" default="false"/>
+
+    <arg name="robot_namespace" default="/scte_bot"/>
 
     <arg name="x" default="0.0"/>
     <arg name="y" default="0.0"/>
     <arg name="z" default="1.0"/>
     <arg name="yaw" default="0.0"/>
+
+    <include file="$(find scte_control)/launch/control.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+        <arg name="pub_tf" default="false"/>
+    </include>
+
+    <include file="$(find scte_description)/launch/description.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+        <arg name="tf_freq" value="100.0"/>
+    </include>
+
+    <group if="$(eval arg('enable_teleop') == 1)">
+        <include file="$(find scte_control)/launch/teleop.launch">
+            <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+        </include>
+    </group>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" value="$(find scte_gazebo)/worlds/scte.world"/>
@@ -32,17 +45,6 @@
         <arg name="gui" value="$(arg gui)"/>
         <arg name="headless" value="$(arg headless)"/>
         <arg name="debug" value="$(arg debug)"/>
-    </include>
-
-    <!-- control and teleop launch -->
-    <!---->
-    <include file="$(find scte_control)/launch/control.launch">
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-        <arg name="tf_freq" value="100.0"/>
-        <arg name="pub_tf" default="true" />
-    </include>
-    <include file="$(find scte_control)/launch/teleop.launch">
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
     </include>
 
     <!-- Spawn robot in gazebo -->
@@ -56,4 +58,5 @@
               -param robot_description
               -model $(arg robot_namespace)" />
 
+    <node name="rviz" pkg="rviz" type="rviz" required="true" args="-d $(find scte_viz)/rviz/scteBot.rviz"/>
 </launch>
