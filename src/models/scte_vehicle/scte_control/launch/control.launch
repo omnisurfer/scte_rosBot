@@ -15,7 +15,9 @@
 
     <!-- load ackermann controller config -->
     <rosparam command="load" file="$(find scte_control)/config/scte_ackermann_controller.yaml"/>
-    <rosparam  command="load" file="scte_ackermann_hw.yaml"/>
+    <rosparam  command="load" file="$(find scte_control)/config/scte_ackermann_hw_sim.yaml"/>
+    <rosparam  command="load" file="$(find scte_gazebo)/config/scte_ackermann_gazebo_sim.yaml"/>
+    <rosparam  command="load" file="$(find scte_gazebo)/config/pids.yaml"/>
 
     <!-- Start ackermann_steering_bot -->
     <node name="ackermann_steering_controller_ackermann_steering_bot"
