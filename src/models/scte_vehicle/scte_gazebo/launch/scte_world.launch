@@ -15,7 +15,7 @@
     <arg name="tf_freq" default="100.0"/>
     <arg name="pub_tf" default="false"/>
 
-    <arg name="robot_namespace" default="/scte_bot"/>
+    <arg name="robot_namespace" default="/"/>
 
     <arg name="x" default="0.0"/>
     <arg name="y" default="0.0"/>

@@ -7,7 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /TF1
-        - /PassSideCamera1/Status1
       Splitter Ratio: 0.5
     Tree Height: 386
   - Class: rviz/Selection
@@ -137,28 +136,31 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        front_left_wheel:
+        front_left_steer_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        front_left_wheel_steer:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_right_wheel:
+        front_left_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        front_right_wheel_steer:
+        front_right_steer_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
+        front_right_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         front_steer_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         imu_link:
           Alpha: 1
           Show Axes: false
@@ -215,12 +217,12 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        rear_left_wheel:
+        rear_left_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        rear_right_wheel:
+        rear_right_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -229,6 +231,7 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         scte_chassis:
           Alpha: 1
           Show Axes: false
@@ -274,11 +277,23 @@ Visualization Manager:
           Value: true
         front_diff_tower_shock_tower:
           Value: true
+        front_left_steer_link:
+          Value: true
+        front_left_wheel_link:
+          Value: true
+        front_right_steer_link:
+          Value: true
+        front_right_wheel_link:
+          Value: true
+        front_steer_link:
+          Value: true
         imu_link:
           Value: true
         inertial_link:
           Value: true
         laser_frame:
+          Value: true
+        odom:
           Value: true
         passenger_mounting_bar:
           Value: true
@@ -298,6 +313,10 @@ Visualization Manager:
           Value: true
         rear_diff_tower_shock_tower:
           Value: true
+        rear_left_wheel_link:
+          Value: true
+        rear_right_wheel_link:
+          Value: true
         rear_wheel_link:
           Value: true
         scte_chassis:
@@ -309,9 +328,23 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        base_footprint:
+        odom:
           base_link:
+            front_left_steer_link:
+              front_left_wheel_link:
+                {}
+            front_right_steer_link:
+              front_right_wheel_link:
+                {}
+            front_steer_link:
+              {}
             inertial_link:
+              {}
+            rear_left_wheel_link:
+              {}
+            rear_right_wheel_link:
+              {}
+            rear_wheel_link:
               {}
             scte_chassis:
               front_diff_tower:
@@ -343,8 +376,7 @@ Visualization Manager:
                   {}
               rear_diff_tower:
                 rear_axle:
-                  rear_wheel_link:
-                    {}
+                  {}
                 rear_bumper_mount:
                   rear_bumper:
                     {}
@@ -464,7 +496,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: base_link
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
