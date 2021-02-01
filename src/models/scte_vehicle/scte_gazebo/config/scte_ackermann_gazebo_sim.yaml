@@ -1,0 +1,11 @@
+ackermann_steering_bot_gazebo_sim:
+  rear_wheel: 'rear_wheel_joint'
+  front_steer: 'front_steer_joint'
+
+  virtual_rear_wheels: ['rear_right_wheel_joint', 'rear_left_wheel_joint']
+  virtual_front_wheels: ['front_right_wheel_joint', 'front_left_wheel_joint']
+  virtual_front_steers: ['front_right_steer_joint', 'front_left_steer_joint']
+
+  enable_ackerman_link: true
+  wheel_seperation_h: 0.20
+  #wheel_seperation_w: 0.20
