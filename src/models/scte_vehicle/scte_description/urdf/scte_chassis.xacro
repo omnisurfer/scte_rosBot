@@ -21,6 +21,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
 
     <xacro:include filename="plugins/scte_plugins.gazebo" />
+    <!--xacro:include filename="plugins/scte_sensors.gazebo" /-->
     <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
     <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />
 

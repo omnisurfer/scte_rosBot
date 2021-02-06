@@ -102,13 +102,15 @@
         </joint>
 
         <!-- Transmission is important to link the joints and the controller -->
-        <transmission name="${name}_steer_joint_trans" type="SimpleTransmission">
+        <transmission name="${name}_steer_joint_trans">
+            <type>SimpleTransmission</type>
             <actuator name="${name}_steer_joint_motor"/>
             <joint name="${name}_steer_joint"/>
             <mechanicalReduction>1</mechanicalReduction>
             <motorTorqueConstant>1</motorTorqueConstant>
         </transmission>
-        <transmission name="${name}_wheel_joint_trans" type="SimpleTransmission">
+        <transmission name="${name}_wheel_joint_trans">
+            <type>SimpleTransmission</type>
             <actuator name="${name}_wheel_joint_motor"/>
             <joint name="${name}_wheel_joint"/>
             <mechanicalReduction>1</mechanicalReduction>
@@ -152,7 +154,8 @@
         </joint>
 
         <!-- Transmission is important to link the joints and the controller -->
-        <transmission name="${name}_wheel_joint_trans" type="SimpleTransmission">
+        <transmission name="${name}_wheel_joint_trans">
+            <type>SimpleTransmission</type>
             <actuator name="${name}_wheel_joint_motor"/>
             <joint name="${name}_wheel_joint"/>
             <mechanicalReduction>1</mechanicalReduction>
@@ -193,7 +196,8 @@
         </joint>
 
         <!-- Transmission is important to link the joints and the controller -->
-        <transmission name="${name}_wheel_joint_trans" type="SimpleTransmission">
+        <transmission name="${name}_wheel_joint_trans">
+            <type>SimpleTransmission</type>
             <actuator name="${name}_wheel_joint_motor"/>
             <joint name="${name}_wheel_joint"/>
             <mechanicalReduction>1</mechanicalReduction>
