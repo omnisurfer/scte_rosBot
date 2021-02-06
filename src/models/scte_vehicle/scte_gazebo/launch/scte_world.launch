@@ -2,7 +2,7 @@
 <launch>
 
     <!-- VMWare env variable workaround to keep gazebo from crashing due to OpenGL issues-->
-    <env name="SVGA_VGPU10" value="1"/>
+    <env name="SVGA_VGPU10" value="0"/>
 
     <arg name="world" default="empty"/>
     <arg name="paused" default="true"/>
@@ -58,5 +58,5 @@
               -param robot_description
               -model $(arg robot_namespace)" />
 
-    <node name="rviz" pkg="rviz" type="rviz" required="true" args="-d $(find scte_viz)/rviz/scteBot.rviz"/>
+    <!--node name="rviz" pkg="rviz" type="rviz" required="true" args="-d $(find scte_viz)/rviz/scteBot.rviz"/-->
 </launch>

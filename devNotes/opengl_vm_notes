@@ -1,1 +1,11 @@
-https://answers.gazebosim.org//question/13214/virtual-machine-not-launching-gazebo/
+Disable OpenGL features that Gazebo and VMWare seem to not support:
+- https://answers.gazebosim.org//question/13214/virtual-machine-not-launching-gazebo/
+    SVGA_VGPU10=0
+
+Modify the vmware vsx file so that it uses OpenGL instead of DX11
+https://communities.vmware.com/t5/VMware-Workstation-Pro/WS15-disables-3D-acceleration/td-p/1404652
+    mks.enableDX11Renderer = "FALSE"
+    mks.enableD3DRenderer = "TRUE"
+
+It also seems that launching both Gazebo and RViz from the same launch file may be a factor in causing Gazebo to freeze?
+Maybe both running from the same terminal "space" screws with how the 3D resources are handled???
