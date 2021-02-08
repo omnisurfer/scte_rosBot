@@ -11,6 +11,7 @@
 
     <!-- load ackermann controller config -->
     <rosparam command="load" file="$(find scte_control)/config/scte_ackermann_controller.yaml"/>
+    <!-- these yamls or just one used with the steer_bot plugin??-->
     <rosparam  command="load" file="$(find scte_control)/config/scte_ackermann_hw_sim.yaml"/>
     <rosparam  command="load" file="$(find scte_gazebo)/config/scte_ackermann_gazebo_sim.yaml"/>
     <rosparam  command="load" file="$(find scte_gazebo)/config/pids.yaml"/>
@@ -22,11 +23,9 @@
     Note this plugin seems to be only made to work with DefaultRobotHW instead of DefaultRobotHWSim
     -->
     <!---->
-    <node name="ackermann_steering_controller_ackermann_steering_bot"
+    <node name="ackermann_steering_controller_ackermann_steering_botABC"
           pkg="ackermann_steering_controller"
           type="ackermann_steering_controller_ackermann_steering_bot"/>
-    <!---->
-
     <!---->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg robot_namespace)"
           args="ackermann_steering_bot_controller"/>
