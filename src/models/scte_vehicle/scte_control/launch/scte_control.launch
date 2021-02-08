@@ -1,0 +1,53 @@
+<launch>
+
+    <!--
+    Look into multimaster launch
+    https://github.com/husky/husky/blob/melodic-devel/husky_control/launch/control.launch
+    -->
+
+    <arg name="robot_namespace" default="/"/>
+    <arg name="pub_tf" default="false"/>
+    <arg name="simulation_on" default="0"/>
+
+    <!-- load ackermann controller config -->
+    <rosparam command="load" file="$(find scte_control)/config/scte_ackermann_controller.yaml"/>
+    <rosparam  command="load" file="$(find scte_control)/config/scte_ackermann_hw_sim.yaml"/>
+    <rosparam  command="load" file="$(find scte_gazebo)/config/scte_ackermann_gazebo_sim.yaml"/>
+    <rosparam  command="load" file="$(find scte_gazebo)/config/pids.yaml"/>
+    <!---->
+
+
+    <!--
+    Start ackermann steering controller
+    Note this plugin seems to be only made to work with DefaultRobotHW instead of DefaultRobotHWSim
+    -->
+    <!---->
+    <node name="ackermann_steering_controller_ackermann_steering_bot"
+          pkg="ackermann_steering_controller"
+          type="ackermann_steering_controller_ackermann_steering_bot"/>
+    <!---->
+
+    <!---->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg robot_namespace)"
+          args="ackermann_steering_bot_controller"/>
+    <!---->
+
+    <!--
+    Load the DEBUG DefaultHWSim controllers
+    The controllers and config file below work to move the joints in the model. They are the basic build in controllers
+    that gazebo offers.
+    -->
+    <!--
+    <rosparam command="load" file="$(find scte_control)/config/scte_joint_control.yaml"/>
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg robot_namespace)"
+            args="joint_state_controller
+            front_left_wheel_position_controller
+            front_right_wheel_position_controller
+            rear_left_wheel_position_controller
+            rear_right_wheel_position_controller
+            front_left_steer_position_controller
+            front_right_steer_position_controller
+            rear_wheel_position_controller
+            "/>
+    -->
+</launch>

@@ -1,34 +1,13 @@
 <launch>
-
-    <!--
-    Look into multimaster launch
-    https://github.com/husky/husky/blob/melodic-devel/husky_control/launch/control.launch
-    -->
-
     <arg name="robot_namespace" default=""/>
     <arg name="pub_tf" default="false"/>
-
     <arg name="simulation_on" default="0"/>
     <arg name="enable_ekf_localization" default="0"/>
     <arg name="enable_navsat_odom" default="0"/>
 
-
-    <!-- load ackermann controller config -->
-    <rosparam command="load" file="$(find scte_control)/config/scte_ackermann_controller.yaml"/>
-    <rosparam  command="load" file="$(find scte_control)/config/scte_ackermann_hw_sim.yaml"/>
-    <rosparam  command="load" file="$(find scte_gazebo)/config/scte_ackermann_gazebo_sim.yaml"/>
-    <rosparam  command="load" file="$(find scte_gazebo)/config/pids.yaml"/>
-
-    <!-- Start ackermann_steering_bot -->
-    <node name="ackermann_steering_controller_ackermann_steering_bot"
-          pkg="ackermann_steering_controller"
-          type="ackermann_steering_controller_ackermann_steering_bot"/>
-
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="ackermann_steering_bot_controller"/>
-
     <!-- start EKF for localization
-        https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/
-    -->
+      https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/
+  -->
     <!--arg name="ekf_settings_file" default="ekf_settings.yaml" unless="$(arg simulation_on)"/>
     <arg name="ekf_settings_file" default="ekf_settings_simulation.yaml" if="$(arg simulation_on)"/-->
 
@@ -76,5 +55,4 @@
         <remap from="cmd_vel_out" to="velocity_controller/cmd_vel"/>
     </node>
     -->
-
 </launch>
