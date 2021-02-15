@@ -27,13 +27,14 @@
     This gazebo ros control setup works with the basic "hello world" joint control demo
     and the scte_joint_control.yaml file
     -->
+    <!--
     <gazebo>
       <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
         <robotNamespace>$(arg robot_namespace)</robotNamespace>
         <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
       </plugin>
     </gazebo>
-
+    -->
     <!-- Gazebo plugin for ROS Control Taken from CIR-KIT-Unit03 -->
     <!--gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
@@ -49,7 +50,7 @@
         Note that the transmission info is taken from the xacro and the joint list below
         seems to be ignored (at least at this point in execution)
     -->
-    <!--
+    <!---->
     <gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
             <robotNamespace>$(arg robot_namespace)</robotNamespace>
@@ -65,6 +66,6 @@
             </jointName>
         </plugin>
     </gazebo>
-    -->
+    <!---->
 
 </robot>

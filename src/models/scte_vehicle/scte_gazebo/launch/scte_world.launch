@@ -22,6 +22,10 @@
     <arg name="z" default="1.0"/>
     <arg name="yaw" default="0.0"/>
 
+    <!-- load steer_bot_hardware_gazebo config -->
+    <rosparam  command="load" file="$(find scte_gazebo)/config/scte_ackermann_gazebo_sim.yaml"/>
+    <rosparam  command="load" file="$(find scte_gazebo)/config/pids.yaml"/>
+
     <!--
     <include file="$(find scte_control)/launch/scte_control.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
