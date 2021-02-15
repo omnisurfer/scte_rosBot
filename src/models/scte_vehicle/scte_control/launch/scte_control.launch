@@ -18,7 +18,7 @@
     Note this plugin seems to be only made to work with DefaultRobotHW instead of DefaultRobotHWSim
     -->
     <!---->
-    <node name="ackermann_steering_controller_ackermann_steering_botABC"
+    <node name="ackermann_steering_controller_ackermann_steering_bot"
           pkg="ackermann_steering_controller"
           type="ackermann_steering_controller_ackermann_steering_bot"/>
     <!---->

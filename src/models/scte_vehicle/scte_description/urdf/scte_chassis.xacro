@@ -16,11 +16,12 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
     <xacro:arg name="robot_namespace" default="/DEFAULTNAMESPACE2"/>
     <xacro:arg name="tf_freq" default="100.0"/>
-    <xacro:arg name="pub_tf" default="false"/>
+    <xacro:arg name="pub_tf" default="true"/>
 
     <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
 
     <xacro:include filename="plugins/scte_plugins.gazebo" />
+    <!--xacro:include filename="$(find scte_description)/urdf/plugins/scte_audi_bot_plugin.gazebo"/-->
     <!--xacro:include filename="plugins/scte_sensors.gazebo" /-->
     <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
     <xacro:include filename="$(find scte_description)/urdf/macros.xacro" />

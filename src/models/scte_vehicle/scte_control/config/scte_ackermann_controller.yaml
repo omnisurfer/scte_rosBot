@@ -16,7 +16,7 @@ ackermann_steering_bot_controller:
   #steer_pos_multiplier          : 1.0
   #base_frame_id                 : base_link
 
-  #enable_odom_tf: true
+  enable_odom_tf: true
 
   #linear:
   #  x:
