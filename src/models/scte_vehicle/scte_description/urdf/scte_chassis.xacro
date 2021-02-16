@@ -14,13 +14,13 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 <!--Gazebo does not seem to like capital letters in the robot namespace-->
 <robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:arg name="robot_namespace" default="/DEFAULTNAMESPACE2"/>
+    <xacro:arg name="robot_namespace" default="/"/>
     <xacro:arg name="tf_freq" default="100.0"/>
     <xacro:arg name="pub_tf" default="true"/>
 
     <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
 
-    <xacro:include filename="plugins/scte_plugins.gazebo" />
+    <xacro:include filename="$(find scte_description)/urdf/plugins/scte_plugins.gazebo" />
     <!--xacro:include filename="$(find scte_description)/urdf/plugins/scte_audi_bot_plugin.gazebo"/-->
     <!--xacro:include filename="plugins/scte_sensors.gazebo" /-->
     <xacro:include filename="$(find scte_description)/urdf/materials.xacro" />
@@ -298,5 +298,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:logitech_c270_camera parent_link="camera_rig_bar" camera_link="driver_side_camera" joint_xyz="0.0 0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
     <xacro:logitech_c270_camera parent_link="camera_rig_bar" camera_link="passenger_side_camera" joint_xyz="0.0 -0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
     <!---->
+
+    <gazebo reference="base_link"/>
 
 </robot>

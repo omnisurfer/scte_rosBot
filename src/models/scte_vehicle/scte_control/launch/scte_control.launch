@@ -5,26 +5,32 @@
     https://github.com/husky/husky/blob/melodic-devel/husky_control/launch/control.launch
     -->
 
-    <arg name="robot_namespace" default="/"/>
+    <arg name="robot_namespace" default=""/>
     <arg name="pub_tf" default="false"/>
     <arg name="simulation_on" default="0"/>
+    <arg name="tf_freq" default="100.0"/>
 
     <!-- load ackermann controller config -->
-    <rosparam command="load" file="$(find scte_control)/config/scte_ackermann_controller.yaml"/>
-    <rosparam  command="load" file="$(find scte_control)/config/scte_ackermann_hw_sim.yaml"/>
+    <rosparam command="load" file="$(find scte_control)/config/scte_ackermann_controller.yaml" ns="$(arg robot_namespace)"/>
+    <rosparam  command="load" file="$(find scte_control)/config/scte_steer_bot_gains.yaml" ns="$(arg robot_namespace)"/>
+    <rosparam command="load" file="$(find scte_control)/config/scte_joint_state_publisher.yaml" ns="$(arg robot_namespace)"/>
+    <rosparam  command="load" file="$(find scte_control)/config/scte_steer_bot_hardware_gazebo.yaml" ns="$(arg robot_namespace)"/>
 
     <!--
-    Start ackermann steering controller
-    Note this plugin seems to be only made to work with DefaultRobotHW instead of DefaultRobotHWSim
+    Start controllers
     -->
-    <!---->
-    <node name="ackermann_steering_controller_ackermann_steering_bot"
-          pkg="ackermann_steering_controller"
-          type="ackermann_steering_controller_ackermann_steering_bot"/>
-    <!---->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg robot_namespace)"
-          args="ackermann_steering_bot_controller"/>
+          args="joint_state_publisher ackermann_steering_controller"/>
+
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"
+          respawn="false" output="screen" ns="$(arg robot_namespace)">
+        <param name="publish_frequency" type="double" value="$(arg tf_freq)"/>
+    </node>
     <!---->
+
+    <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
+        <param name="default_topic" value="$(arg robot_namespace)/ackermann_steering_controller/cmd_vel"/>
+    </node>
 
     <!--
     Load the DEBUG DefaultHWSim controllers

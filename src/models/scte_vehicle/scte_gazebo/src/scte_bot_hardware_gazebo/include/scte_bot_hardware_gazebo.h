@@ -8,6 +8,9 @@
  * http://gazebosim.org/tutorials?cat=guided_i&tut=guided_i5
  *
  * https://github.com/ros-controls/ros_control
+ * https://medium.com/@slaterobotics/how-to-implement-ros-control-on-a-custom-robot-748b52751f2e
+ *
+ * https://github.com/srmainwaring/steer_bot
  */
 
 #ifndef SCTE_BOT_HARDWARE_GAZEBO_H

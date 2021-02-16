@@ -3,7 +3,7 @@
     <!--
     Publish current joint angles
     -->
-    <!---->
+    <!--
     <gazebo>
         <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
             <robotNamespace>$(arg robot_namespace)</robotNamespace>
@@ -21,7 +21,7 @@
             <alwaysOn>true</alwaysOn>
         </plugin>
     </gazebo>
-    <!---->
+    -->
 
     <!--
     This gazebo ros control setup works with the basic "hello world" joint control demo
@@ -36,12 +36,13 @@
     </gazebo>
     -->
     <!-- Gazebo plugin for ROS Control Taken from CIR-KIT-Unit03 -->
-    <!--gazebo>
+    <gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
             <robotNamespace>$(arg robot_namespace)</robotNamespace>
             <robotSimType>steer_bot_hardware_gazebo/SteerBotHardwareGazebo</robotSimType>
+            <legacyModeNS>false</legacyModeNS>
         </plugin>
-    </gazebo-->
+    </gazebo>
 
     <!-- this may only work with Indigo...
         https://github.com/CIR-KIT/steer_drive_ros
@@ -64,6 +65,7 @@
                 'rear_right_wheel_joint_trans'.
                 'rear_left_wheel_joint_trans'.
             </jointName>
+            <legacyModeNS>false</legacyModeNS>
         </plugin>
     </gazebo>
     -->

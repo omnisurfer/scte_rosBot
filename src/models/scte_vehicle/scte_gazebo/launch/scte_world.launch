@@ -1,70 +1,61 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
 
+    <!-- example steer_bot https://github.com/srmainwaring/steer_bot -->
+
     <!-- VMWare env variable workaround to keep gazebo from crashing due to OpenGL issues-->
     <env name="SVGA_VGPU10" value="0"/>
 
-    <arg name="world" default="empty"/>
-    <arg name="paused" default="true"/>
-    <arg name="use_sim_time" default="true"/>
-    <arg name="gui" default="true"/>
-    <arg name="headless" default="false"/>
-    <arg name="debug" default="false"/>
-
-    <arg name="enable_teleop" default="0"/>
-    <arg name="tf_freq" default="100.0"/>
-    <arg name="pub_tf" default="false"/>
-
-    <arg name="robot_namespace" default="/"/>
-
+    <arg name="model" default="$(find scte_description)/urdf/scte_chassis.xacro"/>
+    <arg name="namespace" default="/steer_bot" />
+    <arg name="world_name" default="worlds/empty_world" />
+    <arg name="cmd_timeout" default="0.5"/>
     <arg name="x" default="0.0"/>
     <arg name="y" default="0.0"/>
-    <arg name="z" default="1.0"/>
+    <arg name="z" default="1.0" />
+    <arg name="roll" default="0.0"/>
+    <arg name="pitch" default="0.0"/>
     <arg name="yaw" default="0.0"/>
 
-    <!-- load steer_bot_hardware_gazebo config -->
-    <!--
-    <rosparam  command="load" file="$(find scte_gazebo)/config/scte_ackermann_gazebo_sim.yaml"/>
-    <rosparam  command="load" file="$(find scte_gazebo)/config/pids.yaml"/>
-    -->
+    <group ns="$(arg namespace)">
 
-    <!--
-    <include file="$(find scte_control)/launch/scte_control.launch">
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-        <arg name="pub_tf" default="false"/>
-    </include>
-    -->
-
-    <include file="$(find scte_description)/launch/description.launch">
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-        <arg name="tf_freq" value="100.0"/>
-    </include>
-
-    <group if="$(eval arg('enable_teleop') == 1)">
-        <include file="$(find scte_control)/launch/teleop.launch">
-            <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+        <!-- Gazebo  -->
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <arg name="world_name" default="$(arg world_name)"/>
         </include>
+
+        <!-- Load the robot description -->
+        <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+
+        <!-- Load ros_controllers configuration parameters -->
+        <rosparam command="load" file="$(find scte_control)/config/scte_ackermann_controller.yaml" ns="$(arg namespace)"/>
+        <rosparam  command="load" file="$(find scte_control)/config/scte_steer_bot_gains.yaml" ns="$(arg namespace)"/>
+        <rosparam command="load" file="$(find scte_control)/config/scte_joint_state_publisher.yaml" ns="$(arg namespace)"/>
+        <rosparam  command="load" file="$(find scte_control)/config/scte_steer_bot_hardware_gazebo.yaml" ns="$(arg namespace)"/>
+
+        <!-- Spawn the controllers -->
+        <node pkg="controller_manager" type="spawner" name="controller_spawner" ns="$(arg namespace)"
+              args="joint_state_publisher ackermann_steering_controller"
+              output="screen" respawn="false" />
+
+        <!-- Launch  the robot state publisher -->
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+            <param name="publish_frequency" value="50.0"/>
+        </node>
+
+        <!-- Launch a rqt steering GUI for publishing to /steer_bot/steer_drive_controller/cmd_vel -->
+        <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
+            <param name="default_topic" value="$(arg namespace)/ackermann_steering_controller/cmd_vel"/>
+        </node>
+
+        <!-- Spawn robot in Gazebo -->
+        <node name="spawn_vehicle" pkg="gazebo_ros" type="spawn_model"
+              args="-urdf -param robot_description -model steer_bot
+                -gazebo_namespace /$(arg namespace)/gazebo
+                -x $(arg x) -y $(arg y) -z $(arg z)
+                -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
+              respawn="false" output="screen" />
+
     </group>
 
-    <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(find scte_gazebo)/worlds/scte.world"/>
-        <arg name="paused" value="$(arg paused)"/>
-        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
-        <arg name="gui" value="$(arg gui)"/>
-        <arg name="headless" value="$(arg headless)"/>
-        <arg name="debug" value="$(arg debug)"/>
-    </include>
-
-    <!-- Spawn robot in gazebo -->
-    <node name="spawn_scte_model" pkg="gazebo_ros" type="spawn_model"
-          args="-x $(arg x)
-              -y $(arg y)
-              -z $(arg z)
-              -Y $(arg yaw)
-              -unpause
-              -urdf
-              -param robot_description
-              -model $(arg robot_namespace)" />
-
-    <!--node name="rviz" pkg="rviz" type="rviz" required="true" args="-d $(find scte_viz)/rviz/scteBot.rviz"/-->
 </launch>

@@ -5,6 +5,12 @@
     <arg name="enable_ekf_localization" default="0"/>
     <arg name="enable_navsat_odom" default="0"/>
 
+    <!--
+    path planning
+    http://wiki.ros.org/base_local_planner
+    http://wiki.ros.org/dwa_local_planner
+    -->
+
     <!-- start EKF for localization
       https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/
   -->
