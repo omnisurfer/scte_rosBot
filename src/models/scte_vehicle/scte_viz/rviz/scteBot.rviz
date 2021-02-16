@@ -7,6 +7,9 @@ Panels:
         - /Global Options1
         - /Status1
         - /RobotModel1
+        - /PassSideCamera1
+        - /DriveSideCamera1
+        - /DriveSideCamera1/Visibility1
       Splitter Ratio: 0.5
     Tree Height: 386
   - Class: rviz/Selection
@@ -27,7 +30,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: DriveSideCamera
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -53,7 +56,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 0.5
+    - Alpha: 0.75
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -243,84 +246,10 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_footprint:
-          Value: true
-        base_laser:
-          Value: true
-        base_link:
-          Value: true
-        camera_rig_bar:
-          Value: true
-        camera_rig_support:
-          Value: true
-        computer_enclosure:
-          Value: true
-        driver_mounting_bar:
-          Value: true
-        driver_side_camera_base:
-          Value: true
-        driver_side_camera_body:
-          Value: true
-        driver_side_camera_optical:
-          Value: true
-        front_axle:
-          Value: true
-        front_bumper:
-          Value: true
-        front_bumper_skid_plate:
-          Value: true
-        front_diff_tower:
-          Value: true
-        front_diff_tower_shock_tower:
-          Value: true
-        front_left_steer_link:
-          Value: true
-        front_left_wheel_link:
-          Value: true
-        front_right_steer_link:
-          Value: true
-        front_right_wheel_link:
-          Value: true
-        front_steer_link:
-          Value: true
-        imu_link:
-          Value: true
-        inertial_link:
-          Value: true
-        laser_frame:
-          Value: true
-        odom:
-          Value: true
-        passenger_mounting_bar:
-          Value: true
-        passenger_side_camera_base:
-          Value: true
-        passenger_side_camera_body:
-          Value: true
-        passenger_side_camera_optical:
-          Value: true
-        rear_axle:
-          Value: true
-        rear_bumper:
-          Value: true
-        rear_bumper_mount:
-          Value: true
-        rear_diff_tower:
-          Value: true
-        rear_diff_tower_shock_tower:
-          Value: true
-        rear_left_wheel_link:
-          Value: true
-        rear_right_wheel_link:
-          Value: true
-        rear_wheel_link:
-          Value: true
-        scte_chassis:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 0.4000000059604645
       Name: TF
@@ -328,70 +257,17 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        odom:
-          base_link:
-            front_left_steer_link:
-              front_left_wheel_link:
-                {}
-            front_right_steer_link:
-              front_right_wheel_link:
-                {}
-            front_steer_link:
-              {}
-            inertial_link:
-              {}
-            rear_left_wheel_link:
-              {}
-            rear_right_wheel_link:
-              {}
-            rear_wheel_link:
-              {}
-            scte_chassis:
-              front_diff_tower:
-                driver_mounting_bar:
-                  computer_enclosure:
-                    base_laser:
-                      laser_frame:
-                        {}
-                    camera_rig_support:
-                      camera_rig_bar:
-                        driver_side_camera_body:
-                          driver_side_camera_base:
-                            driver_side_camera_optical:
-                              {}
-                        passenger_side_camera_body:
-                          passenger_side_camera_base:
-                            passenger_side_camera_optical:
-                              {}
-                    imu_link:
-                      {}
-                front_axle:
-                  {}
-                front_bumper_skid_plate:
-                  front_bumper:
-                    {}
-                front_diff_tower_shock_tower:
-                  {}
-                passenger_mounting_bar:
-                  {}
-              rear_diff_tower:
-                rear_axle:
-                  {}
-                rear_bumper_mount:
-                  rear_bumper:
-                    {}
-                rear_diff_tower_shock_tower:
-                  {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/Axes
-      Enabled: true
+      Enabled: false
       Length: 1
       Name: Axes
       Radius: 0.019999999552965164
       Reference Frame: <Fixed Frame>
-      Value: true
+      Value: false
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
@@ -408,7 +284,7 @@ Visualization Manager:
         Grid: true
         LaserScan: true
         PointCloud2: true
-        RobotModel: true
+        RobotModel: false
         TF: true
         Value: true
       Zoom Factor: 1
@@ -428,7 +304,7 @@ Visualization Manager:
         LaserScan: true
         PassSideCamera: true
         PointCloud2: true
-        RobotModel: true
+        RobotModel: false
         TF: true
         Value: true
       Zoom Factor: 1
@@ -520,7 +396,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.469738483428955
+      Distance: 0.6825525760650635
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -536,9 +412,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.21539828181266785
+      Pitch: 0.2753980755805969
       Target Frame: base_link
-      Yaw: 0.010398207232356071
+      Yaw: 1.4153980016708374
     Saved: ~
 Window Geometry:
   Displays:

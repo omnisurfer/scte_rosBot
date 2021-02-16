@@ -57,6 +57,7 @@
             </noise>
           </camera>
           <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <robotNamespace>$(arg robot_namespace)</robotNamespace>
             <alwaysOn>true</alwaysOn>
             <updateRate>10.0</updateRate>
             <cameraName>driver_camera</cameraName>
@@ -115,7 +116,13 @@
     </gazebo>
     <!---->
 
-  <!-- hokuyo -->
+  <!-- hokuyo
+    Noise parameters based on published spec for Hokuyo laser
+    achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+    stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+    reading.
+  -->
+  <!--
   <gazebo reference="laser_frame">
     <sensor type="ray" name="head_hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
@@ -137,24 +144,17 @@
         </range>
         <noise>
           <type>gaussian</type>
-          <!-- Noise parameters based on published spec for Hokuyo laser
-               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
-               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
-               reading. -->
           <mean>0.0</mean>
           <stddev>0.01</stddev>
         </noise>
       </ray>
       <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <robotNamespace>$(arg robot_namespace)</robotNamespace>
         <topicName>/scan</topicName>
         <frameName>laser_frame</frameName>
       </plugin>
     </sensor>
   </gazebo>
-
-  <gazebo reference="chassis">
-      <material>Gazebo/Red</material>
-  </gazebo>
-
+  -->
 
 </robot>
