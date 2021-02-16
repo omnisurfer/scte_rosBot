@@ -1,0 +1,6 @@
+Custom Nav for ackermann based robots
+http://www.iri.upc.edu/files/scidoc/1658-Autonomous-navigation-framework-for-a-car-like-robot.pdf
+https://github.com/efernandez/iri_navigation
+
+Supports ackerman?
+http://wiki.ros.org/base_local_planner

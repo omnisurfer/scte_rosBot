@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="scte_diff_and_shock_tower" params="link_name parent_link
+diff_plate_size
+diff_joint_xyz
+diff_joint_rpy
+shock_tower_size
+shock_tower_joint_origin
+shock_tower_joint_rpy
+">
+        <!--diff base plate-->
+        <link name="${link_name}">
+            <intertial>
+                <mass value="${scte_chassis_mass * 0.05}"/>
+                <inertia
+                        ixx="1e-6" ixy="0" ixz="0"
+                        iyy="1e-6" iyz="0"
+                        izz="1e-6"
+                />
+            </intertial>
+            <visual>
+                <geometry>
+                    <box size="${diff_plate_size}"/>
+                </geometry>
+                <material name="green"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${diff_plate_size}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${link_name}_TO_${parent_link}" type="fixed">
+            <origin xyz="${diff_joint_xyz}" rpy="${diff_joint_rpy}"/>
+            <parent link="${parent_link}"/>
+            <child link="${link_name}"/>
+        </joint>
+
+        <!--shock tower-->
+        <link name="${link_name}_shock_tower">
+            <inertial>
+                <mass value="${scte_chassis_mass * 0.25 * 0.05}"/>
+                <inertia
+                        ixx="1e-6" ixy="0" ixz="0"
+                        iyy="1e-6" iyz="0"
+                        izz="1e-6"
+                />
+            </inertial>
+            <visual name='visual'>
+                <geometry>
+                    <box size="${shock_tower_size}"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision name='collision'>
+                <geometry>
+                    <box size="${shock_tower_size}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name='${link_name}_shock_tower_TO_${link_name}' type='fixed'>
+            <origin xyz="${shock_tower_joint_origin}" rpy="${shock_tower_joint_rpy}"/>
+            <parent link="${link_name}"/>
+            <child link="${link_name}_shock_tower"/>
+        </joint>
+    </xacro:macro>
+
+</robot>
+

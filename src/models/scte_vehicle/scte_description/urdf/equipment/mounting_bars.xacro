@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:macro name="mounting_bar" params="link_name
+    parent_link
+    bar_origin
+    bar_rpy
+    ">
+
+        <xacro:property name="mounting_bars_length" value="0.45"/>
+        <xacro:property name="mounting_bars_width" value="0.025"/>
+        <xacro:property name="mounting_bars_depth" value="0.005"/>
+
+        <link name="${link_name}">
+            <inertial>
+                <mass value="${scte_chassis_mass * 0.02}"/>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <inertia
+                        ixx="1" ixy="0" ixz="0"
+                        iyy="1" iyz="0"
+                        izz="1"
+                />
+            </inertial>
+            <visual name='visual'>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
+                </geometry>
+                <material name="green"/>
+            </visual>
+            <collision name='collision'>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="${mounting_bars_length} ${mounting_bars_width} ${mounting_bars_depth}"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${link_name}_TO_${parent_link}" type="fixed">
+            <origin xyz="${bar_origin}" rpy="${bar_rpy}"/>
+            <parent link="${parent_link}"/>
+            <child link="${link_name}"/>
+        </joint>
+
+    </xacro:macro>
+</robot>
+
+
+
+

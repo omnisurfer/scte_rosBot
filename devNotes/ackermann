@@ -1,0 +1,15 @@
+https://github.com/chrissunny94/ackerman_ros_robot_gazebo_simulation
+https://github.com/robustify/audibot
+https://github.com/froohoo/ackermansteer
+https://www.xarg.org/book/kinematics/ackerman-steering/
+http://correll.cs.colorado.edu/?p=1869
+
+ROS/Gazebo:
+http://wiki.ros.org/ackermann_steering_controller
+http://wiki.ros.org/steer_bot_hardware_gazebo - Only for indigo.
+https://github.com/ros-controls/ros_control/wiki/hardware_interface
+http://gazebosim.org/tutorials?tut=set_velocity&cat=
+
+https://medium.com/@waleedmansoor/how-i-built-ros-odometry-for-differential-drive-vehicle-without-encoder-c9f73fe63d87
+
+Example ackermann implementation under external_src/ros_controllers/ackermann_steering_controller/test/common/

@@ -1,7 +1,9 @@
-- gpsd can information can be sent over ssh as desribed in the below link. This approach is more secure and easier to
+- gpsd information can be sent over ssh as described in the below link. This approach is more secure and easier to
 implement than trying to open up the 2947 port on the machine hosting the GPS.
 https://stackoverflow.com/questions/42240757/access-gpsd-port-2947-over-network
 
 - gpsd will not work with /dev/pps0 unless it is recompiled to hold onto its root privileges. You can run the binary from
 the command line to allow it to work with the 1pps signal.
 https://bugs.archlinux.org/task/53651
+
+- run config_pi_gps.sh to configure the adafruit ultimate gps to run at 115200 and to output a PPS signal.

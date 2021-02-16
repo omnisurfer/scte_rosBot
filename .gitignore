@@ -3,3 +3,4 @@ build/
 devel/
 cmake-build-debug/
 nbproject/
+venv/
