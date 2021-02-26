@@ -7,5 +7,7 @@ steer_bot_hardware_gazebo:
   virtual_front_steers: ['front_right_steer_joint', 'front_left_steer_joint']
 
   enable_ackermann_link : true
-  wheel_separation_h : 0.4
-  wheel_separation_w : 0.4
+  # Wheel separation length between the front side and the rear side, which is used for calculating steer angle of Ackermann link mechanism.
+  wheel_separation_h : 0.37
+  # Wheel separation length between the left side and the right side, which is used for calculating steer angle of Ackermann link mechanism.
+  wheel_separation_w : 0.28
