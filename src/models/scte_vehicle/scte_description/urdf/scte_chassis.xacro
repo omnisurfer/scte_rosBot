@@ -13,14 +13,18 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 -->
 
 <!--
-Geometry:
-The Ackermann steering controllers require the longitudinal
-separation between the front and back wheel axes and the
-lateral separation between the left and right front steering axes.
+    Robot model adapted from https://github.com/CIR-KIT/steer_drive_ros/blob/kinetic-devel/steer_drive_controller/test/common/urdf/steerbot.xacro
 
-For this model:
-wheel_separation_h = base_length - 2 * axle_offset = 0.4
-wheel_separation_w = base_width  + 2 * axle_offset = 0.4
+    Geometry:
+    The Ackermann steering controllers require the longitudinal
+    separation between the front and back wheel axes and the
+    lateral separation between the left and right front steering axes.
+
+    For this model:
+    wheel_separation_h = base_length - 2 * axle_offset = 0.4
+    wheel_separation_w = base_width  + 2 * axle_offset = 0.4
+
+    Modified from the steer_bot example found here: https://github.com/srmainwaring/steer_bot
 -->
 
 <!--Gazebo does not seem to like capital letters in the robot namespace-->

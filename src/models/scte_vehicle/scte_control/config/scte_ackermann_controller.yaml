@@ -11,7 +11,7 @@ ackermann_steering_controller:
 
   # geometry
   # Wheel separation length between the front side and the rear side, which is used for calculating steer angle of Ackermann link mechanism.
-  # wheel_separation_h: 0.343
+  # wheel_separation_h: 0.342
   # wheel_radius: 0.0525
 
   # odom calibration and tuning
