@@ -32,10 +32,12 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
     <xacro:arg name="robot_namespace" default="/scte_bot"/>
 
+    <!-- ackermann components and plugins -->
     <xacro:include filename="$(find scte_description)/urdf/plugins/scte_plugins.gazebo" />
-
     <xacro:include filename="$(find scte_description)/urdf/scte_wheel.xacro"/>
     <xacro:include filename="$(find scte_description)/urdf/scte_inertials.xacro"/>
+
+    <!-- physical components -->
 
     <!-- Math constants -->
     <xacro:property name="deg_to_rad" value="0.01745329251994329577"/>
@@ -60,6 +62,20 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:property name="axle_offset" value="0.05" />
     <xacro:property name="steer_offset" value="0.02" />
 
+    <!-- scte dims -->
+    <xacro:property name="scte_chassis_length_sq" value="${base_length * base_length}"/>
+    <xacro:property name="scte_chassis_width_sq" value="${base_width * base_width}"/>
+    <xacro:property name="scte_chassis_height_sq" value="${base_height * base_height}"/>
+
+    <!-- base footprint for nav -->
+    <link name='base_footprint'/>
+
+    <joint name="base_link_TO_base_footprint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+    </joint>
+
     <!-- Base link -->
     <link name="base_link">
         <visual>
@@ -75,11 +91,28 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                 <box size="${base_length} ${base_width} ${base_height}"/>
             </geometry>
         </collision>
-        <xacro:solid_cuboid_inertial
+        <!--xacro:solid_cuboid_inertial
                 rpy="0 0 0" xyz="0 0 0"
                 mass="${base_mass}"
-                x="${base_length}" y="${base_width}" z="${base_height}" />
+                x="${base_length}" y="${base_width}" z="${base_height}" /-->
     </link>
+
+    <!-- Inertial link stores the robot's inertial information -->
+    <link name="inertial_link">
+        <inertial>
+            <mass value="${base_mass}" />
+            <origin xyz="0 0 0" />
+            <inertia ixx="${(1/12 * base_mass) * (scte_chassis_height_sq + scte_chassis_width_sq)}" ixy="0" ixz="0"
+                     iyy="${(1/12 * base_mass) * (scte_chassis_height_sq + scte_chassis_length_sq)}" iyz="0"
+                     izz="${(1/12 * base_mass) * (scte_chassis_length_sq + scte_chassis_width_sq)}" />
+        </inertial>
+    </link>
+
+    <joint name="inertial_to_base_link_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="inertial_link" />
+    </joint>
 
     <!-- Front steer and rear wheel joints required for ackermann_steering_controller -->
     <xacro:front_steer
@@ -152,6 +185,8 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             wheel_mass="${wheel_mass}">
         <origin xyz="${-base_length/2+axle_offset} ${+base_width/2+axle_offset} 0" rpy="${-90 * deg_to_rad} 0 0"/>
     </xacro:rear_wheel_lr>
+
+
 
     <!-- Colour -->
     <gazebo reference="base_link">
