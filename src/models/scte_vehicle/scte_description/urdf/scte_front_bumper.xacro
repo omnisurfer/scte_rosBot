@@ -58,7 +58,7 @@ front_bumper_size
             </collision>
         </link>
         <joint name="${link_name}_TO_${parent_link}" type="fixed">
-            <origin xyz="${0.07 * 0.70} 0 ${0.07 * 0.35}" rpy="0 ${M_PI/6} 0"/>
+            <origin xyz="${0.07 * 0.70} 0 ${0.07 * 0.35}" rpy="0 ${pi/6} 0"/>
             <parent link="${link_name}_skid_plate"/>
             <child link="${link_name}"/>
         </joint>

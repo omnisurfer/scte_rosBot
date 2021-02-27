@@ -122,7 +122,7 @@
     stddev of 0.01m will put 99.7% of samples within 0.03m of the true
     reading.
   -->
-  <!--
+  <!---->
   <gazebo reference="laser_frame">
     <sensor type="ray" name="head_hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
@@ -155,6 +155,6 @@
       </plugin>
     </sensor>
   </gazebo>
-  -->
+  <!---->
 
 </robot>
