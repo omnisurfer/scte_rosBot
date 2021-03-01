@@ -1,0 +1,42 @@
+<!--USB camera:
+https://stackoverflow.com/questions/56735438/get-the-current-frame-from-usb-camera-using-opencv
+https://answers.ros.org/question/283225/how-to-develop-ros-camera-driver/
+https://answers.ros.org/question/212847/how-to-get-usb-camera-frame/
+https://github.com/behnamasadi/ROS_monocular_camera
+https://rosindustrial.org/3d-camera-survey/
+https://msadowski.github.io/ros-web-tutorial-pt2-cameras/
+http://wiki.ros.org/libuvc_camera
+-->
+
+<launch>
+
+    <arg name="cameraName" default="logitech_c270"/>
+    <arg name="device" default="/dev/video0"/>
+    <arg name="frameId" default="logitech_c270_base"/>
+    <arg name="displayVideo" default="0"/>
+    <arg name="calibrationFileURL" default="file://${ROS_HOME}/camera_info/head_camera.yaml"/>
+    
+    <node name="$(arg cameraName)" pkg="usb_cam" type="usb_cam_node" output="screen">
+        <param name="video_device" value="$(arg device)"/>
+        <param name="image_width" value="320"/>
+        <param name="image_height" value="240"/>
+        <param name="pixel_format" value="yuyv"/><!--"mjpeg yuyv"/-->
+        <param name="camera_frame_id" value="$(arg frameId)"/>
+        <param name="io_method" value="mmap"/>
+        <param name="camera_info_url" value="$(arg calibrationFileURL)"/>
+    </node>    
+
+    <group ns="$(arg cameraName)/image_raw" >
+      <rosparam param="disable_pub_plugins">
+        - 'image_transport/compressedDepth'
+        - 'image_transport/theora'
+      </rosparam>
+    </group>
+
+    <group if="$(arg displayVideo)">
+        <node name="image_view_$(arg cameraName)" pkg="image_view" type="image_view" respawn="false" output="screen">
+            <remap from="image" to="$(arg cameraName)/image_raw"/>
+            <param name="autosize" value="true"/>
+        </node>
+    </group>
+</launch>
