@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<robot>
+    <!--
+    This gazebo ros control setup works with the basic "hello world" joint control demo
+    and the scte_joint_control.yaml file
+    -->
+    <!--
+    <gazebo>
+      <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <robotNamespace>$(arg robot_namespace)</robotNamespace>
+        <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      </plugin>
+    </gazebo>
+    -->
+
+    <!-- Gazebo plugin for ROS Control Taken from CIR-KIT-Unit03 -->
+    <!---->
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>$(arg robot_namespace)</robotNamespace>
+            <robotSimType>steer_bot_hardware_gazebo/SteerBotHardwareGazebo</robotSimType>
+            <legacyModeNS>false</legacyModeNS>
+        </plugin>
+    </gazebo>
+    <!---->
+</robot>

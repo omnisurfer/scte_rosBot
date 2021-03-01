@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- launch RViz-->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find sctebot_viz)/rviz/sctebot.rviz"/>
+
+</launch>
