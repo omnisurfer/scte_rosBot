@@ -1,0 +1,22 @@
+<launch>
+
+    <!--arg name="gpsName" default="garmin18_gps"/-->
+    <arg name="gpsName" default="ada_ultimate_gps"/>
+    <arg name="hostIP" default="localhost"/>
+    <arg name="hostPort" default="2947"/>
+    <arg name="nodeName" default="rosPi_node"/>
+
+    <!--
+    address must match the hostname EXACTLY and/or be all lower case. Otherwise get known_hosts error.
+    -->
+    <machine name="rosPi_node" user="user" address="rospi" default="never" env-loader="/opt/ros/noetic/env.sh" timeout="10"/>
+    <machine name="rosVM_node" user="user" address="rosnodevm" default="never" env-loader="/opt/ros/noetic/env.sh" timeout="10"/>
+
+    <node name="$(arg gpsName)" pkg="gpsd_client" type="gpsd_client" output="screen" machine="$(arg nodeName)">
+        <param name="_host" value="$(arg hostIP)"/>
+        <param name="_port" value="$(arg hostPort)"/>
+        <remap from="/fix" to="/$(arg gpsName)/fix"/>
+        <remap from="/extended_fix" to="/$(arg gpsName)/extended_fix"/>
+    </node>
+
+</launch>

@@ -1,0 +1,71 @@
+<?xml version='1.0'?>
+
+<robot name="logitech_270_camera" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="M_PI" value="3.14159265358979323846264338327950288"/>
+
+    <!--https://answers.ros.org/question/331432/pass-parameters-of-xacro-file-in-another-xacro-file/-->
+    <xacro:macro name="logitech_c270_camera" params="parent_link camera_link joint_xyz joint_rpy">
+        <link name='${camera_link}_body'>
+            <inertial>
+                <mass value="1.0"/>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <inertia
+                        ixx="1" ixy="0" ixz="0"
+                        iyy="1" iyz="0"
+                        izz="1"
+                />
+            </inertial>
+            <visual name='visual'>
+                <transparency>1</transparency>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.075 0.075 0.025"/>
+                </geometry>
+                <material name="none">
+                    <color rgba="${122/255} ${125/255} ${121/255} 0.5"/>
+                </material>
+            </visual>
+            <collision name='collision'>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.075 0.075 0.025"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="${camera_link}_TO_${parent_link}" type="fixed">
+            <origin xyz="${joint_xyz}" rpy="${joint_rpy}"/>
+            <parent link="${parent_link}"/>
+            <child link="${camera_link}_body"/>
+        </joint>
+        
+        <link name="${camera_link}_base">
+            <visual name='visual'>                
+                <origin xyz="0.003 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.01 0.01 0.01"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision name='collision'>
+                <origin xyz="0.003 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.01 0.01 0.01"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${camera_link}_base_TO_${camera_link}_body" type="fixed">
+            <origin xyz="0.03 0.015 0.0" rpy="0 0 0"/> <!-- ${M_PI/-2} 0 ${M_PI/-2} -->
+            <parent link="${camera_link}_body"/>
+            <child link="${camera_link}_base"/>
+        </joint>
+
+        <link name="${camera_link}_optical"/>
+        <joint name="${camera_link}_optical_TO_${camera_link}_base" type="fixed">
+            <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+            <parent link="${camera_link}_base"/>
+            <child link="${camera_link}_optical"/>
+        </joint>
+    </xacro:macro>
+</robot>
