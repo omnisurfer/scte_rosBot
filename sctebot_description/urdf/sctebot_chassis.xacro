@@ -33,12 +33,14 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:arg name="robot_namespace" default="/"/>
 
     <!-- ackermann components and gazebo plugins -->
-    <xacro:include filename="$(find sctebot_description)/urdf/plugins/scte_plugins.gazebo" />
-    <xacro:include filename="$(find sctebot_description)/urdf/scte_wheel.xacro"/>
-    <xacro:include filename="$(find sctebot_description)/urdf/scte_inertials.xacro"/>
+    <xacro:include filename="$(find sctebot_description)/urdf/plugins/sctebot_plugins.gazebo" />
+    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_wheel.xacro"/>
+    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_inertials.xacro"/>
+
+    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_materials.xacro"/>
 
     <!-- sensor gazebo plugins -->
-    <xacro:include filename="$(find sctebot_description)/urdf/plugins/scte_sensors.gazebo" />
+    <xacro:include filename="$(find sctebot_description)/urdf/plugins/sctebot_sensors.gazebo" />
 
     <!-- physical components -->
 
@@ -191,7 +193,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
 
     <!-- Bumpers -->
-    <xacro:include filename="$(find sctebot_description)/urdf/scte_front_bumper.xacro"/>
+    <xacro:include filename="sctebot_front_bumper.xacro"/>
     <xacro:scte_front_bumper
             link_name="front_bumper"
             parent_link="base_link"
@@ -201,7 +203,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             front_bumper_size="0.01 0.175 0.05"
     />
 
-    <xacro:include filename="$(find sctebot_description)/urdf/scte_rear_bumper.xacro"/>
+    <xacro:include filename="sctebot_rear_bumper.xacro"/>
     <xacro:scte_rear_bumper
             link_name="rear_bumper"
             parent_link="base_link"

@@ -6,7 +6,7 @@
     <!-- VMWare env variable workaround to keep gazebo from crashing due to OpenGL issues-->
     <env name="SVGA_VGPU10" value="0"/>
 
-    <arg name="model" default="$(find sctebot_description)/urdf/scte_chassis.xacro"/>
+    <arg name="model" default="$(find sctebot_description)/urdf/sctebot_chassis.xacro"/>
     <arg name="robot_namespace" default="/sctebot" />
     <arg name="world_name" default="worlds/empty_world" />
     <arg name="cmd_timeout" default="0.5"/>
