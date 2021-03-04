@@ -40,7 +40,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:include filename="$(find sctebot_description)/urdf/sctebot_materials.xacro"/>
 
     <!-- sensor gazebo plugins -->
-    <xacro:include filename="$(find sctebot_description)/urdf/plugins/sctebot_sensors.gazebo" />
+    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_sensors.xacro" />
 
     <!-- physical components -->
 

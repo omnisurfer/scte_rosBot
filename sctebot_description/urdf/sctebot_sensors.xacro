@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <!--gazebo reference is the link the sensor is attached to it seems-->
     <!---->
@@ -34,7 +34,6 @@
         - ROS and gazebo use different camera axis conventions,
         this may cause the virtual camera to point in the wrong direction
     -->
-    <!---->
     <gazebo reference="driver_side_camera_base">
         <sensor type="camera" name="driver_camera">
           <visualize>true</visualize>
@@ -122,11 +121,11 @@
     stddev of 0.01m will put 99.7% of samples within 0.03m of the true
     reading.
   -->
-  <!--
+  <!---->
   <gazebo reference="laser_frame">
     <sensor type="ray" name="head_hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
-      <visualize>true</visualize>
+      <visualize>false</visualize>
       <update_rate>12</update_rate>
       <ray>
         <scan>
@@ -155,6 +154,6 @@
       </plugin>
     </sensor>
   </gazebo>
-  -->
+  <!---->
 
 </robot>
