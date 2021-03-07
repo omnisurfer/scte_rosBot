@@ -22,12 +22,18 @@ odom_frame: odom           # Defaults to "odom" if unspecified
 base_link_frame: base_link  # Defaults to "base_link" if unspecified
 world_frame: odom           # Defaults to the value of odom_frame if unspecified
 
+# x, y , z
+# r, p, y
+# vx, vy, vz
+# vr, vp, vy
+# ax, ay, az
+
 odom0: demo_odom/odomX
-odom0_config: [false,  false,  false, # x, y , z
-               false, false, true,   # r, p, y
-               true, false, true,   # vx, vy, vz
-               false, false, true,    # vr, vp, vy
-               false, false, false]   # ax, ay, az
+odom0_config: [false,  false,  false,
+               false, false, true,
+               true, false, true,
+               false, false, true,
+               false, false, false]
 odom0_queue_size: 2
 odom0_nodelay: false
 odom0_differential: false
@@ -36,24 +42,24 @@ odom0_pose_rejection_threshold: 5
 odom0_twist_rejection_threshold: 1
 
 odom1: $(arg robot_namespace)/ackermann_steering_controller/odom
-odom1_config: [false,  false,  false,   # x, y , z/f f f
-               false, false, false,   # r, p, y/f f f
-               true, true, false,   # vx, vy, vz/t t t
-               false, false, true,    # vr, vp, vy/f f t
-               false, false, false]   # ax, ay, az/f f f
+odom1_config: [false,  false,  false,
+               false, false, false,
+               true, true, false,
+               false, false, false,
+               false, false, false]
 odom1_differential: false
 odom1_relative: false
 odom1_queue_size: 10
-odom1_pose_rejection_threshold: 10 # 2
+odom1_pose_rejection_threshold: 15 # 2
 odom1_twist_rejection_threshold: 2 # 0.2
 odom1_nodelay: false
 
 imu0: $(arg robot_namespace)/imu
 imu0_config: [false, false, false,
-              false, false, true, # f f t
+              false, false, true,
               false, false, false,
               false, false, true,
-              true, false, false] # t f f
+              true, false, false]
 imu0_nodelay: false
 imu0_differential: false
 imu0_relative: false

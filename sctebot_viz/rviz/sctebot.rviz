@@ -9,6 +9,9 @@ Panels:
         - /RobotModel1/Status1
         - /DriveSideCamera1/Visibility1
         - /Odometry1
+        - /Odometry1/Covariance1
+        - /Odometry1/Covariance1/Position1
+        - /Odometry1/Covariance1/Orientation1
       Splitter Ratio: 0.5
     Tree Height: 251
   - Class: rviz/Selection
@@ -329,7 +332,7 @@ Visualization Manager:
       Class: rviz/Odometry
       Covariance:
         Orientation:
-          Alpha: 0.5
+          Alpha: 0.05000000074505806
           Color: 255; 255; 127
           Color Style: Unique
           Frame: Local
@@ -337,11 +340,11 @@ Visualization Manager:
           Scale: 1
           Value: true
         Position:
-          Alpha: 0.30000001192092896
+          Alpha: 0.05000000074505806
           Color: 204; 51; 204
           Scale: 1
           Value: true
-        Value: false
+        Value: true
       Enabled: true
       Keep: 100
       Name: Odometry
