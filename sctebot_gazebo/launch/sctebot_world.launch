@@ -62,7 +62,7 @@
 
         <!-- Launch  the robot state publisher -->
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
-            <param name="publish_frequency" value="50.0"/>
+            <param name="publish_frequency" value="10.0"/>
         </node>
 
         <!-- Launch a rqt steering GUI for publishing to /steer_bot/steer_drive_controller/cmd_vel -->

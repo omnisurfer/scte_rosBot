@@ -30,6 +30,7 @@
     <group ns="$(arg robot_namespace)">
         <arg name="ekf_settings_file" default="ekf_settings.yaml"/>
 
+        <!-- odom ekf -->
         <group if="$(eval arg('enable_ekf_localization') == 1)">
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true">
                 <rosparam command="load" file="$(find sctebot_localization)/config/$(arg ekf_settings_file)" subst_value="true"/>
@@ -38,6 +39,7 @@
 
         <!--rosparam param="datum">[55.944904, -3.186693, 0.0, map, base_link]</rosparam-->
 
+        <!-- map/world ekf -->
         <group if="$(eval arg('enable_navsat_odom') == 1)">
             <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" respawn="true">
 
