@@ -3,7 +3,7 @@
     <arg name="pub_tf" default="false"/>
     <arg name="simulation_on" default="0"/>
     <arg name="enable_ekf_localization" default="1"/>
-    <arg name="enable_navsat_odom" default="0"/>
+    <arg name="enable_navsat_odom" default="1"/>
 
     <!--
     Path planning
@@ -27,15 +27,25 @@
         https://answers.ros.org/questions/scope:all/sort:activity-desc/tags:robot_localization/page:1/
     -->
 
-    <group ns="$(arg robot_namespace)">
-        <arg name="ekf_settings_file" default="ekf_settings.yaml"/>
+    <!-- example from source
+    https://github.com/cra-ros-pkg/robot_localization/blob/noetic-devel/launch/dual_ekf_navsat_example.launch
+    -->
 
-        <!-- odom ekf -->
+    <group ns="$(arg robot_namespace)">
+
+
         <group if="$(eval arg('enable_ekf_localization') == 1)">
+            <!-- odom ekf -->
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true">
-                <rosparam command="load" file="$(find sctebot_localization)/config/$(arg ekf_settings_file)" subst_value="true"/>
+                <rosparam command="load" file="$(find sctebot_localization)/config/ekf_state_estimate_odom.yaml" subst_value="true"/>
             </node>
+
+            <!-- map ekf -->
+
         </group>
+
+
+
 
         <!--rosparam param="datum">[55.944904, -3.186693, 0.0, map, base_link]</rosparam-->
 
@@ -43,13 +53,15 @@
         <group if="$(eval arg('enable_navsat_odom') == 1)">
             <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" respawn="true">
 
+                <rosparam command="load" file="$(find sctebot_localization)/config/navsat_transform.yaml" subst_value="true"/>
+
                 <param name="magnetic_declination_radians" value="0"/>
 
                 <param name="yaw_offset" value="0"/>
 
-                <remap from="/imu/data" to="/your/imu/topic" />
-                <remap from="/gps/fix" to="/ada_ultimate_gps/fix" />
-                <remap from="/odometry/filtered" to="/your/robot_localization/output/topic" />
+                <remap from="/imu/data" to="$(arg robot_namespace)/imu" />
+                <remap from="/gps/fix" to="$(arg robot_namespace)/gps/fix" />
+                <remap from="/odometry/filtered" to="$(arg robot_namespace)/odometry/filtered" />
 
             </node>
         </group>

@@ -14,17 +14,41 @@
             <robotNamespace>$(arg robot_namespace)</robotNamespace>
             <topicName>imu</topicName>
             <bodyName>imu_link</bodyName>
+            <frameName>imu_link</frameName>
             <updateRateHZ>50.0</updateRateHZ>
             <gaussianNoise>0.0</gaussianNoise>
             <xyzOffset>0 0 0</xyzOffset>
             <rpyOffset>0 0 0</rpyOffset>
-            <frameName>imu_link</frameName>
             <initialOrientationAsReference>false</initialOrientationAsReference>
           </plugin>
           <pose>0 0 0 0 0 0</pose>
         </sensor>
     </gazebo>
     <!---->
+
+  <gazebo>
+    <plugin name="hector_gps" filename="libhector_gazebo_ros_gps.so">
+      <updateRate>10.0</updateRate>
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <bodyName>base_link</bodyName>
+      <frameId>map</frameId>
+      <topicName>gps/fix</topicName>
+      <velocityTopicName>gps/fix_velocity</velocityTopicName>
+      <referenceLatitude>32.75394484000334</referenceLatitude>
+      <referenceLongitude>-117.21848979362261</referenceLongitude>
+      <referenceHeading>0.0</referenceHeading>
+      <referenceLatitude>0.0</referenceLatitude>
+      <status>STATUS_FIX</status>
+      <service>SERVICE_GPS</service>
+      <drift>5.0 5.0 5.0</drift>
+      <drifFrequency>0.0 0.0 0.0</drifFrequency>
+      <gaussianNoise>0.1 0.1 0.1</gaussianNoise>
+      <velocityOffset>0.0 0.0 0.0</velocityOffset>
+      <velocityDrift>0.0 0.0 0.0</velocityDrift>
+      <velocityDriftFrequency>0.0 0.0 0.0</velocityDriftFrequency>
+      <velocityGaussianNoise>0.1 0.1 0.1</velocityGaussianNoise>
+    </plugin>
+  </gazebo>
 
     <!--
         - Noise is sampled independently per pixel on each frame.
@@ -34,6 +58,7 @@
         - ROS and gazebo use different camera axis conventions,
         this may cause the virtual camera to point in the wrong direction
     -->
+    <!--
     <gazebo reference="driver_side_camera_base">
         <sensor type="camera" name="driver_camera">
           <visualize>true</visualize>
@@ -72,9 +97,9 @@
           </plugin>
         </sensor>
     </gazebo>
-    <!---->
+    -->
 
-    <!---->
+    <!--
     <gazebo reference="passenger_side_camera_base">
         <sensor type="camera" name="passenger_camera">
           <visualize>true</visualize>
@@ -113,7 +138,7 @@
           </plugin>
         </sensor>
     </gazebo>
-    <!---->
+    -->
 
   <!-- hokuyo
     Noise parameters based on published spec for Hokuyo laser
@@ -121,7 +146,7 @@
     stddev of 0.01m will put 99.7% of samples within 0.03m of the true
     reading.
   -->
-  <!---->
+  <!--
   <gazebo reference="laser_frame">
     <sensor type="ray" name="head_hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
@@ -154,6 +179,6 @@
       </plugin>
     </sensor>
   </gazebo>
-  <!---->
+  -->
 
 </robot>
