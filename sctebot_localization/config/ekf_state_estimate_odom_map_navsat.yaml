@@ -54,7 +54,7 @@ ekf_se_odom:
   odom0_relative: false
   odom0_queue_size: 10
   odom0_pose_rejection_threshold: 15 # 2
-  odom0_twist_rejection_threshold: 2 # 0.2
+  odom0_twist_rejection_threshold: 3 # 0.2
   odom0_nodelay: false
 
   imu0: $(arg robot_namespace)/imu
@@ -157,12 +157,12 @@ ekf_se_map:
   odom0_twist_rejection_threshold: 2 # 0.2
   odom0_nodelay: false
 
-  odom1: $(arg robot_namespace)/gps/fix
+  odom1: $(arg robot_namespace)/odometry/gps
   odom1_config: [ true,  true,  false,
-                  false, false, false,
-                  false, false, false,
-                  false, false, false,
-                  false, false, false ]
+                false, false, false,
+                false, false, false,
+                false, false, false,
+                false, false, false ]
   odom1_queue_size: 10
   odom1_nodelay: true
   odom1_differential: false

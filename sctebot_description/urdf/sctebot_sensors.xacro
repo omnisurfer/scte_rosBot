@@ -1,45 +1,45 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <!--gazebo reference is the link the sensor is attached to it seems-->
-    <!---->
-    <gazebo reference="base_link">
-        <gravity>true</gravity>
-        <sensor name="imu_sensor" type="imu">
-          <always_on>true</always_on>
-          <update_rate>100</update_rate>
-          <visualize>true</visualize>
-          <topic>__default_topic__</topic>
-          <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-            <robotNamespace>$(arg robot_namespace)</robotNamespace>
-            <topicName>imu</topicName>
-            <bodyName>imu_link</bodyName>
-            <frameName>imu_link</frameName>
-            <updateRateHZ>50.0</updateRateHZ>
-            <gaussianNoise>0.0</gaussianNoise>
-            <xyzOffset>0 0 0</xyzOffset>
-            <rpyOffset>0 0 0</rpyOffset>
-            <initialOrientationAsReference>false</initialOrientationAsReference>
-          </plugin>
-          <pose>0 0 0 0 0 0</pose>
-        </sensor>
-    </gazebo>
-    <!---->
+  <!--gazebo reference is the link the sensor is attached to it seems-->
+  <!---->
+  <gazebo reference="base_link">
+    <gravity>true</gravity>
+      <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>100</update_rate>
+        <visualize>true</visualize>
+        <topic>__default_topic__</topic>
+        <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+          <robotNamespace>$(arg robot_namespace)</robotNamespace>
+          <topicName>imu</topicName>
+          <bodyName>imu_link</bodyName>
+          <frameName>imu_link</frameName>
+          <updateRateHZ>50.0</updateRateHZ>
+          <gaussianNoise>0.0</gaussianNoise>
+          <xyzOffset>0 0 0</xyzOffset>
+          <rpyOffset>0 0 0</rpyOffset>
+          <initialOrientationAsReference>false</initialOrientationAsReference>
+        </plugin>
+        <pose>0 0 0 0 0 0</pose>
+      </sensor>
+  </gazebo>
+  <!---->
 
   <gazebo>
     <plugin name="hector_gps" filename="libhector_gazebo_ros_gps.so">
       <updateRate>10.0</updateRate>
       <robotNamespace>$(arg robot_namespace)</robotNamespace>
       <bodyName>base_link</bodyName>
-      <frameId>map</frameId>
-      <topicName>gps/fix</topicName>
-      <velocityTopicName>gps/fix_velocity</velocityTopicName>
+      <frameId>gps_link</frameId>
+      <topicName>hector_sim/gps/fix</topicName>
+      <velocityTopicName>hector_sim/gps/fix_velocity</velocityTopicName>
       <referenceLatitude>32.75394484000334</referenceLatitude>
       <referenceLongitude>-117.21848979362261</referenceLongitude>
       <referenceHeading>0.0</referenceHeading>
       <referenceLatitude>0.0</referenceLatitude>
-      <status>STATUS_FIX</status>
-      <service>SERVICE_GPS</service>
+      <!--status>STATUS_FIX</status>
+      <service>SERVICE_GPS</service-->
       <drift>5.0 5.0 5.0</drift>
       <drifFrequency>0.0 0.0 0.0</drifFrequency>
       <gaussianNoise>0.1 0.1 0.1</gaussianNoise>
@@ -50,101 +50,101 @@
     </plugin>
   </gazebo>
 
-    <!--
-        - Noise is sampled independently per pixel on each frame.
-        That pixel's noise value is added to each of its color
-        channels, which at that point lie in the range [0,1].
+  <!--
+  - Noise is sampled independently per pixel on each frame.
+  That pixel's noise value is added to each of its color
+  channels, which at that point lie in the range [0,1].
 
-        - ROS and gazebo use different camera axis conventions,
-        this may cause the virtual camera to point in the wrong direction
-    -->
-    <!--
-    <gazebo reference="driver_side_camera_base">
-        <sensor type="camera" name="driver_camera">
-          <visualize>true</visualize>
-          <update_rate>30.0</update_rate>
-          <camera name="head">
-            <horizontal_fov>1.43</horizontal_fov>
-            <image>
-              <width>320</width>
-              <height>240</height>
-              <format>R8G8B8</format>
-            </image>
-            <clip>
-              <near>0.02</near>
-              <far>300</far>
-            </clip>
-            <noise>
-              <type>gaussian</type>
-              <mean>0.0</mean>
-              <stddev>0.007</stddev>
-            </noise>
-          </camera>
-          <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-            <robotNamespace>$(arg robot_namespace)</robotNamespace>
-            <alwaysOn>true</alwaysOn>
-            <updateRate>10.0</updateRate>
-            <cameraName>driver_camera</cameraName>
-            <imageTopicName>image_raw</imageTopicName>
-            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>driver_side_camera_base</frameName>
-            <hackBaseline>0.07</hackBaseline>
-            <distortionK1>0.0</distortionK1>
-            <distortionK2>0.0</distortionK2>
-            <distortionK3>0.0</distortionK3>
-            <distortionT1>0.0</distortionT1>
-            <distortionT2>0.0</distortionT2>
-          </plugin>
-        </sensor>
-    </gazebo>
-    -->
+  - ROS and gazebo use different camera axis conventions,
+  this may cause the virtual camera to point in the wrong direction
+  -->
+  <!--
+  <gazebo reference="driver_side_camera_base">
+    <sensor type="camera" name="driver_camera">
+      <visualize>true</visualize>
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.43</horizontal_fov>
+        <image>
+          <width>320</width>
+          <height>240</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <robotNamespace>$(arg robot_namespace)</robotNamespace>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>10.0</updateRate>
+        <cameraName>driver_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>driver_side_camera_base</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+  -->
 
-    <!--
-    <gazebo reference="passenger_side_camera_base">
-        <sensor type="camera" name="passenger_camera">
-          <visualize>true</visualize>
-          <update_rate>30.0</update_rate>
-          <camera name="head">
-            <horizontal_fov>1.43</horizontal_fov>
-            <image>
-              <width>320</width>
-              <height>240</height>
-              <format>R8G8B8</format>
-            </image>
-            <clip>
-              <near>0.02</near>
-              <far>300</far>
-            </clip>
-            <noise>
-              <type>gaussian</type>
-              <mean>0.0</mean>
-              <stddev>0.007</stddev>
-            </noise>
-          </camera>
-          <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-            <robotNamespace>$(arg robot_namespace)</robotNamespace>
-            <alwaysOn>true</alwaysOn>
-            <updateRate>10.0</updateRate>
-            <cameraName>passenger_camera</cameraName>
-            <imageTopicName>image_raw</imageTopicName>
-            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>passenger_side_camera_base</frameName>
-            <hackBaseline>0.07</hackBaseline>
-            <distortionK1>0.0</distortionK1>
-            <distortionK2>0.0</distortionK2>
-            <distortionK3>0.0</distortionK3>
-            <distortionT1>0.0</distortionT1>
-            <distortionT2>0.0</distortionT2>
-          </plugin>
-        </sensor>
-    </gazebo>
-    -->
+  <!--
+  <gazebo reference="passenger_side_camera_base">
+    <sensor type="camera" name="passenger_camera">
+      <visualize>true</visualize>
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+      <horizontal_fov>1.43</horizontal_fov>
+        <image>
+          <width>320</width>
+          <height>240</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <robotNamespace>$(arg robot_namespace)</robotNamespace>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>10.0</updateRate>
+        <cameraName>passenger_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>passenger_side_camera_base</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+  -->
 
   <!-- hokuyo
-    Noise parameters based on published spec for Hokuyo laser
-    achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
-    stddev of 0.01m will put 99.7% of samples within 0.03m of the true
-    reading.
+  Noise parameters based on published spec for Hokuyo laser
+  achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+  stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+  reading.
   -->
   <!--
   <gazebo reference="laser_frame">
@@ -155,10 +155,10 @@
       <ray>
         <scan>
           <horizontal>
-            <samples>5000</samples>
-            <resolution>1</resolution>
-            <min_angle>${pi * -1.0}</min_angle>
-            <max_angle>${pi * 1.0}</max_angle>
+          <samples>5000</samples>
+          <resolution>1</resolution>
+          <min_angle>${pi * -1.0}</min_angle>
+          <max_angle>${pi * 1.0}</max_angle>
           </horizontal>
         </scan>
         <range>

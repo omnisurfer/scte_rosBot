@@ -230,12 +230,20 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             camera_rig_rpy="0 0 0"
     />
 
-    <!-- Sim IMU -->
+    <!-- imu link -->
     <link name="imu_link"/>
     <joint name="imu_link_TO_computer_enclosure" type="fixed">
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <parent link="computer_enclosure"/>
         <child link="imu_link"/>
+    </joint>
+
+    <!-- gps link -->
+    <link name="gps_link"/>
+    <joint name="gps_link_TO_computer_enclosure" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <parent link="computer_enclosure"/>
+        <child link="gps_link"/>
     </joint>
 
     <!-- LIDAR -->
