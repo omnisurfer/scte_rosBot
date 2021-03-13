@@ -1,0 +1,2 @@
+Use relative symbolic links instead of absolute links (i.e. using ~/some_directory) so that the project can be more easily moved between dev 
+systems. Little more of a pain to have to ../ but as I add more external src, less hassle to hunt down and fix all the symbolic links.
