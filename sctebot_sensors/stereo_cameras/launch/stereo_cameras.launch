@@ -9,34 +9,19 @@ https://cse.sc.edu/~jokane/agitr/
     <!-- stereo perception using gazebo cameras -->
     <group if="$(arg simulation_on)">
         <group ns="$(arg robot_namespace)">
-            <!--
-            <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
-                <arg name="cameraName" value="c270_left"/>
-                <arg name="device" value="/dev/c270VideoLeft"/>
-                <arg name="displayVideo" value="0"/>
-                <arg name="frameId" value="driver_side_camera_optical"/>
-                <arg name="calibrationFileURL" value="file://${ROS_HOME}/camera_info/stereo_camera_cal.yaml"/>
-            </include>
-
-            <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
-                <arg name="cameraName" value="c270_right"/>
-                <arg name="device" value="/dev/c270VideoRight"/>
-                <arg name="displayVideo" value="0"/>
-                <arg name="frameId" value="passenger_side_camera_optical"/>
-                <arg name="calibrationFileURL" value="file://${ROS_HOME}/camera_info/stereo_camera_cal.yaml"/>
-            </include>
-            -->
 
             <!---->
             <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
-                <remap from="left/image_raw" to="c270_left/image_raw"/>
-                <remap from="left/camera_info" to="c270_left/camera_info"/>
-                <remap from="right/image_raw" to="c270_right/image_raw"/>
-                <remap from="right/camera_info" to="c270_right/camera_info"/>
+                <remap from="left/image_raw" to="driver_camera/image_raw"/>
+                <remap from="left/camera_info" to="driver_camera/camera_info"/>
+                <remap from="right/image_raw" to="passenger_camera/image_raw"/>
+                <remap from="right/camera_info" to="passenger_camera/camera_info"/>
                 <param name="approximate_sync" value="true"/>
                 <param name="queue_size" value="10"/>
+                <param name="frameId" value="driver_side_camera_optical"/>
             </node>
             <!---->
+
         </group>
     </group>
 
@@ -44,7 +29,7 @@ https://cse.sc.edu/~jokane/agitr/
     <group unless="$(arg simulation_on)">
         <group ns="$(arg robot_namespace)">
             <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
-                <arg name="cameraName" value="c270_left"/>
+                <arg name="cameraName" value="driver_camera"/>
                 <arg name="device" value="/dev/c270VideoLeft"/>
                 <arg name="displayVideo" value="0"/>
                 <arg name="frameId" value="driver_side_camera_optical"/>
@@ -52,7 +37,7 @@ https://cse.sc.edu/~jokane/agitr/
             </include>
 
             <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
-                <arg name="cameraName" value="c270_right"/>
+                <arg name="cameraName" value="passenger_camera"/>
                 <arg name="device" value="/dev/c270VideoRight"/>
                 <arg name="displayVideo" value="0"/>
                 <arg name="frameId" value="passenger_side_camera_optical"/>
@@ -61,10 +46,10 @@ https://cse.sc.edu/~jokane/agitr/
 
             <!---->
             <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
-                <remap from="left/image_raw" to="c270_left/image_raw"/>
-                <remap from="left/camera_info" to="c270_left/camera_info"/>
-                <remap from="right/image_raw" to="c270_right/image_raw"/>
-                <remap from="right/camera_info" to="c270_right/camera_info"/>
+                <remap from="left/image_raw" to="driver_camera/image_raw"/>
+                <remap from="left/camera_info" to="driver_camera/camera_info"/>
+                <remap from="right/image_raw" to="passenger_camera/image_raw"/>
+                <remap from="right/camera_info" to="passenger_camera/camera_info"/>
                 <param name="approximate_sync" value="true"/>
                 <param name="queue_size" value="10"/>
             </node>

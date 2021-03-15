@@ -3,7 +3,7 @@
 
   <!--gazebo reference is the link the sensor is attached to it seems-->
   <!---->
-  <gazebo reference="base_link">
+  <gazebo reference="imu_link">
     <gravity>true</gravity>
       <sensor name="imu_sensor" type="imu">
         <always_on>true</always_on>
@@ -86,7 +86,7 @@
         <cameraName>driver_camera</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>/driver_side_camera_base</frameName>
+        <frameName>/driver_side_camera_optical</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
@@ -126,7 +126,7 @@
         <cameraName>passenger_camera</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>/passenger_side_camera_base</frameName>
+        <frameName>/passenger_side_camera_optical</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
