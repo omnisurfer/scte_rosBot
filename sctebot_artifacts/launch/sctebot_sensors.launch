@@ -17,8 +17,8 @@
 
     <group if="$(eval arg('enable_gpsd') == 1)">
         <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
-            <arg name="nodeName" value="rosVM_node"/>
-            <arg name="gpsName" value="garmin18x"/>
+            <arg name="nodeName" value="ros-pi-node"/>
+            <arg name="gpsName" value="adafruit_ultimate_gps"/>
         </include>
     </group>
 
