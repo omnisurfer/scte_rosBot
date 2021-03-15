@@ -61,7 +61,7 @@
               output="screen" respawn="false" />
 
         <!-- Launch  the robot state publisher -->
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" ns="$(arg robot_namespace)">
             <param name="publish_frequency" value="10.0"/>
         </node>
 
@@ -85,7 +85,7 @@
                 -altitude_ref $(arg altitude_ref)
                 -x $(arg x) -y $(arg y) -z $(arg z)
                 -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
-              respawn="false" output="screen" />
+              respawn="false" output="screen"/>
         </group>
         <group unless="$(arg use_geodetic)">
             <node name="spawn_vehicle" pkg="gazebo_ros" type="spawn_model"
@@ -93,7 +93,7 @@
                 -gazebo_namespace /$(arg robot_namespace)/gazebo
                 -x $(arg x) -y $(arg y) -z $(arg z)
                 -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
-                  respawn="false" output="screen" />
+                  respawn="false" output="screen"/>
         </group>
 
     </group>
