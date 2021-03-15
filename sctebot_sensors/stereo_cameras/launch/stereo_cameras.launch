@@ -1,35 +1,75 @@
 <!--
 https://cse.sc.edu/~jokane/agitr/
 -->
-
 <launch>
-    <group ns="stereo">
-        <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
-            <arg name="cameraName" value="c270_left"/>
-            <arg name="device" value="/dev/c270VideoLeft"/>
-            <arg name="displayVideo" value="0"/>
-            <arg name="frameId" value="driver_side_camera_optical"/>
-            <arg name="calibrationFileURL" value="file://${ROS_HOME}/camera_info/stereo_camera_cal.yaml"/> <!--c270_left.yaml"/-->
-        </include>
 
-        <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
-            <arg name="cameraName" value="c270_right"/>
-            <arg name="device" value="/dev/c270VideoRight"/>
-            <arg name="displayVideo" value="0"/>
-            <arg name="frameId" value="passenger_side_camera_optical"/>
-            <arg name="calibrationFileURL" value="file://${ROS_HOME}/camera_info/stereo_camera_cal.yaml"/> <!--c270_right.yaml"/-->
-        </include>
+    <arg name="robot_namespace" default="/sctebot"/>
+    <arg name="simulation_on" default="true"/>
 
-        <!---->
-        <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
-            <remap from="left/image_raw" to="c270_left/image_raw"/>
-            <remap from="left/camera_info" to="c270_left/camera_info"/>
-            <remap from="right/image_raw" to="c270_right/image_raw"/>
-            <remap from="right/camera_info" to="c270_right/camera_info"/>
-            <param name="approximate_sync" value="true"/>
-            <param name="queue_size" value="10"/>
-        </node>
-        <!---->
+    <!-- stereo perception using gazebo cameras -->
+    <group if="$(arg simulation_on)">
+        <group ns="$(arg robot_namespace)">
+            <!--
+            <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
+                <arg name="cameraName" value="c270_left"/>
+                <arg name="device" value="/dev/c270VideoLeft"/>
+                <arg name="displayVideo" value="0"/>
+                <arg name="frameId" value="driver_side_camera_optical"/>
+                <arg name="calibrationFileURL" value="file://${ROS_HOME}/camera_info/stereo_camera_cal.yaml"/>
+            </include>
+
+            <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
+                <arg name="cameraName" value="c270_right"/>
+                <arg name="device" value="/dev/c270VideoRight"/>
+                <arg name="displayVideo" value="0"/>
+                <arg name="frameId" value="passenger_side_camera_optical"/>
+                <arg name="calibrationFileURL" value="file://${ROS_HOME}/camera_info/stereo_camera_cal.yaml"/>
+            </include>
+            -->
+
+            <!---->
+            <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
+                <remap from="left/image_raw" to="c270_left/image_raw"/>
+                <remap from="left/camera_info" to="c270_left/camera_info"/>
+                <remap from="right/image_raw" to="c270_right/image_raw"/>
+                <remap from="right/camera_info" to="c270_right/camera_info"/>
+                <param name="approximate_sync" value="true"/>
+                <param name="queue_size" value="10"/>
+            </node>
+            <!---->
+        </group>
+    </group>
+
+    <!-- stereo perception using real cameras -->
+    <group unless="$(arg simulation_on)">
+        <group ns="$(arg robot_namespace)">
+            <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
+                <arg name="cameraName" value="c270_left"/>
+                <arg name="device" value="/dev/c270VideoLeft"/>
+                <arg name="displayVideo" value="0"/>
+                <arg name="frameId" value="driver_side_camera_optical"/>
+                <arg name="calibrationFileURL" value="file://${ROS_HOME}/camera_info/stereo_camera_cal.yaml"/> <!--c270_left.yaml"/-->
+            </include>
+
+            <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
+                <arg name="cameraName" value="c270_right"/>
+                <arg name="device" value="/dev/c270VideoRight"/>
+                <arg name="displayVideo" value="0"/>
+                <arg name="frameId" value="passenger_side_camera_optical"/>
+                <arg name="calibrationFileURL" value="file://${ROS_HOME}/camera_info/stereo_camera_cal.yaml"/> <!--c270_right.yaml"/-->
+            </include>
+
+            <!---->
+            <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
+                <remap from="left/image_raw" to="c270_left/image_raw"/>
+                <remap from="left/camera_info" to="c270_left/camera_info"/>
+                <remap from="right/image_raw" to="c270_right/image_raw"/>
+                <remap from="right/camera_info" to="c270_right/camera_info"/>
+                <param name="approximate_sync" value="true"/>
+                <param name="queue_size" value="10"/>
+            </node>
+            <!---->
+        </group>
     </group>
 
    <!--node pkg="image_view" type="stereo_view" name="stereo_view">
