@@ -4,7 +4,7 @@ https://cse.sc.edu/~jokane/agitr/
 <launch>
 
     <arg name="robot_namespace" default="/sctebot"/>
-    <arg name="simulation_on" default="true"/>
+    <arg name="simulation_on" default="false"/>
 
     <!-- stereo perception using gazebo cameras -->
     <group if="$(arg simulation_on)">
