@@ -3,6 +3,7 @@
     <!--
     https://github.com/husky/husky/blob/ea1c27f2b2e5e0f106c19aae65ec7bc5023dda64/husky_control/launch/teleop.launch
     -->
+    <arg name="robot_namespace" default="/sctebot"/>
     <arg name="enable_stereo_cameras" default="1"/>
     <arg name="enable_g2_ydlidar" default="1"/>
     <arg name="enable_gpsd" default="1"/>
