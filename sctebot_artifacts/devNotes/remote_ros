@@ -1,0 +1,2 @@
+- ROS uses SSH to connect to remote nodes but uses an old version that only works with RSA keys instead of OpenSSH keys
+you need to convert to make it work: https://stackoverflow.com/questions/54612609/paramiko-not-a-valid-rsa-private-key-file

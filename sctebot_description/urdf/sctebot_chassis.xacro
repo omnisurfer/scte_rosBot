@@ -247,7 +247,6 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     </joint>
 
     <!-- LIDAR -->
-    <!--link name="base_laser"/-->
     <xacro:include filename="$(find ydlidar_ros)/urdf/ydlidar.urdf"/>
     <joint name="ydlidar_base_TO_computer_enclosure" type="fixed">
         <origin xyz="0.090 0 0.0305" rpy="0 0 0"/>

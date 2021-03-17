@@ -1,0 +1,1 @@
+- Video devices need the user to be in the video group to use: usermod -a -G video <user>

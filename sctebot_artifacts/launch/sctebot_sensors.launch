@@ -12,7 +12,9 @@
     </group>
 
     <group if="$(eval arg('enable_g2_ydlidar') == 1)">
-        <include file="$(find ydlidar_ros)/launch/G2.launch"/>
+        <group ns="$(arg robot_namespace)">
+            <include file="$(find ydlidar_ros)/launch/G2.launch"/>
+        </group>
     </group>
 
     <group if="$(eval arg('enable_gpsd') == 1)">

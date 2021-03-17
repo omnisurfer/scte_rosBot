@@ -25,7 +25,7 @@
       </sensor>
   </gazebo>
   <!---->
-
+  
   <gazebo>
     <plugin name="hector_gps" filename="libhector_gazebo_ros_gps.so">
       <updateRate>10.0</updateRate>
@@ -58,7 +58,7 @@
   - ROS and gazebo use different camera axis conventions,
   this may cause the virtual camera to point in the wrong direction
   -->
-  <!---->
+  <!--
   <gazebo reference="driver_side_camera_base">
     <sensor type="camera" name="driver_camera">
       <visualize>true</visualize>
@@ -96,9 +96,9 @@
       </plugin>
     </sensor>
   </gazebo>
-  <!---->
+  -->
 
-  <!---->
+  <!--
   <gazebo reference="passenger_side_camera_base">
     <sensor type="camera" name="passenger_camera">
       <visualize>true</visualize>
@@ -136,7 +136,7 @@
       </plugin>
     </sensor>
   </gazebo>
-  <!---->
+  -->
 
   <!-- hokuyo
   Noise parameters based on published spec for Hokuyo laser
@@ -144,7 +144,7 @@
   stddev of 0.01m will put 99.7% of samples within 0.03m of the true
   reading.
   -->
-  <!---->
+  <!--
   <gazebo reference="laser_frame">
     <sensor type="ray" name="head_hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
@@ -177,6 +177,6 @@
       </plugin>
     </sensor>
   </gazebo>
-  <!---->
+  -->
 
 </robot>
