@@ -6,6 +6,8 @@ Panels:
       Expanded:
         - /RobotModel1/Status1
         - /DriveSideCamera1/Visibility1
+        - /LaserScan1
+        - /LaserScan1/Status1
         - /Odometry1/Covariance1/Position1
         - /Odometry1/Covariance1/Orientation1
       Splitter Ratio: 0.5
@@ -311,7 +313,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /scan
+      Topic: /sctebot/scan
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -415,17 +417,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.4034174680709839
-        Y: -1.277788758277893
-        Z: 1.1920928955078125e-07
+        X: -0.6562395095825195
+        Y: -0.4299544095993042
+        Z: 5.960464477539062e-07
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.1603982299566269
+      Pitch: 0.7953980565071106
       Target Frame: base_link
-      Yaw: 2.725403308868408
+      Yaw: 3.145404815673828
     Saved: ~
 Window Geometry:
   Displays:
@@ -447,5 +449,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 2043
-  X: 1738
+  X: 728
   Y: 27
