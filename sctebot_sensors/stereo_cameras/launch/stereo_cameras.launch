@@ -4,7 +4,7 @@ https://cse.sc.edu/~jokane/agitr/
 <launch>
 
     <arg name="robot_namespace" default="/sctebot"/>
-    <arg name="simulation_on" default="false"/>
+    <arg name="simulation_on" default="true"/>
 
     <!-- stereo perception using gazebo cameras -->
     <group if="$(arg simulation_on)">
@@ -12,10 +12,10 @@ https://cse.sc.edu/~jokane/agitr/
 
             <!---->
             <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
-                <remap from="left/image_raw" to="driver_camera/image_raw"/>
-                <remap from="left/camera_info" to="driver_camera/camera_info"/>
-                <remap from="right/image_raw" to="passenger_camera/image_raw"/>
-                <remap from="right/camera_info" to="passenger_camera/camera_info"/>
+                <remap from="left/image_raw" to="stereo_fwd/camera/left/image_raw"/>
+                <remap from="left/camera_info" to="stereo_fwd/camera/left/camera_info"/>
+                <remap from="right/image_raw" to="stereo_fwd/camera/right/image_raw"/>
+                <remap from="right/camera_info" to="stereo_fwd/camera/right/camera_info"/>
                 <param name="approximate_sync" value="true"/>
                 <param name="queue_size" value="10"/>
                 <param name="frameId" value="driver_side_camera_optical"/>
@@ -29,7 +29,7 @@ https://cse.sc.edu/~jokane/agitr/
     <group unless="$(arg simulation_on)">
         <group ns="$(arg robot_namespace)">
             <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
-                <arg name="cameraName" value="driver_camera"/>
+                <arg name="cameraName" value="stereo_fwd/camera/left"/>
                 <arg name="device" value="/dev/c270VideoLeft"/>
                 <arg name="displayVideo" value="0"/>
                 <arg name="frameId" value="driver_side_camera_optical"/>
@@ -37,7 +37,7 @@ https://cse.sc.edu/~jokane/agitr/
             </include>
 
             <include file="$(find logitech_c270_camera)/launch/logitech_c270.launch">
-                <arg name="cameraName" value="passenger_camera"/>
+                <arg name="cameraName" value="stereo_fwd/camera/right"/>
                 <arg name="device" value="/dev/c270VideoRight"/>
                 <arg name="displayVideo" value="0"/>
                 <arg name="frameId" value="passenger_side_camera_optical"/>
@@ -46,10 +46,10 @@ https://cse.sc.edu/~jokane/agitr/
 
             <!---->
             <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
-                <remap from="left/image_raw" to="driver_camera/image_raw"/>
-                <remap from="left/camera_info" to="driver_camera/camera_info"/>
-                <remap from="right/image_raw" to="passenger_camera/image_raw"/>
-                <remap from="right/camera_info" to="passenger_camera/camera_info"/>
+                <remap from="left/image_raw" to="stereo_fwd/camera/left/image_raw"/>
+                <remap from="left/camera_info" to="stereo_fwd/camera/left/camera_info"/>
+                <remap from="right/image_raw" to="stereo_fwd/camera/right/image_raw"/>
+                <remap from="right/camera_info" to="stereo_fwd/camera/right/camera_info"/>
                 <param name="approximate_sync" value="true"/>
                 <param name="queue_size" value="10"/>
             </node>

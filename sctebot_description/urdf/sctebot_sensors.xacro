@@ -83,7 +83,7 @@
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>10.0</updateRate>
-        <cameraName>driver_camera</cameraName>
+        <cameraName>stereo_fwd/camera/left</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>/driver_side_camera_optical</frameName>
@@ -123,7 +123,7 @@
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>10.0</updateRate>
-        <cameraName>passenger_camera</cameraName>
+        <cameraName>stereo_fwd/camera/right</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>/passenger_side_camera_optical</frameName>
@@ -138,13 +138,73 @@
   </gazebo>
   -->
 
+  <!--
+  Stereo camera plugin
+  -->
+  <gazebo reference="driver_side_camera_base">
+    <sensor type="multicamera" name="stereo_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="left">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <camera name="right">
+        <pose>0 -0.07 0 0 0 0</pose>
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>stereo_fwd/camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>/driver_side_camera_optical</frameName>
+        <!--<rightFrameName>right_camera_optical_frame</rightFrameName>-->
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+  <!-- /sctebot/multisense_sl/camera/left/image_raw -->
+
   <!-- hokuyo
   Noise parameters based on published spec for Hokuyo laser
   achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
   stddev of 0.01m will put 99.7% of samples within 0.03m of the true
   reading.
   -->
-  <!--
+  <!---->
   <gazebo reference="laser_frame">
     <sensor type="ray" name="head_hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
@@ -172,11 +232,11 @@
       </ray>
       <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
         <robotNamespace>$(arg robot_namespace)</robotNamespace>
-        <topicName>/scan</topicName>
+        <topicName>scan</topicName>
         <frameName>laser_frame</frameName>
       </plugin>
     </sensor>
   </gazebo>
-  -->
+  <!---->
 
 </robot>
