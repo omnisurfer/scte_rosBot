@@ -4,9 +4,10 @@
     https://github.com/husky/husky/blob/ea1c27f2b2e5e0f106c19aae65ec7bc5023dda64/husky_control/launch/teleop.launch
     -->
     <arg name="robot_namespace" default="/sctebot"/>
-    <arg name="enable_stereo_cameras" default="1"/>
-    <arg name="enable_g2_ydlidar" default="1"/>
-    <arg name="enable_gpsd" default="1"/>
+    <arg name="enable_stereo_cameras" default="0"/>
+    <arg name="enable_g2_ydlidar" default="0"/>
+    <arg name="enable_gpsd" default="0"/>
+    <arg name="enable_d455" default="0"/>
 
     <group if="$(eval arg('enable_stereo_cameras') == 1)">
         <include file="$(find stereo_cameras)/launch/stereo_cameras.launch"/>
@@ -37,6 +38,15 @@
         <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
             <arg name="nodeName" value="ros-pi-node"/>
             <arg name="gpsName" value="adafruit_ultimate_gps"/>
+        </include>
+    </group>
+
+    <group if="$(eval arg('enable_d455') == 1)">
+        <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+            <arg name="camera" value="d455"/>
+            <arg name="enable_accel" value="True"/>
+            <arg name="enable_gyro" value="True"/>
+            <arg name="unite_imu_method" value="linear_interpolation"/>
         </include>
     </group>
 
