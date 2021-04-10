@@ -59,13 +59,26 @@ static int i2c_operation(const context_t* context, message_t *message) {
     return result;
 }
 
-int i2c_send(const context_t *context, const buffer_t *plaintext) {
+int i2c_send(const context_t *context, buffer_t *plaintext) {
     uint8_t encoded_data[MAX_BUFFER_SIZE] = {0};
 
     message_t message = {
             .buffer = plaintext,
             .i2c_register = 0,
             .operation_is_write = 1,
+    };
+
+    return i2c_operation(context, &message);
+}
+
+int i2c_recv(const context_t *context, buffer_t *plaintext) {
+    uint8_t encoded_data[MAX_BUFFER_SIZE] = {0};
+    int result = 0;
+
+    message_t message = {
+            .buffer = plaintext,
+            .i2c_register = 0x00,
+            .operation_is_write = 0
     };
 
     return i2c_operation(context, &message);
@@ -112,6 +125,11 @@ int i2c_is_connected(context_t *context) {
     return i2c_operation(context, &message);
 }
 
+void i2c_dev_close(context_t *context) {
+    close(context->device);
+    context->device = 0;
+}
+
 int main(int argc, char* argv[]) {
     printf("i2c_linux\n");
 
@@ -125,12 +143,23 @@ int main(int argc, char* argv[]) {
     int device_open = i2c_dev_open(&context, device_id, 0x03);
     int is_connected = i2c_is_connected(&context);
 
-    buffer_t temp = {
+    buffer_t inputMessage = {
             .bytes = inputBuffer,
             .size = sizeof(inputBuffer)
     };
 
-    int message_sent = i2c_send(&context, &temp);
+    int message_sent = i2c_send(&context, &inputMessage);
+
+    buffer_t outputMessage = {
+            .bytes = outputBuffer,
+            .size = sizeof(outputBuffer)
+    };
+
+    int message_received = i2c_recv(&context, &outputMessage);
+
+    i2c_dev_close(&context);
+
+    printf("end of i2c_linux");
 
     return 0;
 }

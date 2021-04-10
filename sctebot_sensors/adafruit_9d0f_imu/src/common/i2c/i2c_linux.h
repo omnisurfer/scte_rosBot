@@ -4,6 +4,11 @@
 
 // I2C based on code from https://git.amongbytes.com/kris/i2c-stub-toy/src/branch/master/src/i2c.c
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #ifndef I2C_LINUX_H_
 #define I2C_LINUX_H_
 
@@ -63,7 +68,7 @@ int i2c_is_connected(context_t *context);
  * @param   [in]    plaintext - buffer with a plaintext to send
  * @returns         1 on success, 0 otherwise
  */
-int i2c_send(const context_t *context, const buffer_t *plaintext);
+int i2c_send(const context_t *context, buffer_t *plaintext);
 
 /*
  * @brief   Receives data from I2C slave
@@ -76,3 +81,7 @@ int i2c_send(const context_t *context, const buffer_t *plaintext);
 int i2c_recv(const context_t *context, buffer_t *plaintext);
 
 #endif //I2C_LINUX_H_
+
+#ifdef __cplusplus
+}
+#endif

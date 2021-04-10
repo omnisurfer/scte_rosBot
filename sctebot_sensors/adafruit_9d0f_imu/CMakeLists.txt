@@ -112,15 +112,16 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  src/common/i2c
+        include
+        ${catkin_INCLUDE_DIRS}
+        src/common/i2c
+        src/common/devices
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/adafruit_9d0f_imu.cpp
-# )
+add_library(
+        i2c_linux src/common/i2c/i2c_linux.c
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -132,11 +133,15 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(
 #    ${PROJECT_NAME}_node
-#    # src/adafruit_9d0f_imu_node.cpp
+#    src/adafruit_9d0f_imu_node.cpp
 # )
 
 add_executable(
         i2c_linux_test src/common/i2c/i2c_linux.c
+)
+
+add_executable(
+        adafruit_9dof_imu src/adafruit_9dof_imu.cpp
 )
 
 ## Rename C++ executable without prefix
@@ -152,7 +157,11 @@ add_executable(
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
-#)
+# )
+target_link_libraries(
+        adafruit_9dof_imu
+        i2c_linux
+)
 
 #############
 ## Install ##
