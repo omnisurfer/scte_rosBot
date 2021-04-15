@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 
+#include <chrono>
+#include <thread>
+
 #include "common/i2c/i2c_linux.h"
 #include "common/devices/bmp180.h"
 
@@ -72,18 +75,30 @@ int main() {
             .size = sizeof(sendBuffer)
     };
 
-    if(i2c_send(&ada_i2c_context, &outboundMessage)) {
-       std::cout << "sent message: " << sendBuffer << " to device OK\n";
+    const std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+
+    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
+
+    for(int i = 0; i < 100; i++) {
+        if (i2c_send(&ada_i2c_context, &outboundMessage)) {
+            std::cout << "sent message: " << sendBuffer << " to device OK\n";
+        }
+
+        buffer_t inboundMessage = {
+                .bytes = receiveBuffer,
+                .size = sizeof(receiveBuffer)
+        };
+
+        if (i2c_recv(&ada_i2c_context, &inboundMessage)) {
+            std::cout << "received message: " << receiveBuffer << " from device\n";
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds (100));
     }
 
-    buffer_t inboundMessage = {
-            .bytes = receiveBuffer,
-            .size = sizeof(receiveBuffer)
-    };
+    std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
 
-    if(i2c_recv(&ada_i2c_context, &inboundMessage)) {
-        std::cout << "received message: " << receiveBuffer <<  " from device\n";
-    }
+    std::cout << "took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
     i2c_dev_close(&ada_i2c_context);
 
