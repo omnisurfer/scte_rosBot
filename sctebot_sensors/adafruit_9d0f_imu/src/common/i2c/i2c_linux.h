@@ -51,7 +51,7 @@ int i2c_dev_open(context_t *context, int device_num, int slave_id);
  *
  * @returns         none
  */
-void i2c_dev_close(context_t *context);
+void i2c_dev_close(context_t *context, int device_id);
 
 /*
  * @brief   Checks if connection is opened and I2C slave is responding to commands
@@ -65,20 +65,22 @@ int i2c_is_connected(context_t *context);
  * @brief   Sends data to I2C device
  *
  * @param   [in]    context device context
- * @param   [in]    plaintext - buffer with a plaintext to send
+ * @param   [in]    data - buffer with a data to send
+ * @param   [in]    register_address - what register to write the value at
  * @returns         1 on success, 0 otherwise
  */
-int i2c_send(const context_t *context, buffer_t *plaintext);
+int i2c_send(const context_t *context, buffer_t *data, uint8_t register_address);
 
 /*
  * @brief   Receives data from I2C slave
  *
  * @param   [in]    context device context
- * @param   [out]   plaintext - buffer to store received data in. Buffer
+ * @param   [out]   data - buffer to store received data in. Buffer
  *                  must be big enough to store data + TAG_LEN bytes.
+ * @param   [in]    register_address - what register to write the value at
  * @returns         1 on success, 0 otherwise
  */
-int i2c_recv(const context_t *context, buffer_t *plaintext);
+int i2c_recv(const context_t *context, buffer_t *data,  uint8_t register_address);
 
 #endif //I2C_LINUX_H_
 

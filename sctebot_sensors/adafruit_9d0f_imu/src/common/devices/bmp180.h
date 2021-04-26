@@ -13,6 +13,7 @@ class Bmp180 {
 private:
     uint8_t control_measurement_register;
 
+    bool sensor_calibration_read = false;
     bool sensor_configured = false;
 
     struct Bmp180CalibrationCoefficients_t {
@@ -80,6 +81,7 @@ private:
     } Bmp180SharedCoefficients;
 
 public:
+
     class Addresses {
 
     public:
@@ -180,7 +182,7 @@ public:
         Bmp180CalibrationCoefficients.MD_ba[0] = bytes[20];
         Bmp180CalibrationCoefficients.MD_ba[1] = bytes[21];
 
-        sensor_configured = true;
+        sensor_calibration_read = true;
 
         return 1;
     }
@@ -188,8 +190,8 @@ public:
     // Note, temperature must be read first, then pressure so that B5 value can be populated
     int calculate_temperature(uint16_t uncompensated_temperature, float &temperature) {
 
-        if(!sensor_configured) {
-            std::cout << "sensor not configured\n";
+        if(!sensor_calibration_read) {
+            std::cout << "sensor calibration not read yet\n";
             return 0;
         }
 
@@ -214,8 +216,8 @@ public:
 
     int calculate_pressure(uint16_t uncompensated_pressure, uint8_t uncompensated_pressure_xlsb, float &pressure) {
 
-        if(!sensor_configured) {
-            std::cout << "sensor not configured\n";
+        if(!sensor_calibration_read) {
+            std::cout << "sensor calibration not read yet\n";
             return 0;
         }
 

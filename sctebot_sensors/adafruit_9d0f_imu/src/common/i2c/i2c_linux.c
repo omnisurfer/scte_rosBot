@@ -59,25 +59,23 @@ static int i2c_operation(const context_t* context, message_t *message) {
     return result;
 }
 
-int i2c_send(const context_t *context, buffer_t *plaintext) {
-    uint8_t encoded_data[MAX_BUFFER_SIZE] = {0};
+int i2c_send(const context_t *context, buffer_t *data, uint8_t register_address) {
 
     message_t message = {
-            .buffer = plaintext,
-            .i2c_register = 0,
+            .buffer = data,
+            .i2c_register = register_address,
             .operation_is_write = 1,
     };
 
     return i2c_operation(context, &message);
 }
 
-int i2c_recv(const context_t *context, buffer_t *plaintext) {
-    uint8_t encoded_data[MAX_BUFFER_SIZE] = {0};
-    int result = 0;
+
+int i2c_recv(const context_t *context, buffer_t *data, uint8_t register_address) {
 
     message_t message = {
-            .buffer = plaintext,
-            .i2c_register = 0x00,
+            .buffer = data,
+            .i2c_register = register_address,
             .operation_is_write = 0
     };
 
@@ -98,7 +96,7 @@ int i2c_dev_open(context_t *context, int device_number, int slave_address) {
         return 0;
     }
 
-    printf("/dev/i2c-%d opened!\r\n", device_number);
+    printf("/dev/i2c-%d opened\r\n", device_number);
 
     return 1;
 }
@@ -125,7 +123,9 @@ int i2c_is_connected(context_t *context) {
     return i2c_operation(context, &message);
 }
 
-void i2c_dev_close(context_t *context) {
+void i2c_dev_close(context_t *context, int device_number) {
+    printf("/dev/i2c-%d closed\r\n", device_number);
+
     close(context->device);
     context->device = 0;
 }
@@ -148,16 +148,16 @@ int main(int argc, char* argv[]) {
             .size = sizeof(inputBuffer)
     };
 
-    int message_sent = i2c_send(&context, &inputMessage);
+    int message_sent = i2c_send(&context, &inputMessage, 0x00);
 
     buffer_t outputMessage = {
             .bytes = outputBuffer,
             .size = sizeof(outputBuffer)
     };
 
-    int message_received = i2c_recv(&context, &outputMessage);
+    int message_received = i2c_recv(&context, &outputMessage, 0x00);
 
-    i2c_dev_close(&context);
+    i2c_dev_close(&context, device_id);
 
     printf("end of i2c_linux");
 
