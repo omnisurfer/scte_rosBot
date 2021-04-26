@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
     }
 
     /*
-     * ARM = Big endian, x86 = little endian
+     * RPI4 is little endian, x86 = little endian  (use lscpu | grep -i byte)
      * https://betterexplained.com/articles/understanding-big-and-little-endian-byte-order/
      */
 
@@ -201,9 +201,10 @@ int main(int argc, char* argv[]) {
 
     //DEBUG SET MOCK PRESSURE
     uint8_t mock_pressure[2] = {
-            static_cast<uint8_t>((mock_bmp180_uncompensated_pressure) & 0xff),
-            static_cast<uint8_t>((mock_bmp180_uncompensated_pressure >> 8) & 0xff)
+            static_cast<uint8_t>((mock_bmp180_uncompensated_pressure >> 8) & 0xff),
+            static_cast<uint8_t>((mock_bmp180_uncompensated_pressure >> 0) & 0xff)
     };
+
     outbound_message = {
             .bytes = mock_pressure,
             .size = sizeof(mock_pressure)
@@ -243,8 +244,8 @@ int main(int argc, char* argv[]) {
     register_address = (Bmp180::Addresses::DataRegisters::OUTPUT >> 8) & 0xff;
     i2c_recv(&ada_i2c_context, &inbound_message, register_address);
 
-    uint16_t long_uncompensated_pressure = (uncompensated_pressure[2] << 8) | uncompensated_pressure[1];
-    uint8_t  short_uncompensated_pressure_xlsb = uncompensated_pressure[0];
+    uint16_t long_uncompensated_pressure = (uncompensated_pressure[0] << 8) | uncompensated_pressure[1];
+    uint8_t  short_uncompensated_pressure_xlsb = uncompensated_pressure[2];
 
     i2c_dev_close(&ada_i2c_context, device_id);
 
