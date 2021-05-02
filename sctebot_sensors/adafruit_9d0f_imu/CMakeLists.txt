@@ -161,6 +161,7 @@ add_executable(
 target_link_libraries(
         adafruit_9dof_imu
         i2c_linux
+        pthread
 )
 
 #############
