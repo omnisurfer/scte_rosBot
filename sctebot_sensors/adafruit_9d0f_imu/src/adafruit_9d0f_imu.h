@@ -27,6 +27,15 @@ private:
 
     uint8_t _calibration_data_buffer[11 * 2] = {0};
 
+    uint16_t _long_uncompensated_temperature;
+
+    uint16_t _long_uncompensated_pressure;
+    uint8_t  _short_uncompensated_pressure_xlsb;
+
+    void demo_thread_x() {
+        std::cout << "demo thread x printing text" << std::endl;
+    }
+
 public:
     AdaFruit9DoFImu(int bus_number, int device_address, std::string device_name) {
         _i2c_bus_number = bus_number;
@@ -54,6 +63,13 @@ public:
             std::cout << "failed to connect to device\n";
             return -1;
         }
+
+        return 0;
+    }
+
+    int close_device() {
+
+        i2c_dev_close(&_ada_i2c_context, _i2c_bus_number);
 
         return 0;
     }
@@ -159,7 +175,7 @@ public:
 
     void start_demo_thread() {
 
-        std::thread demo_thread_object(demo_thread);
+        std::thread demo_thread_object(&AdaFruit9DoFImu::demo_thread_x, this);
 
         std::cout << "start_demo_thread call" << std::endl;
 
@@ -170,6 +186,18 @@ public:
     void read_temperature();
 
     void read_pressure();
+
+    uint16_t get_uncompensated_temperature_count() {
+        return _long_uncompensated_temperature;
+    }
+
+    uint16_t get_uncompensated_pressure() {
+        return _long_uncompensated_pressure;
+    }
+
+    uint8_t get_uncompensated_pressure_xlsb() {
+        return _short_uncompensated_pressure_xlsb;
+    }
 
     uint8_t* get_calibration_buffer_address() {
         return _calibration_data_buffer;
