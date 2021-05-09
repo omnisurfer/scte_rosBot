@@ -91,6 +91,22 @@ void AdaFruit9DoFImu::read_pressure() {
 
 }
 
+void AdaFruit9DoFImu::start_data_captured_thread() {
+
+    std::cout << "start_data_captured_thread call" << std::endl;
+
+    std::thread demo_thread_object(&AdaFruit9DoFImu::data_capture_thread, this);
+
+    this->_client_callback_function(42);
+
+    demo_thread_object.join();
+
+}
+
+void handle_measurements(int some_int) {
+    std::cout << "got called to handle data " << some_int << std::endl;
+}
+
 int main(int argc, char* argv[]) {
     std::cout << "Hello World adafruit 9dof IMU" << std::endl;
 
@@ -100,7 +116,14 @@ int main(int argc, char* argv[]) {
     // lame way to do this but good enough for debug
     if(argv[1]) {
         if (!memcmp("-d", argv[1], 2)) {
-            i2c_bus_number = atoi(argv[2]);
+            // i2c_bus_number = atoi(argv[2]);
+
+            char* p_end;
+            i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
+
+            if (*p_end) {
+                //not sure what to do in this case
+            }
         }
     }
 
@@ -110,38 +133,24 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    AdaFruit9DoFImu adaFruit9DoFImu = AdaFruit9DoFImu(i2c_bus_number, i2c_device_address, "pressure sensor");
+    AdaFruit9DoFImu adaFruit9DoFImu = AdaFruit9DoFImu(
+            i2c_bus_number,
+            i2c_device_address,
+            "pressure sensor",
+            &handle_measurements
+            );
 
-    adaFruit9DoFImu.start_demo_thread();
+    int connect_ok = adaFruit9DoFImu.connect_to_device();
 
-    adaFruit9DoFImu.connect_to_device();
+    if(!connect_ok) {
+        return 0;
+    }
 
     adaFruit9DoFImu.load_mock_calibration_data();
 
     adaFruit9DoFImu.init_device();
 
-    adaFruit9DoFImu.read_temperature();
-
-    adaFruit9DoFImu.read_pressure();
-
-    adaFruit9DoFImu.close_device();
-
-    uint16_t long_uncompensated_temperature = adaFruit9DoFImu.get_uncompensated_temperature_count();
-    uint16_t long_uncompensated_pressure = adaFruit9DoFImu.get_uncompensated_pressure();
-    uint8_t short_uncompensated_pressure_xlsb = adaFruit9DoFImu.get_uncompensated_pressure_xlsb();
-
-    /*
-     * Start calculating measurements with the Bmp180 code
-     */
-    Bmp180 bmp180 = Bmp180();
-    bmp180.init_bmp180_calibration_coefficients((char *)adaFruit9DoFImu.get_calibration_buffer_address(),
-                                                adaFruit9DoFImu.get_calibration_buffer_size());
-
-    float calculated_temperature = 0.0f;
-    bmp180.calculate_temperature(long_uncompensated_temperature, calculated_temperature);
-
-    float calculated_pressure = 0.0f;
-    bmp180.calculate_pressure(long_uncompensated_pressure, short_uncompensated_pressure_xlsb, calculated_pressure);
+    adaFruit9DoFImu.start_data_captured_thread();
 
     return 0;
 }

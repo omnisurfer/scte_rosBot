@@ -12,10 +12,6 @@
 #include "common/i2c/i2c_linux.h"
 #include "common/devices/bmp180.h"
 
-void demo_thread() {
-    std::cout << "demo thread printing text" << std::endl;
-}
-
 class AdaFruit9DoFImu {
 
 private:
@@ -32,20 +28,56 @@ private:
     uint16_t _long_uncompensated_pressure;
     uint8_t  _short_uncompensated_pressure_xlsb;
 
-    void demo_thread_x() {
-        std::cout << "demo thread x printing text" << std::endl;
+    typedef void (*client_callback_function)(int);
+
+    client_callback_function _client_callback_function;
+
+    void data_capture_thread() {
+        std::cout << "data_capture_thread" << std::endl;
+
+        this->read_temperature();
+
+        this->read_pressure();
+
+        uint16_t long_uncompensated_temperature = this->get_uncompensated_temperature_count();
+        uint16_t long_uncompensated_pressure = this->get_uncompensated_pressure();
+        uint8_t short_uncompensated_pressure_xlsb = this->get_uncompensated_pressure_xlsb();
+
+        /*
+         * Start calculating measurements with the Bmp180 code
+         */
+        Bmp180 bmp180 = Bmp180();
+        bmp180.init_bmp180_calibration_coefficients((char *)this->get_calibration_buffer_address(),
+                                                    this->get_calibration_buffer_size());
+
+        float calculated_temperature = 0.0f;
+        bmp180.calculate_temperature(long_uncompensated_temperature, calculated_temperature);
+
+        float calculated_pressure = 0.0f;
+        bmp180.calculate_pressure(long_uncompensated_pressure, short_uncompensated_pressure_xlsb, calculated_pressure);
+    }
+
+    int close_device() {
+
+        i2c_dev_close(&_ada_i2c_context, _i2c_bus_number);
+
+        return 0;
     }
 
 public:
-    AdaFruit9DoFImu(int bus_number, int device_address, std::string device_name) {
+    AdaFruit9DoFImu(int bus_number, int device_address, std::string device_name, client_callback_function function_pointer) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
         _device_name = std::move(device_name);
+
+        _client_callback_function = function_pointer;
     }
 
 
     ~AdaFruit9DoFImu() {
         std::cout << "destructor called" << std::endl;
+
+        this->close_device();
     }
 
     int connect_to_device() {
@@ -56,22 +88,15 @@ public:
         _ada_i2c_context = {0};
         if(!i2c_dev_open(&_ada_i2c_context, _i2c_bus_number, _i2c_device_address)) {
             std::cout << "failed to open device\n";
-            return -1;
+            return 0;
         }
 
         if(!i2c_is_connected(&_ada_i2c_context)) {
             std::cout << "failed to connect to device\n";
-            return -1;
+            return 0;
         }
 
-        return 0;
-    }
-
-    int close_device() {
-
-        i2c_dev_close(&_ada_i2c_context, _i2c_bus_number);
-
-        return 0;
+        return 1;
     }
 
     int load_mock_calibration_data() {
@@ -170,32 +195,24 @@ public:
             std::cout << std::endl;
         }
 
-        return 0;
+        return 1;
     }
 
-    void start_demo_thread() {
-
-        std::thread demo_thread_object(&AdaFruit9DoFImu::demo_thread_x, this);
-
-        std::cout << "start_demo_thread call" << std::endl;
-
-        demo_thread_object.join();
-
-    }
+    void start_data_captured_thread();
 
     void read_temperature();
 
     void read_pressure();
 
-    uint16_t get_uncompensated_temperature_count() {
+    uint16_t get_uncompensated_temperature_count() const {
         return _long_uncompensated_temperature;
     }
 
-    uint16_t get_uncompensated_pressure() {
+    uint16_t get_uncompensated_pressure() const {
         return _long_uncompensated_pressure;
     }
 
-    uint8_t get_uncompensated_pressure_xlsb() {
+    uint8_t get_uncompensated_pressure_xlsb() const {
         return _short_uncompensated_pressure_xlsb;
     }
 
