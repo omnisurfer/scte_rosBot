@@ -91,16 +91,51 @@ void AdaFruit9DoFImu::read_pressure() {
 
 }
 
-void AdaFruit9DoFImu::start_data_captured_thread() {
+void AdaFruit9DoFImu::data_capture_worker() {
+    std::cout << "data_capture_worker starting" << std::endl;
 
-    std::cout << "start_data_captured_thread call" << std::endl;
+    /*
+    std::unique_lock<std::mutex> lk(this->data_capture_thread_access_mutex);
+    std::cout << "waiting to run..." << std::endl;
+    this->data_capture_thread_cv.wait(lk, [this]{
+        return run_data_capture_thread;
+    });
+    */
 
-    std::thread demo_thread_object(&AdaFruit9DoFImu::data_capture_thread, this);
+    /**/
+    while(!this->run_data_capture_thread) {
+        std::cout << "waiting to run..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    /**/
 
-    this->_client_callback_function(42);
+    while(this->run_data_capture_thread) {
 
-    demo_thread_object.join();
+        this->read_temperature();
 
+        this->read_pressure();
+
+        uint16_t long_uncompensated_temperature = this->get_uncompensated_temperature_count();
+        uint16_t long_uncompensated_pressure = this->get_uncompensated_pressure();
+        uint8_t short_uncompensated_pressure_xlsb = this->get_uncompensated_pressure_xlsb();
+
+        /*
+         * Start calculating measurements with the Bmp180 code
+         */
+        Bmp180 bmp180 = Bmp180();
+        bmp180.init_bmp180_calibration_coefficients((char *) this->get_calibration_buffer_address(),
+                                                    this->get_calibration_buffer_size());
+
+        float calculated_temperature = 0.0f;
+        bmp180.calculate_temperature(long_uncompensated_temperature, calculated_temperature);
+
+        float calculated_pressure = 0.0f;
+        bmp180.calculate_pressure(long_uncompensated_pressure, short_uncompensated_pressure_xlsb, calculated_pressure);
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
+    std::cout << "data_capture_worker exiting" << std::endl;
 }
 
 void handle_measurements(int some_int) {
@@ -150,7 +185,11 @@ int main(int argc, char* argv[]) {
 
     adaFruit9DoFImu.init_device();
 
-    adaFruit9DoFImu.start_data_captured_thread();
+    std::cout << "press any key to continue..." << std::endl;
+
+    std::cin.get();
+
+    std::cout << "exiting thread" << std::endl;
 
     return 0;
 }

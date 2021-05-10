@@ -8,6 +8,7 @@
 #include <iostream>
 #include <thread>
 #include <utility>
+#include <condition_variable>
 
 #include "common/i2c/i2c_linux.h"
 #include "common/devices/bmp180.h"
@@ -29,33 +30,14 @@ private:
     uint8_t  _short_uncompensated_pressure_xlsb;
 
     typedef void (*client_callback_function)(int);
-
     client_callback_function _client_callback_function;
 
-    void data_capture_thread() {
-        std::cout << "data_capture_thread" << std::endl;
+    bool run_data_capture_thread = false;
+    //std::condition_variable data_capture_thread_cv;
+    //std::mutex data_capture_thread_access_mutex;
+    std::thread data_capture_thread;
 
-        this->read_temperature();
-
-        this->read_pressure();
-
-        uint16_t long_uncompensated_temperature = this->get_uncompensated_temperature_count();
-        uint16_t long_uncompensated_pressure = this->get_uncompensated_pressure();
-        uint8_t short_uncompensated_pressure_xlsb = this->get_uncompensated_pressure_xlsb();
-
-        /*
-         * Start calculating measurements with the Bmp180 code
-         */
-        Bmp180 bmp180 = Bmp180();
-        bmp180.init_bmp180_calibration_coefficients((char *)this->get_calibration_buffer_address(),
-                                                    this->get_calibration_buffer_size());
-
-        float calculated_temperature = 0.0f;
-        bmp180.calculate_temperature(long_uncompensated_temperature, calculated_temperature);
-
-        float calculated_pressure = 0.0f;
-        bmp180.calculate_pressure(long_uncompensated_pressure, short_uncompensated_pressure_xlsb, calculated_pressure);
-    }
+    void data_capture_worker();
 
     int close_device() {
 
@@ -71,13 +53,29 @@ public:
         _device_name = std::move(device_name);
 
         _client_callback_function = function_pointer;
+
+        data_capture_thread = std::thread(&AdaFruit9DoFImu::data_capture_worker, this);
     }
 
+    /*
+     * https://stackoverflow.com/questions/64650981/call-to-implicitly-deleted-copy-constructor-of-class-error
+     */
+    AdaFruit9DoFImu(const AdaFruit9DoFImu&) = delete;
+    AdaFruit9DoFImu& operator=(const AdaFruit9DoFImu&) = delete;
+
+    AdaFruit9DoFImu(AdaFruit9DoFImu&&) noexcept = default;
+    AdaFruit9DoFImu& operator=(AdaFruit9DoFImu&&) noexcept = default;
 
     ~AdaFruit9DoFImu() {
         std::cout << "destructor called" << std::endl;
 
         this->close_device();
+
+        this->run_data_capture_thread = false;
+
+        if(data_capture_thread.joinable()) {
+            data_capture_thread.join();
+        }
     }
 
     int connect_to_device() {
@@ -195,10 +193,11 @@ public:
             std::cout << std::endl;
         }
 
+        //start the thread
+        this->run_data_capture_thread = true;
+
         return 1;
     }
-
-    void start_data_captured_thread();
 
     void read_temperature();
 
