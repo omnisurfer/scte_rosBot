@@ -31,8 +31,10 @@ void AdaFruit9DoFImu::_get_bmp180_temperature() {
 
     register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
     if (i2c_send(&_bmp180_i2c_context, &outbound_message, register_address)) {
-        std::cout << "sent buffer to device OK\n";
         std::this_thread::sleep_for(std::chrono::microseconds (4500));
+    }
+    else {
+        std::cout << "failed to command temperature read" << std::endl;
     }
 
     // read back temperature
@@ -71,8 +73,10 @@ void AdaFruit9DoFImu::_get_bmp180_pressure() {
 
     register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
     if (i2c_send(&_bmp180_i2c_context, &outbound_message, register_address)) {
-        std::cout << "sent buffer to device OK\n";
         std::this_thread::sleep_for(std::chrono::microseconds (4500));
+    }
+    else {
+        std::cout << "failed to command pressure read" << std::endl;
     }
 
     // read back pressure
@@ -94,14 +98,14 @@ void AdaFruit9DoFImu::_get_bmp180_pressure() {
 void AdaFruit9DoFImu::_bmp180_data_capture_worker() {
     std::cout << "_bmp180_data_capture_worker starting" << std::endl;
 
-    std::unique_lock<std::mutex> lk(this->bmp180_data_capture_thread_run_mutex);
+    std::unique_lock<std::mutex> data_lock(this->bmp180_data_capture_thread_run_mutex);
     std::cout << "waiting to run..." << std::endl;
-    this->bmp180_data_capture_thread_run_cv.wait(lk);
-    lk.unlock();
+    this->bmp180_data_capture_thread_run_cv.wait(data_lock);
+    data_lock.unlock();
 
-    lk.lock();
+    data_lock.lock();
     while(this->run_bmp180_data_capture_thread) {
-        lk.unlock();
+        data_lock.unlock();
 
         this->_get_bmp180_temperature();
 
@@ -117,17 +121,18 @@ void AdaFruit9DoFImu::_bmp180_data_capture_worker() {
         float calculated_pressure = 0.0f;
         this->bmp180.calculate_pressure(long_uncompensated_pressure, short_uncompensated_pressure_xlsb, calculated_pressure);
 
-        this->_bmp180_callback_function(42);
+        this->_bmp180_callback_function(calculated_temperature, calculated_pressure);
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        lk.lock();
+        std::this_thread::sleep_for(std::chrono::milliseconds (this->_bmp180_sensor_update_period_ms));
+
+        data_lock.lock();
     }
 
     std::cout << "_bmp180_data_capture_worker exiting" << std::endl;
 }
 
-void handle_bmp180_measurements(int some_int) {
-    std::cout << "got called to handle data " << some_int << std::endl;
+void handle_bmp180_measurements(float temperature, float pressure) {
+    std::cout << "temperature (C): " << temperature << " pressure (Pa): " << pressure << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -161,6 +166,7 @@ int main(int argc, char* argv[]) {
     adaFruit9DoFImu.config_bmp180(
             i2c_bus_number,
             i2c_device_address,
+            1000,
             "pressure sensor",
             &handle_bmp180_measurements
     );

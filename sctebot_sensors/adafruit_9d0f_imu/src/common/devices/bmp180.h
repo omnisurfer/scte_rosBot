@@ -208,7 +208,7 @@ public:
 
         temperature = _temperature;
 
-        std::cout << "calc temp (C): " << temperature << std::endl;
+        //std::cout << "calc temp (C): " << temperature << std::endl;
 
         return 1;
 
@@ -263,7 +263,7 @@ public:
 
             pressure = _p;
 
-            std::cout << "calc pressure (Pa): " << pressure << std::endl;
+            //std::cout << "calc pressure (Pa): " << pressure << std::endl;
 
         return 1;
     }

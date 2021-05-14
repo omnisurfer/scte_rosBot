@@ -13,6 +13,8 @@
 #include "common/i2c/i2c_linux.h"
 #include "common/devices/bmp180.h"
 
+#include "common/devices/l3gd20.h"
+
 class AdaFruit9DoFImu {
 
 private:
@@ -61,6 +63,7 @@ public:
 private:
     int _bmp180_i2c_bus_number{};
     int _bmp180_i2c_device_address{};
+    int _bmp180_sensor_update_period_ms{};
     std::string _bmp180_device_name;
 
     context_t _bmp180_i2c_context{};
@@ -71,7 +74,7 @@ private:
     uint16_t _bmp180_long_uncompensated_pressure{};
     uint8_t  _bmp180_short_uncompensated_pressure_xlsb{};
 
-    typedef void (*bmp180_callback_function)(int);
+    typedef void (*bmp180_callback_function)(float, float);
     bmp180_callback_function _bmp180_callback_function{};
 
     bool run_bmp180_data_capture_thread = false;
@@ -154,9 +157,10 @@ private:
     }
 
 public:
-    int config_bmp180(int bus_number, int device_address, std::string device_name, bmp180_callback_function function_pointer) {
+    int config_bmp180(int bus_number, int device_address, float update_period_ms, std::string device_name, bmp180_callback_function function_pointer) {
         _bmp180_i2c_bus_number = bus_number;
         _bmp180_i2c_device_address = device_address;
+        _bmp180_sensor_update_period_ms = update_period_ms;
         _bmp180_device_name = std::move(device_name);
 
         _bmp180_callback_function = function_pointer;
