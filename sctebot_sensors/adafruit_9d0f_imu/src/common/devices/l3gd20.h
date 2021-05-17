@@ -11,7 +11,21 @@ class L3gd20 {
     // 1101 0100 0xD4 (Write address)
 
 private:
-    bool temp;
+
+    int _l3gd20_i2c_bus_number{};
+    int _l3gd20_i2c_device_address{};
+    std::string _l3gd20_device_name;
+
+    context_t _l3gd20_i2c_context{};
+
+    int _init_l3gd20() {
+
+        return 0;
+    }
+
+    int _connect_to_l3gd20() {
+        return 0;
+    }
 
 public:
 
@@ -47,6 +61,11 @@ public:
             INT1_DURATION = 0x38
         } Registers;
     };
+
+    int load_mock_l3gd20_data() {
+        return 0;
+    }
+
 };
 
 #endif //L3GD20_H

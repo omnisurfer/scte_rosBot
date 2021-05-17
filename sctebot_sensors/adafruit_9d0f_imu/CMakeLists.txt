@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(adafruit_9d0f_imu)
 
+ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -8,6 +10,7 @@ project(adafruit_9d0f_imu)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED)
+find_package(Boost 1.69.0 COMPONENTS log REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -123,6 +126,10 @@ add_library(
         i2c_linux src/common/i2c/i2c_linux.c
 )
 
+add_library(
+        bmp180 src/common/devices/bmp180.cpp
+)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -142,6 +149,7 @@ add_executable(
 
 add_executable(
         adafruit_9dof_imu src/adafruit_9dof_imu.cpp
+
 )
 
 ## Rename C++ executable without prefix
@@ -161,7 +169,9 @@ add_executable(
 target_link_libraries(
         adafruit_9dof_imu
         i2c_linux
+        bmp180
         pthread
+        Boost::log
 )
 
 #############
