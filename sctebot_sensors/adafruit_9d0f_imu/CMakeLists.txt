@@ -130,6 +130,10 @@ add_library(
         bmp180 src/common/devices/bmp180.cpp
 )
 
+add_library(
+        l3gd20 src/common/devices/l3gd20.cpp
+)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -170,6 +174,7 @@ target_link_libraries(
         adafruit_9dof_imu
         i2c_linux
         bmp180
+        l3gd20
         pthread
         Boost::log
 )

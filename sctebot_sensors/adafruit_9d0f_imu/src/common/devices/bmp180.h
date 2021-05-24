@@ -397,7 +397,7 @@ public:
         } ControlRegister;
     };
 
-    int config_bmp180(int bus_number, int device_address, float update_period_ms, std::string device_name, bmp180_host_callback_function function_pointer) {
+    int config_bmp180(int bus_number, int device_address, int update_period_ms, std::string device_name, bmp180_host_callback_function function_pointer) {
         _bmp180_i2c_bus_number = bus_number;
         _bmp180_i2c_device_address = device_address;
         _bmp180_sensor_update_period_ms = update_period_ms;
