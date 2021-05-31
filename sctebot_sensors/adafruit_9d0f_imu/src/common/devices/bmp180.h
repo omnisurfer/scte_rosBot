@@ -5,6 +5,8 @@
 #ifndef BMP180_H
 #define BMP180_H
 
+#define ENABLE_MOCK_BMP180_DEVICE 0
+
 // some code taken from my github:
 // https://github.com/omnisurfer/IMUController_firmware_AtmelC/blob/master/IMU/src/app_components/sensors/bmp180/bmp180.c
 
@@ -46,11 +48,18 @@ private:
     std::mutex bmp180_data_capture_thread_run_mutex;
     std::thread bmp180_data_capture_thread;
 
+#if ENABLE_MOCK_BMP180_DEVICE
+    bool mock_run_bmp180_device_thread = false;
+    std::condition_variable mock_bmp180_device_thread_run_cv;
+    std::mutex mock_bmp180_device_thread_run_mutex;
+    std::thread mock_bmp180_device_thread;
+#endif
+
     typedef void (*bmp180_host_callback_function)(float, float);
     bmp180_host_callback_function _bmp180_host_callback_function{};
 
     bool sensor_calibration_read = false;
-    bool sensor_configured = false;
+    //bool sensor_configured = false;
 
     struct Bmp180CalibrationCoefficients_t {
         union {
@@ -132,7 +141,7 @@ private:
             return 0;
         }
 
-        load_mock_bmp180_calibration_data();
+        mock_load_bmp180_calibration_data();
 
         // try read chip id
         uint8_t chip_id[1] = {0};
@@ -163,6 +172,8 @@ private:
     }
 
     void _bmp180_data_capture_worker();
+
+    void _mock_bmp180_device_emulation();
 
     void _get_bmp180_temperature();
 
@@ -336,6 +347,18 @@ public:
             bmp180_data_capture_thread.join();
         }
 
+#if ENABLE_MOCK_BMP180_DEVICE
+        this->mock_run_bmp180_device_thread = false;
+
+        std::unique_lock<std::mutex> device_lock(this->mock_bmp180_device_thread_run_mutex);
+        this->mock_bmp180_device_thread_run_cv.notify_one();
+        device_lock.unlock();
+
+        if(mock_bmp180_device_thread.joinable()) {
+            mock_bmp180_device_thread.join();
+        }
+#endif
+
     }
 
     class Addresses {
@@ -424,7 +447,7 @@ public:
         return 1;
     }
 
-    int load_mock_bmp180_calibration_data() {
+    int mock_load_bmp180_calibration_data() {
 
         /*
          * RPI4 is little endian, x86 = little endian  (use lscpu | grep -i byte)
@@ -490,9 +513,9 @@ public:
          * this is why I need to swap bytes manually to store as little endian in memory.
          */
 
-        for(int i = 0; i < sizeof(_mock_device_memory)/sizeof(*_mock_device_memory); i++) {
+        for(uint i = 0; i < sizeof(_mock_device_memory)/sizeof(*_mock_device_memory); i++) {
 
-            std::cout << "i " << i << std::endl;
+            //std::cout << "i " << i << std::endl;
             send_buffer[i + (i * 1)] = (_mock_device_memory[i] >> 8) & 0xff;
             send_buffer[i + (i * 1) + 1] = (_mock_device_memory[i]) & 0xff;
         }
@@ -512,6 +535,19 @@ public:
 
         return -1;
     }
+
+#if ENABLE_MOCK_BMP180_DEVICE
+    int mock_run_bmp180_device_emulation() {
+
+        mock_bmp180_device_thread = std::thread(&Bmp180::_mock_bmp180_device_emulation, this);
+
+        std::lock_guard<std::mutex> lock(this->mock_bmp180_device_thread_run_mutex);
+        this->mock_bmp180_device_thread_run_cv.notify_one();
+        this->mock_run_bmp180_device_thread = true;
+
+        return 1;
+    }
+#endif
 };
 
 #endif //BMP180_H

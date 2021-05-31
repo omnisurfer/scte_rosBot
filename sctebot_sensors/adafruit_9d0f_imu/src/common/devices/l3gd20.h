@@ -288,9 +288,9 @@ public:
          * this is why I need to swap bytes manually to store as little endian in memory.
          */
 
-        for(int i = 0; i < sizeof(_mock_device_memory)/sizeof(*_mock_device_memory); i++) {
+        for(uint i = 0; i < sizeof(_mock_device_memory)/sizeof(*_mock_device_memory); i++) {
 
-            std::cout << "i " << i << std::endl;
+            //std::cout << "i " << i << std::endl;
             send_buffer[i + (i * 1)] = (_mock_device_memory[i] >> 8) & 0xff;
             send_buffer[i + (i * 1) + 1] = (_mock_device_memory[i]) & 0xff;
         }

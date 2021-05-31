@@ -22,9 +22,11 @@ void L3gd20::_l3gd20_data_capture_worker() {
     BOOST_LOG_TRIVIAL(debug) << "_l3gd20_data_capture_worker starting";
 
     std::unique_lock<std::mutex> data_lock(this->l3gd20_data_capture_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << "waiting to run...";
+    BOOST_LOG_TRIVIAL(debug) << "l3gd20 waiting to run...";
     this->l3gd20_data_capture_thread_run_cv.wait(data_lock);
     data_lock.unlock();
+
+    BOOST_LOG_TRIVIAL(debug) << "l3gd20 running...";
 
     data_lock.lock();
     while(this->run_l3gd20_data_capture_thread) {

@@ -70,7 +70,6 @@ int i2c_send(const context_t *context, buffer_t *data, uint8_t register_address)
     return i2c_operation(context, &message);
 }
 
-
 int i2c_recv(const context_t *context, buffer_t *data, uint8_t register_address) {
 
     message_t message = {
@@ -130,6 +129,7 @@ void i2c_dev_close(context_t *context, int device_number) {
     context->device = 0;
 }
 
+
 int main(int argc, char* argv[]) {
     printf("i2c_linux\n");
 
@@ -141,7 +141,17 @@ int main(int argc, char* argv[]) {
     uint8_t inputBuffer[] = "Hello World";
 
     int device_open = i2c_dev_open(&context, device_id, 0x03);
+
+    if(!device_open) {
+        printf("not device_open");
+    }
+
     int is_connected = i2c_is_connected(&context);
+
+    if(!is_connected) {
+        printf("not is_connected");
+    }
+
 
     buffer_t inputMessage = {
             .bytes = inputBuffer,
@@ -150,12 +160,20 @@ int main(int argc, char* argv[]) {
 
     int message_sent = i2c_send(&context, &inputMessage, 0x00);
 
+    if(!message_sent) {
+        printf("not message_sent");
+    }
+
     buffer_t outputMessage = {
             .bytes = outputBuffer,
             .size = sizeof(outputBuffer)
     };
 
     int message_received = i2c_recv(&context, &outputMessage, 0x00);
+
+    if(!message_received) {
+        printf("not message_received");
+    }
 
     i2c_dev_close(&context, device_id);
 

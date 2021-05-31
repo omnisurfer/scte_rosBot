@@ -21,7 +21,7 @@ int Bmp180::_init_bmp180() {
 
         std::cout << "calibration data: " << std::endl;
 
-        for(int i = 0; i < sizeof(_bmp180_calibration_data_buffer); ++i) {
+        for(uint i = 0; i < sizeof(_bmp180_calibration_data_buffer); ++i) {
             std::cout << std::hex << std::setfill('0') << std::setw(2) << (int)_bmp180_calibration_data_buffer[i] << " ";
         }
 
@@ -39,12 +39,14 @@ int Bmp180::_init_bmp180() {
 }
 
 void Bmp180::_bmp180_data_capture_worker() {
-    std::cout << "_bmp180_data_capture_worker starting" << std::endl;
+    BOOST_LOG_TRIVIAL(debug) << "_bmp180_data_capture_worker starting";
 
     std::unique_lock<std::mutex> data_lock(this->bmp180_data_capture_thread_run_mutex);
-    std::cout << "waiting to run..." << std::endl;
+    BOOST_LOG_TRIVIAL(debug) << "bmp180 waiting to run...";
     this->bmp180_data_capture_thread_run_cv.wait(data_lock);
     data_lock.unlock();
+
+    BOOST_LOG_TRIVIAL(debug) << "bmp180 running...";
 
     data_lock.lock();
     while(this->run_bmp180_data_capture_thread) {
@@ -81,8 +83,32 @@ void Bmp180::_bmp180_data_capture_worker() {
         data_lock.lock();
     }
 
-    std::cout << "_bmp180_data_capture_worker exiting" << std::endl;
+    BOOST_LOG_TRIVIAL(debug) << "_bmp180_data_capture_worker exiting";
 }
+
+#if ENABLE_MOCK_BMP180_DEVICE
+void Bmp180::_mock_bmp180_device_emulation() {
+    std::cout << "_mock_bmp180_device_emulation starting" << std::endl;
+
+    std::unique_lock<std::mutex> device_lock(this->mock_bmp180_device_thread_run_mutex);
+    std::cout << "waiting to run..." << std::endl;
+    this->mock_bmp180_device_thread_run_cv.wait(device_lock);
+    device_lock.unlock();
+
+    device_lock.lock();
+    while(this->mock_run_bmp180_device_thread) {
+        device_lock.unlock();
+
+        std::cout << "mock running" << std::endl;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds (1000));
+
+        device_lock.lock();
+    }
+
+    std::cout << "_mock_bmp180_device_emulation exiting" << std::endl;
+}
+#endif
 
 void Bmp180::_get_bmp180_temperature() {
 // command temperature read
