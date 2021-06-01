@@ -5,7 +5,7 @@
 #ifndef BMP180_H
 #define BMP180_H
 
-#define ENABLE_MOCK_BMP180_DEVICE 0
+#define ENABLE_MOCK_BMP180_DEVICE 1
 
 // some code taken from my github:
 // https://github.com/omnisurfer/IMUController_firmware_AtmelC/blob/master/IMU/src/app_components/sensors/bmp180/bmp180.c
@@ -48,12 +48,10 @@ private:
     std::mutex bmp180_data_capture_thread_run_mutex;
     std::thread bmp180_data_capture_thread;
 
-#if ENABLE_MOCK_BMP180_DEVICE
     bool mock_run_bmp180_device_thread = false;
     std::condition_variable mock_bmp180_device_thread_run_cv;
     std::mutex mock_bmp180_device_thread_run_mutex;
     std::thread mock_bmp180_device_thread;
-#endif
 
     typedef void (*bmp180_host_callback_function)(float, float);
     bmp180_host_callback_function _bmp180_host_callback_function{};
@@ -347,7 +345,6 @@ public:
             bmp180_data_capture_thread.join();
         }
 
-#if ENABLE_MOCK_BMP180_DEVICE
         this->mock_run_bmp180_device_thread = false;
 
         std::unique_lock<std::mutex> device_lock(this->mock_bmp180_device_thread_run_mutex);
@@ -357,8 +354,6 @@ public:
         if(mock_bmp180_device_thread.joinable()) {
             mock_bmp180_device_thread.join();
         }
-#endif
-
     }
 
     class Addresses {
@@ -502,7 +497,7 @@ public:
                 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
                 0x0000, 0x0000, 0x0000,
                 0x6496, // data word for temp/pressure
-                0x0000, 0x0000, 0x0000, 0xBEEF
+                0x0000, 0x0000, 0xBABE, 0xBEEF
         };
 
         uint8_t send_buffer[sizeof(_mock_device_memory)];
@@ -536,18 +531,20 @@ public:
         return -1;
     }
 
-#if ENABLE_MOCK_BMP180_DEVICE
     int mock_run_bmp180_device_emulation() {
 
         mock_bmp180_device_thread = std::thread(&Bmp180::_mock_bmp180_device_emulation, this);
 
-        std::lock_guard<std::mutex> lock(this->mock_bmp180_device_thread_run_mutex);
+        // wait a little bit for the thread to get started
+        std::this_thread::sleep_for(std::chrono::milliseconds (10));
+
+        std::unique_lock<std::mutex> device_lock(this->mock_bmp180_device_thread_run_mutex);
         this->mock_bmp180_device_thread_run_cv.notify_one();
         this->mock_run_bmp180_device_thread = true;
+        device_lock.unlock();
 
         return 1;
     }
-#endif
 };
 
 #endif //BMP180_H

@@ -31,7 +31,7 @@ int Bmp180::_init_bmp180() {
     this->_init_bmp180_calibration_coefficients((char *) this->_get_bmp180_calibration_buffer_address(),
                                                 this->_get_bmp180_calibration_buffer_size());
 
-    std::lock_guard<std::mutex> lk(this->bmp180_data_capture_thread_run_mutex);
+    std::lock_guard<std::mutex> lock(this->bmp180_data_capture_thread_run_mutex);
     this->bmp180_data_capture_thread_run_cv.notify_one();
     this->run_bmp180_data_capture_thread = true;
 
@@ -86,29 +86,70 @@ void Bmp180::_bmp180_data_capture_worker() {
     BOOST_LOG_TRIVIAL(debug) << "_bmp180_data_capture_worker exiting";
 }
 
-#if ENABLE_MOCK_BMP180_DEVICE
 void Bmp180::_mock_bmp180_device_emulation() {
-    std::cout << "_mock_bmp180_device_emulation starting" << std::endl;
+    BOOST_LOG_TRIVIAL(debug) << "_mock_bmp180_device_emulation starting";
 
     std::unique_lock<std::mutex> device_lock(this->mock_bmp180_device_thread_run_mutex);
-    std::cout << "waiting to run..." << std::endl;
+    BOOST_LOG_TRIVIAL(debug) << "mock bmp180 waiting to run...";
     this->mock_bmp180_device_thread_run_cv.wait(device_lock);
     device_lock.unlock();
+
+    BOOST_LOG_TRIVIAL(debug) << "mock bmp180 running...";
 
     device_lock.lock();
     while(this->mock_run_bmp180_device_thread) {
         device_lock.unlock();
 
-        std::cout << "mock running" << std::endl;
+        uint8_t register_address;
+
+        // read in the register command
+        uint8_t measurement_command[1] = {0};
+        buffer_t inbound_message = {
+                .bytes = measurement_command,
+                .size = sizeof(measurement_command)
+        };
+
+        register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
+        i2c_recv(&_bmp180_i2c_context, &inbound_message, register_address);
+
+        if(measurement_command[0] == Bmp180::Commands::MeasurementControlValues::TEMPERATURE) {
+            std::cout << "Got temp cmd: " << std::hex << int(measurement_command[0]) << std::endl;
+        }
+        else if (measurement_command[0] == Bmp180::Commands::MeasurementControlValues::PRESSURE_OSS0) {
+            std::cout << "Got press cmd: " << std::hex << int(measurement_command[0]) << std::endl;
+        }
+        else {
+            // do nothing
+        }
+
+        //set the measurement in progress bit
+
+        //set the temperature value in memory
+
+        //wait 4.5ms
+
+        //clear the measurement in progress bit
+
+        // wait for ~1ms for driver to read the value. A better approach is to maybe find a way to detect the data being read
+        // like the chip may do it...
+
+        // set the measurement in progress bit
+
+        // wait 4.5ms
+
+        //clear the measurement in progress bit
+
+        // wait ~1ms to start the cycle again?
+
+        BOOST_LOG_TRIVIAL(debug) << "mock bmp180 device running";
 
         std::this_thread::sleep_for(std::chrono::milliseconds (1000));
 
         device_lock.lock();
     }
 
-    std::cout << "_mock_bmp180_device_emulation exiting" << std::endl;
+    BOOST_LOG_TRIVIAL(debug) << "_mock_bmp180_device_emulation exiting";
 }
-#endif
 
 void Bmp180::_get_bmp180_temperature() {
 // command temperature read
@@ -118,14 +159,14 @@ void Bmp180::_get_bmp180_temperature() {
     uint8_t control_register_and_start_meas[1] = {Bmp180::Commands::MeasurementControlValues ::TEMPERATURE};
     buffer_t outbound_message = {
             .bytes = control_register_and_start_meas,
-            .size = 1
+            .size = sizeof(control_register_and_start_meas)
     };
 
     uint8_t register_address;
 
     register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
     if (i2c_send(&_bmp180_i2c_context, &outbound_message, register_address)) {
-        std::this_thread::sleep_for(std::chrono::microseconds (4500));
+        std::this_thread::sleep_for(std::chrono::microseconds (4500 * 100));
     }
     else {
         std::cout << "failed to command temperature read" << std::endl;
@@ -161,7 +202,7 @@ void Bmp180::_get_bmp180_pressure() {
 
     register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
     if (i2c_send(&_bmp180_i2c_context, &outbound_message, register_address)) {
-        std::this_thread::sleep_for(std::chrono::microseconds (4500));
+        std::this_thread::sleep_for(std::chrono::microseconds (4500 * 100));
     }
     else {
         std::cout << "failed to command pressure read" << std::endl;

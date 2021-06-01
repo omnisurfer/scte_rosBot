@@ -10,7 +10,7 @@
 
 void handle_bmp180_measurements(float temperature, float pressure) {
     std::cout << "temperature (C): " << temperature << " pressure (Pa): " << pressure << std::endl;
-    /*
+    /**/
     double absolute_altitude;
     double pressure_sea_level = 1013.25 * 100;
 
@@ -24,7 +24,7 @@ void handle_bmp180_measurements(float temperature, float pressure) {
     sea_level_pressure = pressure / pow(1 - absolute_altitude/44330, 5.255);
 
     std::cout << "abs alt (m): " << absolute_altitude << " sea level pressure (Pa): " << sea_level_pressure << std::endl;
-     */
+     /**/
 }
 
 void handle_l3gd20_measurements(float temperature, float pressure) {

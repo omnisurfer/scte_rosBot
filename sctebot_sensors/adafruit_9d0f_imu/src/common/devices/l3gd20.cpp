@@ -34,6 +34,8 @@ void L3gd20::_l3gd20_data_capture_worker() {
 
         // DO STUFF
 
+        std::this_thread::sleep_for(std::chrono::milliseconds (this->_l3gd20_sensor_update_period_ms));
+
         data_lock.lock();
     }
 
