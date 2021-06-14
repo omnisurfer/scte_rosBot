@@ -5,6 +5,8 @@
 #ifndef L3GD20_H
 #define L3GD20_H
 
+#define ENABLE_MOCK_L3GD20_DEVICE 1
+
 #include <iostream>
 #include <iomanip>
 #include <cstring>
@@ -36,13 +38,20 @@ private:
 
     context_t _l3gd20_i2c_context{};
 
+    uint8_t _l3gd20_control_register_buffer[5] = {0};
+
     bool run_l3gd20_data_capture_thread = false;
     std::condition_variable l3gd20_data_capture_thread_run_cv;
     std::mutex l3gd20_data_capture_thread_run_mutex;
     std::thread l3gd20_data_capture_thread;
 
-    typedef void (*l3gd20_host_callback_function)(float, float);
+    typedef void (*l3gd20_host_callback_function)(float, float, float);
     l3gd20_host_callback_function _l3gd20_host_callback_function{};
+
+    bool mock_run_l3gd20_device_thread = false;
+    std::condition_variable mock_l3gd20_device_thread_run_cv;
+    std::mutex mock_l3gd20_device_thread_run_mutex;
+    std::thread mock_l3gd20_device_thread;
 
     int _connect_to_l3gd20() {
 
@@ -60,8 +69,11 @@ private:
             return 0;
         }
 
-        /* TODO Check WHOAMI register here
-        // try read chip id
+#if ENABLE_MOCK_L3GD20_DEVICE
+        mock_load_l3gd20_data();
+#endif
+
+        // try read whoami
         uint8_t chip_id[1] = {0};
         buffer_t inbound_message = {
                 .bytes = chip_id,
@@ -69,14 +81,13 @@ private:
         };
 
         uint8_t register_address;
-        register_address = L3gd20::Addresses::DataRegisters::CHIP_ID;
+        register_address = L3gd20::Addresses::Registers::WHO_AM_I;
         i2c_recv(&_l3gd20_i2c_context, &inbound_message, register_address);
 
-        if(chip_id[0] != L3gd20::Commands::ChipId::CHIP_ID) {
-            std::cout << "failed to read device chip id\n";
+        if(chip_id[0] != L3gd20::MagicNumbers::WhoAmI::WHO_AM_I) {
+            std::cout << "failed to read device who am I register\n";
             return 0;
         }
-        */
         return 1;
     }
 
@@ -90,6 +101,10 @@ private:
     }
 
     void _l3gd20_data_capture_worker();
+
+    void _mock_l3gd20_device_emulation();
+
+    int _measurement_completed_ok();
 
 public:
 
@@ -108,6 +123,17 @@ public:
         if(l3gd20_data_capture_thread.joinable()) {
             l3gd20_data_capture_thread.join();
         }
+
+        this->mock_run_l3gd20_device_thread = false;
+
+        std::unique_lock<std::mutex> device_lock(this->mock_l3gd20_device_thread_run_mutex);
+        this->mock_l3gd20_device_thread_run_cv.notify_one();
+        device_lock.unlock();
+
+        if(mock_l3gd20_device_thread.joinable()) {
+            mock_l3gd20_device_thread.join();
+        }
+
     }
 
     class Addresses {
@@ -143,6 +169,94 @@ public:
         } Registers;
     };
 
+    class MagicNumbers {
+    public:
+        typedef enum WhoAmI_t {
+            WHO_AM_I = 0xD7 //0xD4
+        }WhoAmI;
+    };
+
+    class BitMasks {
+    public:
+        typedef enum ControlRegister1_t {
+            ODR_95 = 0b00000000,
+            ODR_190 = 0b01000000,
+            ODR_380 = 0b10000000,
+            ODR_760 = 0b11000000,
+            BW_CO1 = 0b00000000,
+            BW_CO2 = 0b00010000,
+            BW_CO3 = 0b00100000,
+            BW_CO4 = 0b00110000,
+            POWER_DOWN_ENABLE = (1 << 3),
+            Z_AXIS_ENABLE = (1 << 2),
+            X_AXIS_ENABLE = (1 << 1),
+            Y_AXIS_ENABLE = (1 << 0)
+        } ControlRegister1;
+
+        typedef enum ControlRegister2_t {
+            NORMAL_MODE_RESET = 0b00000000,
+            REF_SIGNAL_FILTER = 0b00010000,
+            NORMAL_MODE = 0b00100000,
+            AUTORESET_ON_INT = 0b00110000,
+            HPFCO0 = 0b00000000,
+            HPFCO1 = 0b00000001,
+            HPFCO2 = 0b00000010,
+            HPFCO3 = 0b00000011,
+            HPFCO4 = 0b00000100,
+            HPFCO5 = 0b00000101,
+            HPFCO6 = 0b00000110,
+            HPFCO7 = 0b00000111,
+            HPFCO8 = 0b00001000,
+            HPFCO9 = 0b00001001
+        } ControlRegister2;
+
+        typedef enum ControlRegister3_t {
+            INT1_EN = (1 << 7),
+            INT1_BOOT_STATUS = (1 << 6),
+            INT1_ACTIVE = (1 << 5),
+            PP_OD = (1 << 4),
+            INT2_DRDY = (1 << 3),
+            INT2_WTM = (1 << 2),
+            INT2_ORUN = (1 << 1),
+            INT2_EMPTY = (1 << 0)
+        } ControlRegister3;
+
+        typedef enum ControlRegister4_t {
+            BDU = (1 << 7),
+            BLE = (1 << 6),
+            FS_250 = 0b00000000,
+            FS_500 = 0b00010000,
+            FS_2000 = 0b00100000,
+            SIM_3WIRE_EN = (1 << 0)
+
+        } ControlRegister4;
+
+        typedef enum ControlRegister5_t {
+            BOOT = (1 << 7),
+            FIFO_EN = (1 << 6),
+            HPEN = (1 << 4)
+        } ControlRegister5;
+
+        typedef enum StatusRegister_t {
+            ZYX_OVERRUN = (1 << 7),
+            Z_OVERRUN = (1 << 6),
+            Y_OVERRUN = (1 << 5),
+            X_OVERRUN = (1 << 4),
+            ZYX_DATA_AVAILABLE = (1 << 3),
+            Z_DATA_AVAILABLE = (1 << 2),
+            Y_DATA_AVAILABLE = (1 << 1),
+            X_DATA_AVAILABLE = (1 << 0)
+        } StatusRegister;
+
+        typedef enum FifoControlRegister_t {
+            BYPASS_MODE = 0b00000000,
+            FIFO_MODE = 0b00100000,
+            STREAM_MODE = 0b01000000,
+            STREAM_TO_FIFO = 0b01100000,
+            BYPASS_TO_STREAM = 0b10000000
+        } FifoControlRegister;
+    };
+
     int config_l3gd20(int bus_number, int device_address, int update_period_ms, std::string device_name, l3gd20_host_callback_function function_pointer) {
         _l3gd20_i2c_bus_number = bus_number;
         _l3gd20_i2c_device_address = device_address;
@@ -170,7 +284,7 @@ public:
         return 1;
     }
 
-    int load_mock_l3gd20_data() {
+    int mock_load_l3gd20_data() {
         /*
          * @77 bmp180 (?)
          * @6b l3gd20 (?)
@@ -311,6 +425,21 @@ public:
             std::cout << "loaded mock data for device FAILED\n";
             return -1;
         }
+    }
+
+    int mock_run_l3gd20_device_emulation() {
+
+        mock_l3gd20_device_thread = std::thread(&L3gd20::_mock_l3gd20_device_emulation, this);
+
+        // wait a little bit for the thread to get started
+        std::this_thread::sleep_for(std::chrono::milliseconds (10));
+
+        std::unique_lock<std::mutex> device_lock(this->mock_l3gd20_device_thread_run_mutex);
+        this->mock_l3gd20_device_thread_run_cv.notify_one();
+        this->mock_run_l3gd20_device_thread = true;
+        device_lock.unlock();
+
+        return 1;
     }
 
 };

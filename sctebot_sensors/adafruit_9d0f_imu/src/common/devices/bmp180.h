@@ -48,13 +48,13 @@ private:
     std::mutex bmp180_data_capture_thread_run_mutex;
     std::thread bmp180_data_capture_thread;
 
+    typedef void (*bmp180_host_callback_function)(float, float);
+    bmp180_host_callback_function _bmp180_host_callback_function{};
+
     bool mock_run_bmp180_device_thread = false;
     std::condition_variable mock_bmp180_device_thread_run_cv;
     std::mutex mock_bmp180_device_thread_run_mutex;
     std::thread mock_bmp180_device_thread;
-
-    typedef void (*bmp180_host_callback_function)(float, float);
-    bmp180_host_callback_function _bmp180_host_callback_function{};
 
     bool sensor_calibration_read = false;
     //bool sensor_configured = false;
@@ -139,7 +139,9 @@ private:
             return 0;
         }
 
+#if ENABLE_MOCK_BMP180_DEVICE
         mock_load_bmp180_calibration_data();
+#endif
 
         // try read chip id
         uint8_t chip_id[1] = {0};
@@ -152,7 +154,7 @@ private:
         register_address = Bmp180::Addresses::DataRegisters::CHIP_ID;
         i2c_recv(&_bmp180_i2c_context, &inbound_message, register_address);
 
-        if(chip_id[0] != Bmp180::Commands::ChipId::CHIP_ID) {
+        if(chip_id[0] != Bmp180::MagicNumbers::ChipId::CHIP_ID) {
             std::cout << "failed to read device chip id\n";
             return 0;
         }
@@ -400,7 +402,10 @@ public:
         typedef enum SoftReset_t {
             POWER_ON_RESET = 0xB6
         } SoftReset;
+    };
 
+    class MagicNumbers {
+    public:
         typedef enum ChipId_t {
             CHIP_ID = 0x55
         } ChipId;

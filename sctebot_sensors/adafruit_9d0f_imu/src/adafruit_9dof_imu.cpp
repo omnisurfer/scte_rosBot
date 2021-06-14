@@ -27,8 +27,8 @@ void handle_bmp180_measurements(float temperature, float pressure) {
      /**/
 }
 
-void handle_l3gd20_measurements(float temperature, float pressure) {
-    std::cout << "temperature (C): " << temperature << " pressure (Pa): " << pressure << std::endl;
+void handle_l3gd20_measurements(float out_x, float out_y, float out_z) {
+    std::cout << "out_x: " << out_x << " out_y: " << out_y << " out_z: " << out_z << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -72,8 +72,6 @@ int main(int argc, char* argv[]) {
         return 0;
     };
 
-    bmp180DeviceHandle.mock_load_bmp180_calibration_data();
-
 #if ENABLE_MOCK_BMP180_DEVICE
     bmp180DeviceHandle.mock_run_bmp180_device_emulation();
 #endif
@@ -97,7 +95,9 @@ int main(int argc, char* argv[]) {
         return 0;
     };
 
-    l3gd20DeviceHandle.load_mock_l3gd20_data();
+#if ENABLE_MOCK_L3GD20_DEVICE
+    l3gd20DeviceHandle.mock_run_l3gd20_device_emulation();
+#endif
 
     l3gd20DeviceHandle.init_device();
 
