@@ -12,14 +12,18 @@ int L3gd20::_init_l3gd20() {
         logging::trivial::severity >= logging::trivial::debug
     );
 
-    // Config CTRL_REG1
-    buffer_t inbound_message = {
+    buffer_t inbound_message;
+    buffer_t outbound_message;
+    uint8_t register_address;
+    uint8_t control_reg;
+
+    // Read config bytes
+    inbound_message = {
             .bytes = _l3gd20_control_register_buffer,
             .size = sizeof(_l3gd20_control_register_buffer)
     };
 
-    uint8_t register_address = L3gd20::Addresses::CTRL_REG1;
-
+    register_address = L3gd20::Addresses::CTRL_REG1;
     if(i2c_recv(&_l3gd20_i2c_context, &inbound_message, register_address)) {
         std::cout << "l3gd20 config: " << std::endl;
 
@@ -30,26 +34,53 @@ int L3gd20::_init_l3gd20() {
         std::cout << std::endl;
     }
 
-    //
+    // Config CTRL_REG5
+    // Default
 
+    // Config CTRL_REG4
+    // BDU = 1, read update on read
+    control_reg =
+            _l3gd20_control_register_buffer[3] |
+            L3gd20::BitMasks::ControlRegister4::BDU;
+
+    std::bitset<8> a(_l3gd20_control_register_buffer[3]);
+    std::bitset<8> b(control_reg);
+
+    std::cout << "ctrl1b " << a << " ctrl1a " << b << std::endl;
+
+    outbound_message = {
+            .bytes = _l3gd20_control_register_buffer,
+            .size = sizeof(control_reg)
+    };
+
+    register_address = L3gd20::Addresses::CTRL_REG4;
+    if(i2c_send(&_l3gd20_i2c_context, &outbound_message, register_address)) {
+        std::cout << "sensor commanded to start measuring" << std::endl;
+    }
+    else {
+        std::cout << "failed to command sensor to start measuring" << std::endl;
+    }
+
+    // Config CTRL_REG3
+    // Default
+
+    // Config CTRL_REG2
+    // Default
+
+    // Config CTRL_REG1
     //Disable power down mode
-    uint8_t control_reg_1 =
+    control_reg =
             _l3gd20_control_register_buffer[0] |
             L3gd20::BitMasks::ControlRegister1::X_AXIS_ENABLE |
             L3gd20::BitMasks::ControlRegister1::Y_AXIS_ENABLE |
             L3gd20::BitMasks::ControlRegister1::Z_AXIS_ENABLE;
 
-    control_reg_1 &= ~L3gd20::BitMasks::ControlRegister1::POWER_DOWN_ENABLE;
+    control_reg |= L3gd20::BitMasks::ControlRegister1::POWER_DOWN_DISABLE;
 
-    std::bitset<8> x(_l3gd20_control_register_buffer[0]);
-    std::bitset<8> y(control_reg_1);
+    std::bitset<8> c(_l3gd20_control_register_buffer[0]);
+    std::bitset<8> d(control_reg);
 
-    std::cout << "ctrl1b " << x << " ctrl1a " << y << std::endl;
-
-    buffer_t outbound_message = {
-            .bytes = _l3gd20_control_register_buffer,
-            .size = sizeof(control_reg_1)
-    };
+    std::cout << "ctrl1b " << c << " ctrl1a " << d << std::endl;
 
     register_address = L3gd20::Addresses::CTRL_REG1;
     if(i2c_send(&_l3gd20_i2c_context, &outbound_message, register_address)) {
@@ -58,7 +89,6 @@ int L3gd20::_init_l3gd20() {
     else {
         std::cout << "failed to command sensor to start measuring" << std::endl;
     }
-
 
     std::lock_guard<std::mutex> lk(this->l3gd20_data_capture_thread_run_mutex);
     this->l3gd20_data_capture_thread_run_cv.notify_one();

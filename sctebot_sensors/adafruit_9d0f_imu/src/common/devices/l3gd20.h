@@ -187,7 +187,7 @@ public:
             BW_CO2 = 0b00010000,
             BW_CO3 = 0b00100000,
             BW_CO4 = 0b00110000,
-            POWER_DOWN_ENABLE = (1 << 3),
+            POWER_DOWN_DISABLE = (1 << 3),
             Z_AXIS_ENABLE = (1 << 2),
             X_AXIS_ENABLE = (1 << 1),
             Y_AXIS_ENABLE = (1 << 0)
@@ -255,6 +255,38 @@ public:
             STREAM_TO_FIFO = 0b01100000,
             BYPASS_TO_STREAM = 0b10000000
         } FifoControlRegister;
+
+        typedef enum FifoSourceRegister_t {
+            WATERMARK_STATUS = (1 << 7),
+            OVERRUN_STATUS = (1 << 6),
+            FIFO_EMPTY = (1 << 5),
+            FIFO_STORED_DATA = 0b00000000
+        } FifoSourceRegister;
+
+        typedef enum Int1Config_t {
+            AND_OR_COMBINATION_INTERRUPTS = (1 << 7),
+            LATCH_INTERRUPT_REQUEST = (1 << 6),
+            ENABLE_INT_GENERATION_ON_Z_HIGH = (1 << 5),
+            ENABLE_INT_GENERATION_ON_Z_LOW = (1 << 4),
+            ENABLE_INT_GENERATION_ON_Y_HIGH = (1 << 3),
+            ENABLE_INT_GENERATION_ON_Y_LOW = (1 << 2),
+            ENABLE_INT_GENERATION_ON_X_HIGH = (1 << 1),
+            ENABLE_INT_GENERATION_ON_X_LOW = (1 << 0)
+        };
+
+        typedef enum Int1Source_t {
+            INT_ACTIVE = (1 << 7),
+            Z_HIGH_EVENT = (1 << 6),
+            Z_LOW_EVENT = (1 << 5),
+            Y_HIGH_EVENT = (1 << 4),
+            Y_LOW_EVENT = (1 << 3),
+            X_HIGH_EVENT = (1 << 2),
+            X_LOW_EVENT = (1 << 1)
+        } Int1Source;
+
+        typedef enum Int1Duration_t {
+            WAIT_ENABLE = (1 << 7)
+        } Int1Duration;
     };
 
     int config_l3gd20(int bus_number, int device_address, int update_period_ms, std::string device_name, l3gd20_host_callback_function function_pointer) {
