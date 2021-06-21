@@ -175,9 +175,9 @@ private:
 
     void _mock_bmp180_device_emulation();
 
-    void _get_bmp180_temperature();
+    void _request_bmp180_temperature();
 
-    void _get_bmp180_pressure();
+    void _request_bmp180_pressure();
 
     int _measurement_completed_ok();
 

@@ -39,6 +39,7 @@ int L3gd20::_init_l3gd20() {
 
     // Config CTRL_REG4
     // BDU = 1, read update on read
+    // 250 dps (DEFAULT)
     control_reg =
             _l3gd20_control_register_buffer[3] |
             L3gd20::BitMasks::ControlRegister4::BDU;
@@ -68,7 +69,8 @@ int L3gd20::_init_l3gd20() {
     // Default
 
     // Config CTRL_REG1
-    //Disable power down mode
+    // Disable power down mode
+    // ODR = 95Hz (Default)
     control_reg =
             _l3gd20_control_register_buffer[0] |
             L3gd20::BitMasks::ControlRegister1::X_AXIS_ENABLE |
@@ -111,9 +113,17 @@ void L3gd20::_l3gd20_data_capture_worker() {
     while(this->run_l3gd20_data_capture_thread) {
         data_lock.unlock();
 
-        // DO STUFF
+        this->_request_l3gd20_temperature();
 
-        this->_l3gd20_host_callback_function(0.42, 0.69, 0.420);
+        this->_request_l3gd20_xyz_axis();
+
+        // maybe make these structs and pass that? less calls?
+        int8_t temperature = this->_get_l3gd20_temperature();
+        int16_t x_axis = this->_get_l3gd20_x_axis();
+        int16_t y_axis = this->_get_l3gd20_y_axis();
+        int16_t z_axis = this->_get_l3gd20_z_axis();
+
+        this->_l3gd20_host_callback_function(temperature, x_axis, y_axis, z_axis);
 
         std::this_thread::sleep_for(std::chrono::milliseconds (this->_l3gd20_sensor_update_period_ms));
 
@@ -133,112 +143,128 @@ void L3gd20::_mock_l3gd20_device_emulation() {
 
     BOOST_LOG_TRIVIAL(debug) << "mock l3gd20 running...";
 
-    uint8_t debug_temp_counter = 0x96;
-    uint8_t debug_press_counter = 0x07;
+    uint16_t loop_sleep_microseconds = 10500;
+
+    int16_t debug_x_axis = 420;
+    int16_t debug_y_axis = -420;
+    int16_t debug_z_axis = 69;
+    int8_t debug_temp_axis = -42;
+
+    uint8_t register_address;
 
     device_lock.lock();
     while(this->mock_run_l3gd20_device_thread) {
         device_lock.unlock();
 
-        /*
-        uint8_t register_address;
-
-        // read in the register command
-        uint8_t measurement_command[1] = {0};
-
-        buffer_t inbound_message = {
-                .bytes = measurement_command,
-                .size = sizeof(measurement_command)
+        // TEMP AXIS
+        uint8_t mock_temperature[1] = {0};
+        buffer_t outbound_measurement = {
+                .bytes = mock_temperature,
+                .size = sizeof(mock_temperature)
         };
 
-        register_address = L3gd20::Addresses::DataRegisters::CONTROL_MEASUREMENT;
-        i2c_recv(&_l3gd20_i2c_context, &inbound_message, register_address);
+        mock_temperature[0] = debug_temp_axis;
 
+        register_address = L3gd20::Addresses::Registers::OUT_TEMP;
+        i2c_send(&_l3gd20_i2c_context, &outbound_measurement, register_address);
 
-        //figure out which measurement is being made
-        if(measurement_command[0] == L3gd20::Commands::MeasurementControlValues::TEMPERATURE) {
-            //std::cout << "Got temp cmd: " << std::hex << int(measurement_command[0]) << std::endl;
-
-            //set the temperature value in memory
-            uint8_t mock_temperature[2] = {0};
-            buffer_t outbound_measurement = {
-                    .bytes = mock_temperature,
-                    .size = sizeof(mock_temperature)
-            };
-
-            // real temp ~26C
-            mock_temperature[0] = 0x64;
-            mock_temperature[1] = debug_temp_counter;
-
-            //debug_temp_counter = (debug_temp_counter + 1)%0x02;
-
-            register_address = Bmp180::Addresses::DataRegisters::OUTPUT_MSB;
-            i2c_send(&_bmp180_i2c_context, &outbound_measurement, register_address);
-
-        }
-        else if (measurement_command[0] == L3gd20::Commands::MeasurementControlValues::PRESSURE_OSS0) {
-            //std::cout << "Got press cmd: " << std::hex << int(measurement_command[0]) << std::endl;
-
-            uint8_t mock_pressure[3] = {0};
-            buffer_t outbound_measurement = {
-                    .bytes = mock_pressure,
-                    .size = sizeof(mock_pressure)
-            };
-
-            // real pressure ~13 PSI or ~91000 Pa @ ~26C ONLY
-            mock_pressure[0] = 0xa3;
-            mock_pressure[1] = debug_press_counter;
-            mock_pressure[2] = 0x00;
-
-            debug_press_counter = (debug_press_counter + 1)%0x03;
-
-            register_address = Bmp180::Addresses::DataRegisters::OUTPUT_MSB;
-            i2c_send(&_bmp180_i2c_context, &outbound_measurement, register_address);
-
-        }
-        else {
-            //skip this iteration of the loop since no valid measurement command received
-            //std::cout << "Got unknown cmd 0x" << std::hex << int(measurement_command[0]) << std::endl;
-            // sleep a little just to prevent busy looping
-            std::this_thread::sleep_for(std::chrono::microseconds(500));
-            device_lock.lock();
-            continue;
-        }
-
-        //set the measurement in progress bit
-        register_address = L3gd20::Addresses::DataRegisters::CONTROL_MEASUREMENT;
-        measurement_command[0] &= L3gd20::BitMasks::ControlRegister::SCO_BIT;
-        //std::bitset<8> x(measurement_command[0]);
-        //std::cout << "Ctrl SCO SET: " << x << std::endl;
-
-        buffer_t  outbound_message = {
-                .bytes = measurement_command,
-                .size = sizeof(measurement_command)
+        // X - AXIS
+        uint8_t mock_x_axis[2] = {0};
+        outbound_measurement = {
+                .bytes = mock_x_axis,
+                .size = sizeof(mock_x_axis)
         };
 
+        mock_x_axis[0] = debug_x_axis & 0xFF;
+        mock_x_axis[1] = (debug_x_axis >> 8) & 0xFF;
 
-        i2c_send(&_l3gd20_i2c_context, &outbound_message, register_address);
-        */
-        //wait 4.5ms
-        std::this_thread::sleep_for(std::chrono::microseconds(4500));
-        /*
-        //clear the measurement in progress bit
-        measurement_command[0] &= ~L3gd20::BitMasks::ControlRegister::SCO_BIT;
-        //std::bitset<8> y(measurement_command[0]);
-        //std::cout << "Ctrl SCO CLEAR: " << y << std::endl;
+        //std::cout << "x_l " << mock_x_axis[0] << " x_h " << mock_x_axis[1] << std::endl;
 
-        outbound_message = {
-                .bytes = measurement_command,
-                .size = sizeof(measurement_command)
+        register_address = L3gd20::Addresses::Registers::OUT_X_L;
+        i2c_send(&_l3gd20_i2c_context, &outbound_measurement, register_address);
+
+        // Y - AXIS
+        uint8_t mock_y_axis[2] = {0};
+        outbound_measurement = {
+                .bytes = mock_y_axis,
+                .size = sizeof(mock_y_axis)
         };
 
-        i2c_send(&_l3gd20_i2c_context, &outbound_message, register_address);
-        */
+        mock_y_axis[0] = debug_y_axis & 0xFF;
+        mock_y_axis[1] = (debug_y_axis >> 8) & 0xFF;
 
+        register_address = L3gd20::Addresses::Registers::OUT_Y_L;
+        i2c_send(&_l3gd20_i2c_context, &outbound_measurement, register_address);
+
+        // Z - AXIS
+        uint8_t mock_z_axis[2] = {0};
+        outbound_measurement = {
+                .bytes = mock_z_axis,
+                .size = sizeof(mock_z_axis)
+        };
+
+        mock_z_axis[0] = debug_z_axis & 0xFF;
+        mock_z_axis[1] = (debug_z_axis >> 8) & 0xFF;
+
+        register_address = L3gd20::Addresses::Registers::OUT_Z_L;
+        i2c_send(&_l3gd20_i2c_context, &outbound_measurement, register_address);
+
+        std::this_thread::sleep_for(std::chrono::microseconds(loop_sleep_microseconds));
+        // sleep to help with debug
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         device_lock.lock();
     }
 
     BOOST_LOG_TRIVIAL(debug) << "_mock_bmp180_device_emulation exiting";
+}
+
+void L3gd20::_request_l3gd20_temperature() {
+
+    uint8_t register_address;
+
+    uint8_t temperature[1] = {0};
+    buffer_t inbound_message = {
+            .bytes = temperature,
+            .size = sizeof(temperature)
+    };
+
+    register_address = L3gd20::Addresses::Registers::OUT_TEMP;
+    bool data_ok = i2c_recv(&_l3gd20_i2c_context, &inbound_message, register_address);
+
+    if(data_ok) {
+        _l3gd20_temperature = (int8_t)temperature[0];
+    }
+}
+
+void L3gd20::_request_l3gd20_xyz_axis() {
+    uint8_t register_address;
+
+    uint8_t out_xyz_axis[2] = {0};
+    buffer_t inbound_message = {
+            .bytes = out_xyz_axis,
+            .size = sizeof(out_xyz_axis)
+    };
+
+    register_address = L3gd20::Addresses::Registers::OUT_X_L;
+    bool data_ok = i2c_recv(&_l3gd20_i2c_context, &inbound_message, register_address);
+
+    if(data_ok) {
+        _l3gd20_x_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+    }
+
+    register_address = L3gd20::Addresses::Registers::OUT_Y_L;
+    data_ok = i2c_recv(&_l3gd20_i2c_context, &inbound_message, register_address);
+
+    if(data_ok) {
+        _l3gd20_y_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+    }
+
+    register_address = L3gd20::Addresses::Registers::OUT_Z_L;
+    data_ok = i2c_recv(&_l3gd20_i2c_context, &inbound_message, register_address);
+
+    if(data_ok) {
+        _l3gd20_z_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+    }
 }
 
 int L3gd20::_measurement_completed_ok() {

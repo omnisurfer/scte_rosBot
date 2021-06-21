@@ -27,8 +27,8 @@ void handle_bmp180_measurements(float temperature, float pressure) {
      /**/
 }
 
-void handle_l3gd20_measurements(float out_x, float out_y, float out_z) {
-    std::cout << "out_x: " << out_x << " out_y: " << out_y << " out_z: " << out_z << std::endl;
+void handle_l3gd20_measurements(int temperature, int out_x, int out_y, int out_z) {
+    std::cout << "temp: " << (float)temperature << " out_x: " << (float)out_x << " out_y: " << (float)out_y << " out_z: " << (float)out_z << std::endl;
 }
 
 int main(int argc, char* argv[]) {

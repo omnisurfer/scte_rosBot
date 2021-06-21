@@ -54,11 +54,11 @@ void Bmp180::_bmp180_data_capture_worker() {
     while(this->run_bmp180_data_capture_thread) {
         data_lock.unlock();
 
-        this->_get_bmp180_temperature();
+        this->_request_bmp180_temperature();
 
         //std::this_thread::sleep_for(std::chrono::milliseconds (5000));
 
-        this->_get_bmp180_pressure();
+        this->_request_bmp180_pressure();
 
         uint16_t long_uncompensated_temperature = this->_get_bmp180_uncompensated_temperature_count();
         uint16_t long_uncompensated_pressure = this->_get_bmp180_uncompensated_pressure();
@@ -196,7 +196,7 @@ void Bmp180::_mock_bmp180_device_emulation() {
     BOOST_LOG_TRIVIAL(debug) << "_mock_bmp180_device_emulation exiting";
 }
 
-void Bmp180::_get_bmp180_temperature() {
+void Bmp180::_request_bmp180_temperature() {
 
     uint8_t control_register_and_start_meas[1] = {Bmp180::Commands::MeasurementControlValues ::TEMPERATURE};
     buffer_t outbound_message = {
@@ -236,7 +236,7 @@ void Bmp180::_get_bmp180_temperature() {
 
 }
 
-void Bmp180::_get_bmp180_pressure() {
+void Bmp180::_request_bmp180_pressure() {
 
     uint8_t register_address;
 

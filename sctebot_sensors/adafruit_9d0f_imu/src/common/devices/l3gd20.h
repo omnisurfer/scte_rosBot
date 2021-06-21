@@ -39,13 +39,17 @@ private:
     context_t _l3gd20_i2c_context{};
 
     uint8_t _l3gd20_control_register_buffer[5] = {0};
+    int8_t _l3gd20_temperature{0};
+    int16_t _l3gd20_x_axis{0};
+    int16_t _l3gd20_y_axis{0};
+    int16_t _l3gd20_z_axis{0};
 
     bool run_l3gd20_data_capture_thread = false;
     std::condition_variable l3gd20_data_capture_thread_run_cv;
     std::mutex l3gd20_data_capture_thread_run_mutex;
     std::thread l3gd20_data_capture_thread;
 
-    typedef void (*l3gd20_host_callback_function)(float, float, float);
+    typedef void (*l3gd20_host_callback_function)(int, int, int, int);
     l3gd20_host_callback_function _l3gd20_host_callback_function{};
 
     bool mock_run_l3gd20_device_thread = false;
@@ -103,6 +107,26 @@ private:
     void _l3gd20_data_capture_worker();
 
     void _mock_l3gd20_device_emulation();
+
+    void _request_l3gd20_temperature();
+
+    void _request_l3gd20_xyz_axis();
+
+    int8_t _get_l3gd20_temperature() const {
+        return _l3gd20_temperature;
+    }
+
+    int16_t _get_l3gd20_x_axis() const {
+        return _l3gd20_x_axis;
+    }
+
+    int16_t _get_l3gd20_y_axis() const {
+        return _l3gd20_y_axis;
+    }
+
+    int16_t _get_l3gd20_z_axis() const {
+        return _l3gd20_z_axis;
+    }
 
     int _measurement_completed_ok();
 
@@ -272,7 +296,7 @@ public:
             ENABLE_INT_GENERATION_ON_Y_LOW = (1 << 2),
             ENABLE_INT_GENERATION_ON_X_HIGH = (1 << 1),
             ENABLE_INT_GENERATION_ON_X_LOW = (1 << 0)
-        };
+        } Int1Config;
 
         typedef enum Int1Source_t {
             INT_ACTIVE = (1 << 7),
