@@ -28,36 +28,98 @@ class Bmp180 {
 
 private:
 
+    class Addresses {
+
+    public:
+        typedef enum CalibrationCoefficients_t {
+
+            AC1 = 0xAAAB,
+            AC2 = 0xACAD,
+            AC3 = 0xAEAF,
+            AC4 = 0xB0B1,
+            AC5 = 0xB2B3,
+            AC6 = 0xB4B5,
+            B1 = 0xB6B7,
+            B2 = 0xB8B9,
+            MB = 0xBABB,
+            MC = 0xBCBD,
+            MD = 0xBEBF
+
+        } CalibrationCoefficients;
+
+        typedef enum DataRegisters_t {
+
+            OUTPUT_XLSB = 0xF8,
+            OUTPUT_MSB = 0xF6,
+            OUTPUT_LSB = 0xF7,
+            CONTROL_MEASUREMENT = 0xF4,
+            SOFT_RESET = 0xE0,
+            CHIP_ID = 0xD0
+        } DataRegisters;
+    };
+
+    class Commands {
+
+    public:
+        typedef enum MeasurementControlValues_t {
+            TEMPERATURE = 0x2E,
+            PRESSURE_OSS0 = 0x34,
+            PRESSURE_OSS1 = 0x74,
+            PRESSURE_OSS2 = 0xB4,
+            PRESSURE_OSS3 = 0xF4
+        } MeasurementControlValues;
+
+        typedef enum SoftReset_t {
+            POWER_ON_RESET = 0xB6
+        } SoftReset;
+    };
+
+    class MagicNumbers {
+    public:
+        typedef enum ChipId_t {
+            CHIP_ID = 0x55
+        } ChipId;
+    };
+
+    class BitMasks {
+
+    public:
+        typedef enum ControlRegister_t {
+            OSS_BITS = 0b11000000,
+            SCO_BIT = 0b00100000,
+            MEASUREMENT_CONTROL_BITS = 0b00011111
+        } ControlRegister;
+    };
+
     int _device_endian_msb_index = 1;
     int _device_endian_lsb_index = 0;
 
-    int _bmp180_i2c_bus_number{};
-    int _bmp180_i2c_device_address{};
-    int _bmp180_sensor_update_period_ms{};
-    std::string _bmp180_device_name;
+    int _i2c_bus_number{};
+    int _i2c_device_address{};
+    int _sensor_update_period_ms{};
+    std::string _device_name;
 
-    context_t _bmp180_i2c_context{};
+    context_t _i2c_device_context{};
 
-    uint8_t _bmp180_calibration_data_buffer[11 * 2] = {0};
-    uint16_t _bmp180_long_uncompensated_temperature{};
-    uint16_t _bmp180_long_uncompensated_pressure{};
-    uint8_t  _bmp180_short_uncompensated_pressure_xlsb{};
+    uint8_t _calibration_data_buffer[11 * 2] = {0};
+    uint16_t _long_uncompensated_temperature{};
+    uint16_t _long_uncompensated_pressure{};
+    uint8_t  _short_uncompensated_pressure_xlsb{};
 
-    bool run_bmp180_data_capture_thread = false;
-    std::condition_variable bmp180_data_capture_thread_run_cv;
-    std::mutex bmp180_data_capture_thread_run_mutex;
-    std::thread bmp180_data_capture_thread;
+    bool run_data_capture_thread = false;
+    std::condition_variable data_capture_thread_run_cv;
+    std::mutex data_capture_thread_run_mutex;
+    std::thread data_capture_thread;
 
-    typedef void (*bmp180_host_callback_function)(float, float);
-    bmp180_host_callback_function _bmp180_host_callback_function{};
+    typedef void (*host_callback_function)(float, float);
+    host_callback_function _host_callback_function{};
 
-    bool mock_run_bmp180_device_thread = false;
-    std::condition_variable mock_bmp180_device_thread_run_cv;
-    std::mutex mock_bmp180_device_thread_run_mutex;
-    std::thread mock_bmp180_device_thread;
+    bool mock_run_device_thread = false;
+    std::condition_variable mock_device_thread_run_cv;
+    std::mutex mock_device_thread_run_mutex;
+    std::thread mock_device_thread;
 
     bool sensor_calibration_read = false;
-    //bool sensor_configured = false;
 
     struct Bmp180CalibrationCoefficients_t {
         union {
@@ -123,24 +185,24 @@ private:
         };
     } Bmp180SharedCoefficients;
 
-    int _connect_to_bmp180() {
+    int _connect_to_device() {
 
         /*
          * setup the i2c context and connect
          */
-        _bmp180_i2c_context = {0};
-        if(!i2c_dev_open(&_bmp180_i2c_context, _bmp180_i2c_bus_number, _bmp180_i2c_device_address)) {
+        _i2c_device_context = {0};
+        if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
             std::cout << "failed to open device\n";
             return 0;
         }
 
-        if(!i2c_is_connected(&_bmp180_i2c_context)) {
+        if(!i2c_is_connected(&_i2c_device_context)) {
             std::cout << "failed to connect to device\n";
             return 0;
         }
 
 #if ENABLE_MOCK_BMP180_DEVICE
-        mock_load_bmp180_calibration_data();
+        mock_load_calibration_data();
 #endif
 
         // try read chip id
@@ -152,7 +214,7 @@ private:
 
         uint8_t register_address;
         register_address = Bmp180::Addresses::DataRegisters::CHIP_ID;
-        i2c_recv(&_bmp180_i2c_context, &inbound_message, register_address);
+        i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
         if(chip_id[0] != Bmp180::MagicNumbers::ChipId::CHIP_ID) {
             std::cout << "failed to read device chip id\n";
@@ -162,43 +224,43 @@ private:
         return 1;
     }
 
-    int _init_bmp180();
+    int _init_device();
 
     int _close_device() {
 
-        i2c_dev_close(&_bmp180_i2c_context, _bmp180_i2c_bus_number);
+        i2c_dev_close(&_i2c_device_context, _i2c_bus_number);
 
         return 0;
     }
 
-    void _bmp180_data_capture_worker();
+    void _data_capture_worker();
 
-    void _mock_bmp180_device_emulation();
+    void _mock_device_emulation();
 
-    void _request_bmp180_temperature();
+    void _request_temperature();
 
-    void _request_bmp180_pressure();
+    void _request_pressure();
 
     int _measurement_completed_ok();
 
-    uint16_t _get_bmp180_uncompensated_temperature_count() const {
-        return _bmp180_long_uncompensated_temperature;
+    uint16_t _get_uncompensated_temperature_count() const {
+        return _long_uncompensated_temperature;
     }
 
-    uint16_t _get_bmp180_uncompensated_pressure() const {
-        return _bmp180_long_uncompensated_pressure;
+    uint16_t _get_uncompensated_pressure() const {
+        return _long_uncompensated_pressure;
     }
 
-    uint8_t _get_bmp180_uncompensated_pressure_xlsb() const {
-        return _bmp180_short_uncompensated_pressure_xlsb;
+    uint8_t _get_uncompensated_pressure_xlsb() const {
+        return _short_uncompensated_pressure_xlsb;
     }
 
-    uint8_t* _get_bmp180_calibration_buffer_address() {
-        return _bmp180_calibration_data_buffer;
+    uint8_t* _get_calibration_buffer_address() {
+        return _calibration_data_buffer;
     }
 
-    int _get_bmp180_calibration_buffer_size() {
-        return sizeof(_bmp180_calibration_data_buffer);
+    int _get_calibration_buffer_size() {
+        return sizeof(_calibration_data_buffer);
     }
 
     // Note, temperature must be read first, then pressure so that B5 value can be populated
@@ -282,8 +344,8 @@ private:
         return 1;
     }
 
-    int _init_bmp180_calibration_coefficients(char *bytes, uint8_t length) {
-        std::cout << "_init_bmp180_calibration_coefficients\n";
+    int _init_calibration_coefficients(char *bytes, uint8_t length) {
+        std::cout << "_init_calibration_coefficients\n";
 
         if(length < 0 or length > 22) {
             return 0;
@@ -337,99 +399,43 @@ public:
 
         this->_close_device();
 
-        this->run_bmp180_data_capture_thread = false;
+        this->run_data_capture_thread = false;
 
-        std::unique_lock<std::mutex> data_lock(this->bmp180_data_capture_thread_run_mutex);
-        this->bmp180_data_capture_thread_run_cv.notify_one();
+        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+        this->data_capture_thread_run_cv.notify_one();
         data_lock.unlock();
 
-        if(bmp180_data_capture_thread.joinable()) {
-            bmp180_data_capture_thread.join();
+        if(data_capture_thread.joinable()) {
+            data_capture_thread.join();
         }
 
-        this->mock_run_bmp180_device_thread = false;
+        this->mock_run_device_thread = false;
 
-        std::unique_lock<std::mutex> device_lock(this->mock_bmp180_device_thread_run_mutex);
-        this->mock_bmp180_device_thread_run_cv.notify_one();
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        this->mock_device_thread_run_cv.notify_one();
         device_lock.unlock();
 
-        if(mock_bmp180_device_thread.joinable()) {
-            mock_bmp180_device_thread.join();
+        if(mock_device_thread.joinable()) {
+            mock_device_thread.join();
         }
     }
 
-    class Addresses {
+    int config_device(
+            int bus_number,
+            int device_address,
+            int update_period_ms,
+            std::string device_name,
+            host_callback_function
+            function_pointer
+            ) {
+        _i2c_bus_number = bus_number;
+        _i2c_device_address = device_address;
+        _sensor_update_period_ms = update_period_ms;
+        _device_name = std::move(device_name);
 
-    public:
-        typedef enum CalibrationCoefficients_t {
+        _host_callback_function = function_pointer;
 
-            AC1 = 0xAAAB,
-            AC2 = 0xACAD,
-            AC3 = 0xAEAF,
-            AC4 = 0xB0B1,
-            AC5 = 0xB2B3,
-            AC6 = 0xB4B5,
-            B1 = 0xB6B7,
-            B2 = 0xB8B9,
-            MB = 0xBABB,
-            MC = 0xBCBD,
-            MD = 0xBEBF
-
-        } CalibrationCoefficients;
-
-        typedef enum DataRegisters_t {
-
-            OUTPUT_XLSB = 0xF8,
-            OUTPUT_MSB = 0xF6,
-            OUTPUT_LSB = 0xF7,
-            CONTROL_MEASUREMENT = 0xF4,
-            SOFT_RESET = 0xE0,
-            CHIP_ID = 0xD0
-        } DataRegisters;
-    };
-
-    class Commands {
-
-    public:
-        typedef enum MeasurementControlValues_t {
-            TEMPERATURE = 0x2E,
-            PRESSURE_OSS0 = 0x34,
-            PRESSURE_OSS1 = 0x74,
-            PRESSURE_OSS2 = 0xB4,
-            PRESSURE_OSS3 = 0xF4
-        } MeasurementControlValues;
-
-        typedef enum SoftReset_t {
-            POWER_ON_RESET = 0xB6
-        } SoftReset;
-    };
-
-    class MagicNumbers {
-    public:
-        typedef enum ChipId_t {
-            CHIP_ID = 0x55
-        } ChipId;
-    };
-
-    class BitMasks {
-
-    public:
-        typedef enum ControlRegister_t {
-            OSS_BITS = 0b11000000,
-            SCO_BIT = 0b00100000,
-            MEASUREMENT_CONTROL_BITS = 0b00011111
-        } ControlRegister;
-    };
-
-    int config_bmp180(int bus_number, int device_address, int update_period_ms, std::string device_name, bmp180_host_callback_function function_pointer) {
-        _bmp180_i2c_bus_number = bus_number;
-        _bmp180_i2c_device_address = device_address;
-        _bmp180_sensor_update_period_ms = update_period_ms;
-        _bmp180_device_name = std::move(device_name);
-
-        _bmp180_host_callback_function = function_pointer;
-
-        bmp180_data_capture_thread = std::thread(&Bmp180::_bmp180_data_capture_worker, this);
+        data_capture_thread = std::thread(&Bmp180::_data_capture_worker, this);
 
         return 0;
     }
@@ -437,18 +443,18 @@ public:
     int connect_to_device() {
         int status = 1;
 
-        status &= this->_connect_to_bmp180();
+        status &= this->_connect_to_device();
 
         return status;
     }
 
     int init_device() {
-        this->_init_bmp180();
+        this->_init_device();
 
         return 1;
     }
 
-    int mock_load_bmp180_calibration_data() {
+    int mock_load_calibration_data() {
 
         /*
          * RPI4 is little endian, x86 = little endian  (use lscpu | grep -i byte)
@@ -529,7 +535,7 @@ public:
 
         int8_t register_address = 0x00;
 
-        if (i2c_send(&_bmp180_i2c_context, &outbound_message, register_address)) {
+        if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
             std::cout << "sent mock calibration data to device OK\n";
             return 0;
         }
@@ -537,16 +543,16 @@ public:
         return -1;
     }
 
-    int mock_run_bmp180_device_emulation() {
+    int mock_run_device_emulation() {
 
-        mock_bmp180_device_thread = std::thread(&Bmp180::_mock_bmp180_device_emulation, this);
+        mock_device_thread = std::thread(&Bmp180::_mock_device_emulation, this);
 
         // wait a little bit for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));
 
-        std::unique_lock<std::mutex> device_lock(this->mock_bmp180_device_thread_run_mutex);
-        this->mock_bmp180_device_thread_run_cv.notify_one();
-        this->mock_run_bmp180_device_thread = true;
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        this->mock_device_thread_run_cv.notify_one();
+        this->mock_run_device_thread = true;
         device_lock.unlock();
 
         return 1;

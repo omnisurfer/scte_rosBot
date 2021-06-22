@@ -28,7 +28,7 @@ void handle_bmp180_measurements(float temperature, float pressure) {
 }
 
 void handle_l3gd20_measurements(int temperature, int out_x, int out_y, int out_z) {
-    std::cout << "temp: " << (float)temperature << " out_x: " << (float)out_x << " out_y: " << (float)out_y << " out_z: " << (float)out_z << std::endl;
+    std::cout << "temp: " << (float)temperature << " out_x_dps: " << (float)out_x << " out_y_dps: " << (float)out_y << " out_z_dps: " << (float)out_z << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     /* BMP180 device setup */
     Bmp180 bmp180DeviceHandle;
 
-    bmp180DeviceHandle.config_bmp180(
+    bmp180DeviceHandle.config_device(
             i2c_bus_number,
             i2c_device_address,
             1000,
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
     };
 
 #if ENABLE_MOCK_BMP180_DEVICE
-    bmp180DeviceHandle.mock_run_bmp180_device_emulation();
+    bmp180DeviceHandle.mock_run_device_emulation();
 #endif
 
     bmp180DeviceHandle.init_device();
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 
     i2c_device_address = 0x6b;
 
-    l3gd20DeviceHandle.config_l3gd20(
+    l3gd20DeviceHandle.config_device(
             i2c_bus_number,
             i2c_device_address,
             1000,
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
     };
 
 #if ENABLE_MOCK_L3GD20_DEVICE
-    l3gd20DeviceHandle.mock_run_l3gd20_device_emulation();
+    l3gd20DeviceHandle.mock_run_device_emulation();
 #endif
 
     l3gd20DeviceHandle.init_device();

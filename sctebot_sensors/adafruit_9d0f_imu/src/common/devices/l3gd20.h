@@ -28,138 +28,6 @@ class L3gd20 {
 
 private:
 
-    int _device_endian_msb_index = 1;
-    int _device_endian_lsb_index = 0;
-
-    int _l3gd20_i2c_bus_number{};
-    int _l3gd20_i2c_device_address{};
-    int _l3gd20_sensor_update_period_ms{};
-    std::string _l3gd20_device_name;
-
-    context_t _l3gd20_i2c_context{};
-
-    uint8_t _l3gd20_control_register_buffer[5] = {0};
-    int8_t _l3gd20_temperature{0};
-    int16_t _l3gd20_x_axis{0};
-    int16_t _l3gd20_y_axis{0};
-    int16_t _l3gd20_z_axis{0};
-
-    bool run_l3gd20_data_capture_thread = false;
-    std::condition_variable l3gd20_data_capture_thread_run_cv;
-    std::mutex l3gd20_data_capture_thread_run_mutex;
-    std::thread l3gd20_data_capture_thread;
-
-    typedef void (*l3gd20_host_callback_function)(int, int, int, int);
-    l3gd20_host_callback_function _l3gd20_host_callback_function{};
-
-    bool mock_run_l3gd20_device_thread = false;
-    std::condition_variable mock_l3gd20_device_thread_run_cv;
-    std::mutex mock_l3gd20_device_thread_run_mutex;
-    std::thread mock_l3gd20_device_thread;
-
-    int _connect_to_l3gd20() {
-
-        /*
-         * setup the i2c context and connect
-         */
-        _l3gd20_i2c_context = {0};
-        if(!i2c_dev_open(&_l3gd20_i2c_context, _l3gd20_i2c_bus_number, _l3gd20_i2c_device_address)) {
-            std::cout << "failed to open device\n";
-            return 0;
-        }
-
-        if(!i2c_is_connected(&_l3gd20_i2c_context)) {
-            std::cout << "failed to connect to device\n";
-            return 0;
-        }
-
-#if ENABLE_MOCK_L3GD20_DEVICE
-        mock_load_l3gd20_data();
-#endif
-
-        // try read whoami
-        uint8_t chip_id[1] = {0};
-        buffer_t inbound_message = {
-                .bytes = chip_id,
-                .size = sizeof(chip_id)
-        };
-
-        uint8_t register_address;
-        register_address = L3gd20::Addresses::Registers::WHO_AM_I;
-        i2c_recv(&_l3gd20_i2c_context, &inbound_message, register_address);
-
-        if(chip_id[0] != L3gd20::MagicNumbers::WhoAmI::WHO_AM_I) {
-            std::cout << "failed to read device who am I register\n";
-            return 0;
-        }
-        return 1;
-    }
-
-    int _init_l3gd20();
-
-    int _close_device() {
-
-        i2c_dev_close(&_l3gd20_i2c_context, _l3gd20_i2c_bus_number);
-
-        return 0;
-    }
-
-    void _l3gd20_data_capture_worker();
-
-    void _mock_l3gd20_device_emulation();
-
-    void _request_l3gd20_temperature();
-
-    void _request_l3gd20_xyz_axis();
-
-    int8_t _get_l3gd20_temperature() const {
-        return _l3gd20_temperature;
-    }
-
-    int16_t _get_l3gd20_x_axis() const {
-        return _l3gd20_x_axis;
-    }
-
-    int16_t _get_l3gd20_y_axis() const {
-        return _l3gd20_y_axis;
-    }
-
-    int16_t _get_l3gd20_z_axis() const {
-        return _l3gd20_z_axis;
-    }
-
-    int _measurement_completed_ok();
-
-public:
-
-    L3gd20() = default;
-
-    ~L3gd20() {
-
-        this->_close_device();
-
-        this->run_l3gd20_data_capture_thread = false;
-
-        std::unique_lock<std::mutex> data_lock(this->l3gd20_data_capture_thread_run_mutex);
-        this->l3gd20_data_capture_thread_run_cv.notify_one();
-        data_lock.unlock();
-
-        if(l3gd20_data_capture_thread.joinable()) {
-            l3gd20_data_capture_thread.join();
-        }
-
-        this->mock_run_l3gd20_device_thread = false;
-
-        std::unique_lock<std::mutex> device_lock(this->mock_l3gd20_device_thread_run_mutex);
-        this->mock_l3gd20_device_thread_run_cv.notify_one();
-        device_lock.unlock();
-
-        if(mock_l3gd20_device_thread.joinable()) {
-            mock_l3gd20_device_thread.join();
-        }
-
-    }
-
     class Addresses {
 
     public:
@@ -313,15 +181,154 @@ public:
         } Int1Duration;
     };
 
-    int config_l3gd20(int bus_number, int device_address, int update_period_ms, std::string device_name, l3gd20_host_callback_function function_pointer) {
-        _l3gd20_i2c_bus_number = bus_number;
-        _l3gd20_i2c_device_address = device_address;
-        _l3gd20_sensor_update_period_ms = update_period_ms;
-        _l3gd20_device_name = std::move(device_name);
+    int _device_endian_msb_index = 1;
+    int _device_endian_lsb_index = 0;
 
-        _l3gd20_host_callback_function = function_pointer;
+    int _i2c_bus_number{};
+    int _i2c_device_address{};
+    int _sensor_update_period_ms{};
+    std::string _device_name;
 
-        l3gd20_data_capture_thread = std::thread(&L3gd20::_l3gd20_data_capture_worker, this);
+    context_t _i2c_device_context{};
+
+    uint8_t _control_register_buffer[5] = {0};
+    int8_t _temperature_axis{0};
+    int16_t _angular_rate_x_axis{0};
+    int16_t _angular_rate_y_axis{0};
+    int16_t _angular_rate_z_axis{0};
+
+    bool run_data_capture_thread = false;
+    std::condition_variable data_capture_thread_run_cv;
+    std::mutex data_capture_thread_run_mutex;
+    std::thread data_capture_thread;
+
+    typedef void (*host_callback_function)(int, int, int, int);
+    host_callback_function _host_callback_function{};
+
+    bool mock_run_device_thread = false;
+    std::condition_variable mock_device_thread_run_cv;
+    std::mutex mock_device_thread_run_mutex;
+    std::thread mock_device_thread;
+
+    int _init_device();
+
+    int _connect_to_device() {
+
+        /*
+         * setup the i2c context and connect
+         */
+        _i2c_device_context = {0};
+        if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
+            std::cout << "failed to open device\n";
+            return 0;
+        }
+
+        if(!i2c_is_connected(&_i2c_device_context)) {
+            std::cout << "failed to connect to device\n";
+            return 0;
+        }
+
+#if ENABLE_MOCK_L3GD20_DEVICE
+        mock_load_data();
+#endif
+
+        // try read whoami
+        uint8_t chip_id[1] = {0};
+        buffer_t inbound_message = {
+                .bytes = chip_id,
+                .size = sizeof(chip_id)
+        };
+
+        uint8_t register_address;
+        register_address = L3gd20::Addresses::Registers::WHO_AM_I;
+        i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+
+        if(chip_id[0] != L3gd20::MagicNumbers::WhoAmI::WHO_AM_I) {
+            std::cout << "failed to read device who am I register\n";
+            return 0;
+        }
+        return 1;
+    }
+
+    int _close_device() {
+
+        i2c_dev_close(&_i2c_device_context, _i2c_bus_number);
+
+        return 0;
+    }
+
+    void _data_capture_worker();
+
+    void _mock_device_emulation();
+
+    void _request_temperature();
+
+    void _request_angular_rate_xyz_axis();
+
+    int8_t _get_temperature() const {
+        return _temperature_axis;
+    }
+
+    int16_t _get_angular_rate_x_axis() const {
+        return _angular_rate_x_axis;
+    }
+
+    int16_t _get_angular_rate_y_axis() const {
+        return _angular_rate_y_axis;
+    }
+
+    int16_t _get_angular_rate_z_axis() const {
+        return _angular_rate_z_axis;
+    }
+
+    int _measurement_completed_ok();
+
+public:
+
+    L3gd20() = default;
+
+    ~L3gd20() {
+
+        this->_close_device();
+
+        this->run_data_capture_thread = false;
+
+        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+        this->data_capture_thread_run_cv.notify_one();
+        data_lock.unlock();
+
+        if(data_capture_thread.joinable()) {
+            data_capture_thread.join();
+        }
+
+        this->mock_run_device_thread = false;
+
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        this->mock_device_thread_run_cv.notify_one();
+        device_lock.unlock();
+
+        if(mock_device_thread.joinable()) {
+            mock_device_thread.join();
+        }
+
+    }
+
+    int config_device(
+            int bus_number,
+            int device_address,
+            int update_period_ms,
+            std::string device_name,
+            host_callback_function
+            function_pointer
+            ) {
+        _i2c_bus_number = bus_number;
+        _i2c_device_address = device_address;
+        _sensor_update_period_ms = update_period_ms;
+        _device_name = std::move(device_name);
+
+        _host_callback_function = function_pointer;
+
+        data_capture_thread = std::thread(&L3gd20::_data_capture_worker, this);
 
         return 0;
     }
@@ -329,18 +336,18 @@ public:
     int connect_to_device() {
         int status = 1;
 
-        status &= this->_connect_to_l3gd20();
+        status &= this->_connect_to_device();
 
         return status;
     }
 
     int init_device() {
-        this->_init_l3gd20();
+        this->_init_device();
 
         return 1;
     }
 
-    int mock_load_l3gd20_data() {
+    int mock_load_data() {
         /*
          * @77 bmp180 (?)
          * @6b l3gd20 (?)
@@ -473,7 +480,7 @@ public:
 
         int8_t register_address = 0x00;
 
-        if (i2c_send(&_l3gd20_i2c_context, &outbound_message, register_address)) {
+        if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
             std::cout << "loaded mock data for device OK\n";
             return 0;
         }
@@ -483,16 +490,16 @@ public:
         }
     }
 
-    int mock_run_l3gd20_device_emulation() {
+    int mock_run_device_emulation() {
 
-        mock_l3gd20_device_thread = std::thread(&L3gd20::_mock_l3gd20_device_emulation, this);
+        mock_device_thread = std::thread(&L3gd20::_mock_device_emulation, this);
 
         // wait a little bit for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));
 
-        std::unique_lock<std::mutex> device_lock(this->mock_l3gd20_device_thread_run_mutex);
-        this->mock_l3gd20_device_thread_run_cv.notify_one();
-        this->mock_run_l3gd20_device_thread = true;
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        this->mock_device_thread_run_cv.notify_one();
+        this->mock_run_device_thread = true;
         device_lock.unlock();
 
         return 1;
