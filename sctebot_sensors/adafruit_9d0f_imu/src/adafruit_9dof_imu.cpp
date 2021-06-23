@@ -27,8 +27,12 @@ void handle_bmp180_measurements(float temperature, float pressure) {
      /**/
 }
 
-void handle_l3gd20_measurements(int temperature, int out_x, int out_y, int out_z) {
-    std::cout << "temp: " << (float)temperature << " out_x_dps: " << (float)out_x << " out_y_dps: " << (float)out_y << " out_z_dps: " << (float)out_z << std::endl;
+void handle_l3gd20_measurements(int temperature, int r_x, int r_y, int r_z) {
+    std::cout << "temp: " << (float)temperature << " x_dps: " << (float)r_x << " y_dps: " << (float)r_y << " z_dps: " << (float)r_z << std::endl;
+}
+
+void handle_lsm303dlhc_measurements(int temperature, int a_x, int a_y, int a_z, int m_x, int m_y, int m_z) {
+
 }
 
 int main(int argc, char* argv[]) {
@@ -100,6 +104,30 @@ int main(int argc, char* argv[]) {
 #endif
 
     l3gd20DeviceHandle.init_device();
+
+    /* LSM303DLHC device setup */
+
+    Lsm303Dlhc lsm303DlhcDeviceHandle;
+
+    i2c_device_address = 0x1e;
+
+    lsm303DlhcDeviceHandle.config_device(
+            i2c_bus_number,
+            i2c_device_address,
+            1000,
+            "3d_accel",
+            &handle_lsm303dlhc_measurements
+    );
+
+    if(!l3gd20DeviceHandle.connect_to_device()) {
+        return 0;
+    }
+
+#if ENABLE_MOCK_LSM303DLHC_DEVICE
+    lsm303DlhcDeviceHandle.mock_run_device_emulation();
+#endif
+
+    lsm303DlhcDeviceHandle.init_device();
 
     std::cout << "press any key to continue..." << std::endl;
 

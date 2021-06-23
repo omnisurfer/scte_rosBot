@@ -135,6 +135,10 @@ add_library(
         l3gd20 src/common/devices/l3gd20.cpp
 )
 
+add_library(
+        lsm303dlhc src/common/devices/lsm303dlhc.cpp
+)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -176,6 +180,7 @@ target_link_libraries(
         i2c_linux
         bmp180
         l3gd20
+        lsm303dlhc
         pthread
         Boost::log
 )

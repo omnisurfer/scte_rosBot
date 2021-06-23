@@ -351,6 +351,7 @@ public:
         /*
          * @77 bmp180 (?)
          * @6b l3gd20 (?)
+         * @1e lsm303dlhc (?)
          */
 
         /* Sensors connected

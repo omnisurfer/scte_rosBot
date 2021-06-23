@@ -164,8 +164,7 @@ void Bmp180::_mock_device_emulation() {
         //set the measurement in progress bit
         register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
         measurement_command[0] &= Bmp180::BitMasks::ControlRegister::SCO_BIT;
-        //std::bitset<8> x(measurement_command[0]);
-        //std::cout << "Ctrl SCO SET: " << x << std::endl;
+        //std::cout << "Ctrl SCO SET: " << std::bitset<8>(measurement_command[0]) << std::endl;
 
         buffer_t  outbound_message = {
                 .bytes = measurement_command,
@@ -180,8 +179,7 @@ void Bmp180::_mock_device_emulation() {
 
         //clear the measurement in progress bit
         measurement_command[0] &= ~Bmp180::BitMasks::ControlRegister::SCO_BIT;
-        //std::bitset<8> y(measurement_command[0]);
-        //std::cout << "Ctrl SCO CLEAR: " << y << std::endl;
+        //std::cout << "Ctrl SCO CLEAR: " << std::bitset<8>(measurement_command[0]) << std::endl;
 
         outbound_message = {
                 .bytes = measurement_command,

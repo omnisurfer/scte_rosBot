@@ -44,10 +44,9 @@ int L3gd20::_init_device() {
             _control_register_buffer[3] |
             L3gd20::BitMasks::ControlRegister4::BDU;
 
-    std::bitset<8> a(_control_register_buffer[3]);
-    std::bitset<8> b(control_reg);
-
-    std::cout << "ctrl1b " << a << " ctrl1a " << b << std::endl;
+    std::cout << "ctrl1b "
+                << std::bitset<8>(_control_register_buffer[3])
+                << " ctrl1a " << std::bitset<8>(control_reg) << std::endl;
 
     outbound_message = {
             .bytes = _control_register_buffer,
@@ -79,10 +78,9 @@ int L3gd20::_init_device() {
 
     control_reg |= L3gd20::BitMasks::ControlRegister1::POWER_DOWN_DISABLE;
 
-    std::bitset<8> c(_control_register_buffer[0]);
-    std::bitset<8> d(control_reg);
-
-    std::cout << "ctrl1b " << c << " ctrl1a " << d << std::endl;
+    std::cout << "ctrl1b "
+                << std::bitset<8>(_control_register_buffer[0])
+                << " ctrl1a " << std::bitset<8>(control_reg) << std::endl;
 
     register_address = L3gd20::Addresses::CTRL_REG1;
     if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {

@@ -83,6 +83,8 @@ private:
     };
 
     class BitMasks {
+
+    public:
         typedef enum ControlRegister1_t {
             ODR_POWER_DOWN = 0b00000000,
             ODR_1HZ = 0b00010000,
@@ -279,7 +281,7 @@ private:
 
     context_t _i2c_device_context{};
 
-    uint8_t _control_register_buffer[5] = {0};
+    uint8_t _control_register_buffer[6] = {0};
     int16_t _accel_x_axis{0};
     int16_t _accel_y_axis{0};
     int16_t _accel_z_axis{0};
@@ -333,13 +335,9 @@ private:
         return 0;
     }
 
-    void _data_capture_worker() {
+    void _data_capture_worker();
 
-    }
-
-    void _mock_device_emulation() {
-
-    }
+    void _mock_device_emulation();
 
 public:
 
