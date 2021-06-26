@@ -282,6 +282,9 @@ private:
     context_t _i2c_device_context{};
 
     uint8_t _control_register_buffer[6] = {0};
+    uint8_t _cra_reg_m[1] = {0};
+    uint8_t _crb_reg_m[1] = {0};
+    uint8_t _mr_reg_m[1] = {0};
     int16_t _accel_x_axis{0};
     int16_t _accel_y_axis{0};
     int16_t _accel_z_axis{0};
