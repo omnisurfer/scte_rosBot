@@ -2,8 +2,8 @@
 // Created by user on 5/23/21.
 //
 
-#include <bitset>
 #include "l3gd20.h"
+#include "shared_util.h"
 
 int L3gd20::_init_device() {
 
@@ -15,80 +15,102 @@ int L3gd20::_init_device() {
     buffer_t inbound_message;
     buffer_t outbound_message;
     uint8_t register_address;
-    uint8_t control_reg;
+    uint8_t control_reg[1] = {0};
 
-    // Read config bytes
+    // CONTROL REGISTERS 1 to 5
+    register_address = L3gd20::Addresses::CTRL_REG1;
+
     inbound_message = {
-            .bytes = _control_register_buffer,
-            .size = sizeof(_control_register_buffer)
+            .bytes = _control_register_1to5_buffer,
+            .size = sizeof(_control_register_1to5_buffer)
     };
 
-    register_address = L3gd20::Addresses::CTRL_REG1;
     if(i2c_recv(&_i2c_device_context, &inbound_message, register_address)) {
-        std::cout << "l3gd20 config: " << std::endl;
 
-        for(uint i = 0; i < sizeof(_control_register_buffer); ++i) {
-            std::cout << std::hex << std::setfill('0') << std::setw(2) << (int)_control_register_buffer[i] << " ";
+        std::string output_string;
+        std::stringstream ss;
+
+        ss << "l3gd20 config: ";
+
+        for(uint i = 0; i < sizeof(_control_register_1to5_buffer); ++i) {
+            ss << std::hex << std::setfill('0') << std::setw(2) << (int)_control_register_1to5_buffer[i] << " ";
         }
 
-        std::cout << std::endl;
+        output_string = ss.str();
+
+        BOOST_LOG_TRIVIAL(info) << output_string;
     }
 
     // Config CTRL_REG5
-    // Default
+    /*
+     * DEFAULT
+     */
 
-    // Config CTRL_REG4
-    // BDU = 1, read update on read
-    // 250 dps (DEFAULT)
-    control_reg =
-            _control_register_buffer[3] |
+    //region CTRL_REG4
+    /*
+     * BDU = 1, read update on read
+     * 250 dps (DEFAULT)
+     */
+    register_address = L3gd20::Addresses::CTRL_REG4;
+
+    control_reg[0] =
+            _control_register_1to5_buffer[3] |
             L3gd20::BitMasks::ControlRegister4::BDU;
 
-    std::cout << "ctrl1b "
-                << std::bitset<8>(_control_register_buffer[3])
-                << " ctrl1a " << std::bitset<8>(control_reg) << std::endl;
+    display_register_bits(_control_register_1to5_buffer[3], control_reg[0]);
 
     outbound_message = {
-            .bytes = _control_register_buffer,
+            .bytes = control_reg,
             .size = sizeof(control_reg)
     };
 
-    register_address = L3gd20::Addresses::CTRL_REG4;
     if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-        std::cout << "sensor commanded to start measuring" << std::endl;
+        BOOST_LOG_TRIVIAL(debug) << "CTRL_REG4 configure OK";
     }
     else {
-        std::cout << "failed to command sensor to start measuring" << std::endl;
+        BOOST_LOG_TRIVIAL(debug) << "CTRL_REG4 configure failed";
     }
+    //endregion
 
-    // Config CTRL_REG3
-    // Default
+    // CTRL_REG3
+    /*
+     * Default
+     */
 
-    // Config CTRL_REG2
-    // Default
+    // CTRL_REG2
+    /*
+     * Default
+     */
 
-    // Config CTRL_REG1
-    // Disable power down mode
-    // ODR = 95Hz (Default)
-    control_reg =
-            _control_register_buffer[0] |
+    //region CTRL_REG1
+    /*
+     * Disable power down mode
+     * ODR = 95Hz (Default)
+     */
+    register_address = L3gd20::Addresses::CTRL_REG1;
+
+    control_reg[0] =
+            _control_register_1to5_buffer[0] |
             L3gd20::BitMasks::ControlRegister1::X_AXIS_ENABLE |
             L3gd20::BitMasks::ControlRegister1::Y_AXIS_ENABLE |
             L3gd20::BitMasks::ControlRegister1::Z_AXIS_ENABLE;
 
-    control_reg |= L3gd20::BitMasks::ControlRegister1::POWER_DOWN_DISABLE;
+    control_reg[0] |= L3gd20::BitMasks::ControlRegister1::POWER_DOWN_DISABLE;
 
-    std::cout << "ctrl1b "
-                << std::bitset<8>(_control_register_buffer[0])
-                << " ctrl1a " << std::bitset<8>(control_reg) << std::endl;
+    display_register_bits(_control_register_1to5_buffer[0], control_reg[0]);
 
-    register_address = L3gd20::Addresses::CTRL_REG1;
+    outbound_message = {
+            .bytes = control_reg,
+            .size = sizeof(control_reg)
+    };
+
     if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-        std::cout << "sensor commanded to start measuring" << std::endl;
+        BOOST_LOG_TRIVIAL(debug) << "CTRL_REG1 configure OK";
     }
     else {
-        std::cout << "failed to command sensor to start measuring" << std::endl;
+        BOOST_LOG_TRIVIAL(debug) << "CTRL_REG1 configure failed";
     }
+    //endregion
 
     std::lock_guard<std::mutex> lk(this->data_capture_thread_run_mutex);
     this->data_capture_thread_run_cv.notify_one();
@@ -143,9 +165,9 @@ void L3gd20::_mock_device_emulation() {
 
     uint16_t loop_sleep_microseconds = 10500;
 
-    int16_t debug_x_axis = 420;
-    int16_t debug_y_axis = -420;
-    int16_t debug_z_axis = 69;
+    int16_t debug_x_rate_axis = 420;
+    int16_t debug_y_rate_axis = -420;
+    int16_t debug_z_rate_axis = 69;
     int8_t debug_temp_axis = -42;
 
     uint8_t register_address;
@@ -154,7 +176,9 @@ void L3gd20::_mock_device_emulation() {
     while(this->mock_run_device_thread) {
         device_lock.unlock();
 
-        // TEMP AXIS
+        //region TEMP AXIS
+        register_address = L3gd20::Addresses::Registers::OUT_TEMP;
+
         uint8_t mock_temperature[1] = {0};
         buffer_t outbound_measurement = {
                 .bytes = mock_temperature,
@@ -163,49 +187,53 @@ void L3gd20::_mock_device_emulation() {
 
         mock_temperature[0] = debug_temp_axis;
 
-        register_address = L3gd20::Addresses::Registers::OUT_TEMP;
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+        //endregion
 
-        // X - AXIS
+        //region X AXIS
+        register_address = L3gd20::Addresses::Registers::OUT_X_L;
+
         uint8_t mock_x_axis[2] = {0};
         outbound_measurement = {
                 .bytes = mock_x_axis,
                 .size = sizeof(mock_x_axis)
         };
 
-        mock_x_axis[0] = debug_x_axis & 0xFF;
-        mock_x_axis[1] = (debug_x_axis >> 8) & 0xFF;
+        mock_x_axis[0] = debug_x_rate_axis & 0xFF;
+        mock_x_axis[1] = (debug_x_rate_axis >> 8) & 0xFF;
 
-        //std::cout << "x_l " << mock_x_axis[0] << " x_h " << mock_x_axis[1] << std::endl;
-
-        register_address = L3gd20::Addresses::Registers::OUT_X_L;
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+        //endregion
 
-        // Y - AXIS
+        //region Y AXIS
+        register_address = L3gd20::Addresses::Registers::OUT_Y_L;
+
         uint8_t mock_y_axis[2] = {0};
         outbound_measurement = {
                 .bytes = mock_y_axis,
                 .size = sizeof(mock_y_axis)
         };
 
-        mock_y_axis[0] = debug_y_axis & 0xFF;
-        mock_y_axis[1] = (debug_y_axis >> 8) & 0xFF;
+        mock_y_axis[0] = debug_y_rate_axis & 0xFF;
+        mock_y_axis[1] = (debug_y_rate_axis >> 8) & 0xFF;
 
-        register_address = L3gd20::Addresses::Registers::OUT_Y_L;
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+        //endregion
 
-        // Z - AXIS
+        //region Z AXIS
+        register_address = L3gd20::Addresses::Registers::OUT_Z_L;
+
         uint8_t mock_z_axis[2] = {0};
         outbound_measurement = {
                 .bytes = mock_z_axis,
                 .size = sizeof(mock_z_axis)
         };
 
-        mock_z_axis[0] = debug_z_axis & 0xFF;
-        mock_z_axis[1] = (debug_z_axis >> 8) & 0xFF;
+        mock_z_axis[0] = debug_z_rate_axis & 0xFF;
+        mock_z_axis[1] = (debug_z_rate_axis >> 8) & 0xFF;
 
-        register_address = L3gd20::Addresses::Registers::OUT_Z_L;
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+        //endregion
 
         std::this_thread::sleep_for(std::chrono::microseconds(loop_sleep_microseconds));
         // sleep to help with debug

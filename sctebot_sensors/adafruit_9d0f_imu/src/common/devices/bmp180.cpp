@@ -3,8 +3,7 @@
 //
 
 #include "bmp180.h"
-
-#include <bitset>
+#include "shared_util.h"
 
 int Bmp180::_init_device() {
 
@@ -13,25 +12,39 @@ int Bmp180::_init_device() {
         logging::trivial::severity >= logging::trivial::debug
     );
 
-    buffer_t inbound_message = {
+    buffer_t inbound_message;
+
+    // COEFFICIENT REGISTERS 1 to 11
+    uint8_t register_address = (Bmp180::Addresses::CalibrationCoefficients::AC1 >> 8) & 0xff;
+
+    inbound_message = {
             .bytes = _calibration_data_buffer,
             .size = sizeof(_calibration_data_buffer)
     };
 
-    uint8_t register_address = (Bmp180::Addresses::CalibrationCoefficients::AC1 >> 8) & 0xff;
     if (i2c_recv(&_i2c_device_context, &inbound_message, register_address)) {
 
-        std::cout << "calibration data: " << std::endl;
+        std::string output_string;
+        std::stringstream ss;
+
+        ss << "bmp180 calibration data: " << std::endl;
 
         for(uint i = 0; i < sizeof(_calibration_data_buffer); ++i) {
-            std::cout << std::hex << std::setfill('0') << std::setw(2) << (int)_calibration_data_buffer[i] << " ";
+            ss << std::hex << std::setfill('0') << std::setw(2) << (int)_calibration_data_buffer[i] << " ";
         }
 
-        std::cout << std::endl;
+        output_string = ss.str();
+
+        BOOST_LOG_TRIVIAL(info) << output_string;
+    }
+    else {
+        BOOST_LOG_TRIVIAL(error) << "failed to read bmp180 coefficient registers";
     }
 
-    this->_init_calibration_coefficients((char *) this->_get_calibration_buffer_address(),
-                                         this->_get_calibration_buffer_size());
+    this->_init_calibration_coefficients(
+            (char *) this->_get_calibration_buffer_address(),
+            this->_get_calibration_buffer_size()
+                                         );
 
     std::lock_guard<std::mutex> lock(this->data_capture_thread_run_mutex);
     this->data_capture_thread_run_cv.notify_one();
@@ -207,12 +220,12 @@ void Bmp180::_request_temperature() {
     register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
     if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
         if(!this->_measurement_completed_ok()) {
-            std::cout << "failed to complete measurement" << std::endl;
+            BOOST_LOG_TRIVIAL(error) << "failed to complete measurement";
             return;
         }
     }
     else {
-        std::cout << "failed to command temperature read" << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "failed to command temperature read";
     }
 
     // read back temperature
@@ -254,7 +267,7 @@ void Bmp180::_request_pressure() {
         this->_measurement_completed_ok();
     }
     else {
-        std::cout << "failed to command pressure read" << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "failed to command pressure read";
     }
 
     // read back pressure

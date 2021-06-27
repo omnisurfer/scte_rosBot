@@ -281,7 +281,7 @@ private:
 
     context_t _i2c_device_context{};
 
-    uint8_t _control_register_buffer[6] = {0};
+    uint8_t _control_register_1to6_buffer[6] = {0};
     uint8_t _cra_reg_m[1] = {0};
     uint8_t _crb_reg_m[1] = {0};
     uint8_t _mr_reg_m[1] = {0};
@@ -314,12 +314,12 @@ private:
 
         _i2c_device_context = {0};
         if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
-            std::cout << "failed to open device\n";
+            BOOST_LOG_TRIVIAL(error) << "failed to open device";
             return 0;
         }
 
         if(!i2c_is_connected(&_i2c_device_context)) {
-            std::cout << "failed to connect to device\n";
+            BOOST_LOG_TRIVIAL(error) << "failed to connect to device\n";
             return 0;
         }
 

@@ -192,12 +192,12 @@ private:
          */
         _i2c_device_context = {0};
         if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
-            std::cout << "failed to open device\n";
+            BOOST_LOG_TRIVIAL(error) << "failed to open device";
             return 0;
         }
 
         if(!i2c_is_connected(&_i2c_device_context)) {
-            std::cout << "failed to connect to device\n";
+            BOOST_LOG_TRIVIAL(error) << "failed to connect to device";
             return 0;
         }
 
@@ -217,7 +217,7 @@ private:
         i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
         if(chip_id[0] != Bmp180::MagicNumbers::ChipId::CHIP_ID) {
-            std::cout << "failed to read device chip id\n";
+            BOOST_LOG_TRIVIAL(error) << "failed to read device chip id";
             return 0;
         }
 
@@ -267,7 +267,7 @@ private:
     int _calculate_temperature(uint16_t uncompensated_temperature, float &temperature) {
 
         if(!sensor_calibration_read) {
-            std::cout << "sensor calibration not read yet\n";
+            BOOST_LOG_TRIVIAL(debug) << "sensor calibration not read yet";
             return 0;
         }
 
@@ -293,7 +293,7 @@ private:
     int _calculate_pressure(uint16_t uncompensated_pressure, uint8_t uncompensated_pressure_xlsb, float &pressure) const {
 
         if(!sensor_calibration_read) {
-            std::cout << "sensor calibration not read yet\n";
+            BOOST_LOG_TRIVIAL(debug) << "sensor calibration not read yet";
             return 0;
         }
 
@@ -345,7 +345,7 @@ private:
     }
 
     int _init_calibration_coefficients(char *bytes, uint8_t length) {
-        std::cout << "_init_calibration_coefficients\n";
+        BOOST_LOG_TRIVIAL(debug) << "_init_calibration_coefficients";
 
         if(length < 0 or length > 22) {
             return 0;
@@ -395,7 +395,7 @@ public:
     Bmp180() = default;
 
     ~Bmp180() {
-        std::cout << "bmp180 destructor called" << std::endl;
+        BOOST_LOG_TRIVIAL(debug) << "bmp180 destructor called";
 
         this->_close_device();
 
@@ -526,7 +526,6 @@ public:
             send_buffer[i + (i * 1)] = (_mock_device_memory[i] >> 8) & 0xff;
             send_buffer[i + (i * 1) + 1] = (_mock_device_memory[i]) & 0xff;
         }
-        //std::memcpy(&send_buffer, _mock_device_memory, sizeof(_mock_device_memory));
 
         buffer_t outbound_message = {
                 .bytes = send_buffer,
@@ -536,7 +535,7 @@ public:
         int8_t register_address = 0x00;
 
         if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-            std::cout << "sent mock calibration data to device OK\n";
+            BOOST_LOG_TRIVIAL(debug) << "sent mock calibration data to device OK";
             return 0;
         }
 

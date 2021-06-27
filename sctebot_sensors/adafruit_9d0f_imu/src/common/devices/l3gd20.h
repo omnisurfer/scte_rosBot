@@ -191,7 +191,7 @@ private:
 
     context_t _i2c_device_context{};
 
-    uint8_t _control_register_buffer[5] = {0};
+    uint8_t _control_register_1to5_buffer[5] = {0};
     int8_t _temperature_axis{0};
     int16_t _angular_rate_x_axis{0};
     int16_t _angular_rate_y_axis{0};
@@ -219,12 +219,12 @@ private:
          */
         _i2c_device_context = {0};
         if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
-            std::cout << "failed to open device\n";
+            BOOST_LOG_TRIVIAL(error) << "failed to open device";
             return 0;
         }
 
         if(!i2c_is_connected(&_i2c_device_context)) {
-            std::cout << "failed to connect to device\n";
+            BOOST_LOG_TRIVIAL(error) << "failed to connect to device";
             return 0;
         }
 
@@ -244,7 +244,7 @@ private:
         i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
         if(chip_id[0] != L3gd20::MagicNumbers::WhoAmI::WHO_AM_I) {
-            std::cout << "failed to read device who am I register\n";
+            BOOST_LOG_TRIVIAL(error) << "failed to read device WHO_AM_I register";
             return 0;
         }
         return 1;
@@ -467,12 +467,9 @@ public:
          */
 
         for(uint i = 0; i < sizeof(_mock_device_memory)/sizeof(*_mock_device_memory); i++) {
-
-            //std::cout << "i " << i << std::endl;
             send_buffer[i + (i * 1)] = (_mock_device_memory[i] >> 8) & 0xff;
             send_buffer[i + (i * 1) + 1] = (_mock_device_memory[i]) & 0xff;
         }
-        //std::memcpy(&send_buffer, _mock_device_memory, sizeof(_mock_device_memory));
 
         buffer_t outbound_message = {
                 .bytes = send_buffer,
@@ -482,11 +479,11 @@ public:
         int8_t register_address = 0x00;
 
         if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-            std::cout << "loaded mock data for device OK\n";
+            BOOST_LOG_TRIVIAL(debug) << "loaded mock data for device OK";
             return 0;
         }
         else {
-            std::cout << "loaded mock data for device FAILED\n";
+            BOOST_LOG_TRIVIAL(debug) << "loaded mock data for device FAILED";
             return -1;
         }
     }
