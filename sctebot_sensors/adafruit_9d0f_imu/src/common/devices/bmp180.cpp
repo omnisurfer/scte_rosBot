@@ -83,7 +83,9 @@ void Bmp180::_data_capture_worker() {
         float calculated_pressure = 0.0f;
         this->_calculate_pressure(long_uncompensated_pressure, short_uncompensated_pressure_xlsb, calculated_pressure);
 
-        this->_host_callback_function(calculated_temperature, calculated_pressure);
+        this->_host_callback_function(
+                calculated_temperature, calculated_pressure
+                );
 
         std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 

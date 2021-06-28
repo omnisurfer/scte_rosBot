@@ -285,22 +285,27 @@ private:
     uint8_t _cra_reg_m[1] = {0};
     uint8_t _crb_reg_m[1] = {0};
     uint8_t _mr_reg_m[1] = {0};
-    int16_t _accel_x_axis{0};
-    int16_t _accel_y_axis{0};
-    int16_t _accel_z_axis{0};
+    int16_t _accelerometer_x_axis{0};
+    int16_t _accelerometer_y_axis{0};
+    int16_t _accelerometer_z_axis{0};
 
-    int16_t _mag_x_axis{0};
-    int16_t _mag_y_axis{0};
-    int16_t _mag_z_axis{0};
+    int16_t _magnetometer_x_axis{0};
+    int16_t _magnetometer_y_axis{0};
+    int16_t _magnetometer_z_axis{0};
 
-    int16_t _temp_axis{0};
+    int16_t _temperature_axis{0};
 
     bool run_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
     std::mutex data_capture_thread_run_mutex;
     std::thread data_capture_thread;
 
-    typedef void (*host_callback_function)(int, int, int, int, int, int, int);
+    typedef void (*host_callback_function)(
+            int temperature,
+            int x_accel_axis, int y_accel_axis, int z_accel_axis,
+            int x_mag_axis, int y_mag_axis, int z_mag_axis
+            );
+
     host_callback_function _host_callback_function{};
 
     bool mock_run_device_thread = false;
@@ -341,6 +346,41 @@ private:
     void _data_capture_worker();
 
     void _mock_device_emulation();
+
+    void _request_temperature_axis();
+
+    void _request_accelerometer_xyz_axis();
+
+    void _request_magnetometer_xyz_axis();
+
+    int16_t _get_temperature() const {
+        // TODO manipulate the bits to convert the 12-bit value to 16-bit
+        return _temperature_axis;
+    }
+
+    int16_t _get_accel_x_axis() const {
+        return _accelerometer_x_axis;
+    }
+
+    int16_t _get_accel_y_axis() const {
+        return _accelerometer_y_axis;
+    }
+
+    int16_t _get_accel_z_axis() const {
+        return _accelerometer_z_axis;
+    }
+
+    int16_t _get_magnetic_x_axis() const {
+        return _magnetometer_x_axis;
+    }
+
+    int16_t _get_magnetic_y_axis() const {
+        return _magnetometer_y_axis;
+    }
+
+    int16_t _get_magnetic_z_axis() const {
+        return _magnetometer_z_axis;
+    }
 
 public:
 

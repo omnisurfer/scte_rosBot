@@ -32,7 +32,10 @@ void handle_l3gd20_measurements(int temperature, int r_x, int r_y, int r_z) {
 }
 
 void handle_lsm303dlhc_measurements(int temperature, int a_x, int a_y, int a_z, int m_x, int m_y, int m_z) {
-
+    std::cout << "temp: " << (float)temperature
+        << " a_x: " << (float)a_x << " a_y: " << (float)a_y << " a_z: " << (float)a_z
+        << " m_x: " << (float)m_x << " m_y: " << (float)m_y << " m_z: " << (float)m_z
+        << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -61,7 +64,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    /* BMP180 device setup */
+    //region BMP180 device setup
     Bmp180 bmp180DeviceHandle;
 
     bmp180DeviceHandle.config_device(
@@ -81,8 +84,9 @@ int main(int argc, char* argv[]) {
 #endif
 
     bmp180DeviceHandle.init_device();
+    //endregion
 
-    /* L3GD20 device setup */
+    //region L3GD20 device setup
     L3gd20 l3gd20DeviceHandle;
 
     i2c_device_address = 0x6b;
@@ -104,9 +108,9 @@ int main(int argc, char* argv[]) {
 #endif
 
     l3gd20DeviceHandle.init_device();
+    //endregion
 
-    /* LSM303DLHC device setup */
-
+    //region LSM303DLHC device setup
     Lsm303Dlhc lsm303DlhcDeviceHandle;
 
     i2c_device_address = 0x1e;
@@ -119,7 +123,7 @@ int main(int argc, char* argv[]) {
             &handle_lsm303dlhc_measurements
     );
 
-    if(!l3gd20DeviceHandle.connect_to_device()) {
+    if(!lsm303DlhcDeviceHandle.connect_to_device()) {
         return 0;
     }
 
@@ -128,6 +132,7 @@ int main(int argc, char* argv[]) {
 #endif
 
     lsm303DlhcDeviceHandle.init_device();
+    //endregion
 
     std::cout << "press any key to continue..." << std::endl;
 

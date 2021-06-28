@@ -202,7 +202,10 @@ private:
     std::mutex data_capture_thread_run_mutex;
     std::thread data_capture_thread;
 
-    typedef void (*host_callback_function)(int, int, int, int);
+    typedef void (*host_callback_function)(
+            int temperature,
+            int x_axis, int y_axis, int z_axis
+            );
     host_callback_function _host_callback_function{};
 
     bool mock_run_device_thread = false;
@@ -261,7 +264,7 @@ private:
 
     void _mock_device_emulation();
 
-    void _request_temperature();
+    void _request_temperature_axis();
 
     void _request_angular_rate_xyz_axis();
 

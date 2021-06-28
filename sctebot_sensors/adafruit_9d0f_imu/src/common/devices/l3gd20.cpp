@@ -57,7 +57,7 @@ int L3gd20::_init_device() {
             _control_register_1to5_buffer[3] |
             L3gd20::BitMasks::ControlRegister4::BDU;
 
-    display_register_bits(_control_register_1to5_buffer[3], control_reg[0]);
+    //display_register_8bits(_control_register_1to5_buffer[3], control_reg[0]);
 
     outbound_message = {
             .bytes = control_reg,
@@ -97,7 +97,7 @@ int L3gd20::_init_device() {
 
     control_reg[0] |= L3gd20::BitMasks::ControlRegister1::POWER_DOWN_DISABLE;
 
-    display_register_bits(_control_register_1to5_buffer[0], control_reg[0]);
+    //display_register_8bits(_control_register_1to5_buffer[0], control_reg[0]);
 
     outbound_message = {
             .bytes = control_reg,
@@ -133,17 +133,20 @@ void L3gd20::_data_capture_worker() {
     while(this->run_data_capture_thread) {
         data_lock.unlock();
 
-        this->_request_temperature();
-
+        this->_request_temperature_axis();
         this->_request_angular_rate_xyz_axis();
 
         // maybe make these structs and pass that? less calls?
         int8_t temperature = this->_get_temperature();
+
         int16_t x_axis = this->_get_angular_rate_x_axis();
         int16_t y_axis = this->_get_angular_rate_y_axis();
         int16_t z_axis = this->_get_angular_rate_z_axis();
 
-        this->_host_callback_function(temperature, x_axis, y_axis, z_axis);
+        this->_host_callback_function(
+                temperature,
+                x_axis, y_axis, z_axis
+                );
 
         std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
@@ -244,7 +247,7 @@ void L3gd20::_mock_device_emulation() {
     BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation exiting";
 }
 
-void L3gd20::_request_temperature() {
+void L3gd20::_request_temperature_axis() {
 
     uint8_t register_address;
 
@@ -263,6 +266,7 @@ void L3gd20::_request_temperature() {
 }
 
 void L3gd20::_request_angular_rate_xyz_axis() {
+
     uint8_t register_address;
 
     uint8_t out_xyz_axis[2] = {0};

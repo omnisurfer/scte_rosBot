@@ -111,7 +111,9 @@ private:
     std::mutex data_capture_thread_run_mutex;
     std::thread data_capture_thread;
 
-    typedef void (*host_callback_function)(float, float);
+    typedef void (*host_callback_function)(
+            float calculated_temperature, float calculated_pressure
+            );
     host_callback_function _host_callback_function{};
 
     bool mock_run_device_thread = false;
