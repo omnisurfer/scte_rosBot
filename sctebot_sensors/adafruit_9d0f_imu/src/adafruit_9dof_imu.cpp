@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
             i2c_bus_number,
             i2c_device_address,
             1000,
-            "pressure sensor",
+            "pressure_sensor",
             &handle_bmp180_measurements
     );
 
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
     //region LSM303DLHC device setup
     Lsm303Dlhc lsm303DlhcDeviceHandle;
 
-    i2c_device_address = 0x1e;
+    i2c_device_address = 0x19;
 
     lsm303DlhcDeviceHandle.config_device(
             i2c_bus_number,

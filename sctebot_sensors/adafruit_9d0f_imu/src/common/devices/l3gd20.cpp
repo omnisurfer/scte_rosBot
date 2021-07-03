@@ -86,6 +86,7 @@ int L3gd20::_init_device() {
     /*
      * Disable power down mode
      * ODR = 95Hz (Default)
+     * i2cset -y 1 0x6b 0x20 0x17
      */
     register_address = L3gd20::Addresses::CTRL_REG1;
 

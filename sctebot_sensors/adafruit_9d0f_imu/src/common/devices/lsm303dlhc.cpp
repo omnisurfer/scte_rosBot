@@ -48,6 +48,7 @@ int Lsm303Dlhc::_init_device() {
     //region CTRL_REG1
     /*
      * 1HZ
+     * i2cset -y 1 0x19 0x20 0x17
      */
     register_address = Lsm303Dlhc::Addresses::CTRL_REG1_A;
 
@@ -89,6 +90,7 @@ int Lsm303Dlhc::_init_device() {
      * LSB @ Lower address, LITTLE ENDIAN
      * FS Res +/- 2G
      * HiRes disabled
+     * i2cset -y 1 0x19 0x23 0x80
      */
     register_address = Lsm303Dlhc::Addresses::CTRL_REG4_A;
 
@@ -127,6 +129,7 @@ int Lsm303Dlhc::_init_device() {
     /*
      * Enable temperature
      * Data Output rate = 15Hz (default)
+     * i2cset -y 1 0x19 0x00 0x80
      */
     register_address = Lsm303Dlhc::Addresses::CRA_REG_M;
 
@@ -178,6 +181,7 @@ int Lsm303Dlhc::_init_device() {
     //region MR_REG_M
     /*
      * Set to single-conversion mode
+     * i2cset -y 1 0x19 0x02 0x01
      */
     register_address = Lsm303Dlhc::Addresses::MR_REG_M;
 
@@ -433,6 +437,11 @@ void Lsm303Dlhc::_request_temperature_axis() {
             .size = sizeof(temperature)
     };
 
+    /*
+     * i2cget -y 1 0x1e 0x31 (H)
+     * i2cget -y 1 0x1e 0x32 (L)
+     */
+
     register_address = Lsm303Dlhc::Addresses::Registers::TEMP_OUT_H_M;
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
@@ -454,6 +463,11 @@ void Lsm303Dlhc::_request_accelerometer_xyz_axis() {
             .bytes = out_accel_xyz_axis,
             .size = sizeof(out_accel_xyz_axis)
     };
+
+    /*
+     * i2cget -y 1 0x1e 0x28 (H)
+     * i2cget -y 1 0x1e 0x29 (L)
+    */
 
     register_address = Lsm303Dlhc::Addresses::Registers::OUT_X_L_A;
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
