@@ -288,11 +288,17 @@ void Lsm303Dlhc::_mock_device_emulation() {
 
     int16_t debug_x_accel_axis = 420;
     int16_t debug_y_accel_axis = -420;
-    int16_t debug_z_accel_axis = 42;
+    int16_t debug_z_accel_axis = 690;
+
+    /*
+    debug_x_accel_axis = 0x8080;
+    debug_y_accel_axis = 0x8080;
+    debug_z_accel_axis = 0x807f;
+     */
 
     int16_t debug_x_mag_axis = 420;
     int16_t debug_y_mag_axis = -420;
-    int16_t debug_z_mag_axis = 42;
+    int16_t debug_z_mag_axis = 690;
 
     uint8_t register_address;
 
@@ -320,8 +326,11 @@ void Lsm303Dlhc::_mock_device_emulation() {
         // convert to 12-bit value
         int16_t temp = debug_temp_axis;
         int16_t out_temp_axis = debug_temp_axis << 4;
-        mock_temperature[_device_endian_lsb_index] = out_temp_axis & 0x00FF;
-        mock_temperature[_device_endian_msb_index] = (out_temp_axis & 0xFF00) >> 8;
+
+        // T_H 0x31
+        mock_temperature[0] = (out_temp_axis & 0xFF00) >> 8;
+        // T_L 0x32
+        mock_temperature[1] = out_temp_axis & 0x00FF;
 
         display_register_8bits(mock_temperature[0], mock_temperature[1]);
         display_register_16bits(temp, out_temp_axis);
@@ -338,8 +347,10 @@ void Lsm303Dlhc::_mock_device_emulation() {
                 .size = sizeof(mock_x_accel)
         };
 
-        mock_x_accel[_device_endian_lsb_index] = debug_x_accel_axis & 0x00FF;
-        mock_x_accel[_device_endian_msb_index] = (debug_x_accel_axis & 0xFF00) >> 8;
+        // X_L_A 0x28
+        mock_x_accel[0] = debug_x_accel_axis & 0x00FF;
+        // X_H_A 0x29
+        mock_x_accel[1] = (debug_x_accel_axis & 0xFF00) >> 8;
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
@@ -353,8 +364,10 @@ void Lsm303Dlhc::_mock_device_emulation() {
                 .size = sizeof(mock_y_accel)
         };
 
-        mock_y_accel[_device_endian_lsb_index] = debug_y_accel_axis & 0x00FF;
-        mock_y_accel[_device_endian_msb_index] = (debug_y_accel_axis & 0xFF00) >> 8;
+        // Y_L_A 0x2A
+        mock_y_accel[0] = debug_y_accel_axis & 0x00FF;
+        // Y_H_A 0x2B
+        mock_y_accel[1] = (debug_y_accel_axis & 0xFF00) >> 8;
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
@@ -368,14 +381,16 @@ void Lsm303Dlhc::_mock_device_emulation() {
                 .size = sizeof(mock_z_accel)
         };
 
-        mock_z_accel[_device_endian_lsb_index] = debug_z_accel_axis & 0x00FF;
-        mock_z_accel[_device_endian_msb_index] = (debug_z_accel_axis & 0xFF00) >> 8;
+        // Y_L_A 0x2C
+        mock_z_accel[0] = debug_z_accel_axis & 0x00FF;
+        // Y_L_A 0x2D
+        mock_z_accel[1] = (debug_z_accel_axis & 0xFF00) >> 8;
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
 
         //region MAG X AXIS
-        register_address = Lsm303Dlhc::Addresses::Registers::OUT_X_L_M;
+        register_address = Lsm303Dlhc::Addresses::Registers::OUT_X_H_M;
 
         uint8_t mock_x_mag[2] = {0};
         outbound_measurement = {
@@ -383,14 +398,16 @@ void Lsm303Dlhc::_mock_device_emulation() {
                 .size = sizeof(mock_x_mag)
         };
 
-        mock_x_mag[_device_endian_lsb_index] = debug_x_mag_axis & 0x00FF;
-        mock_x_mag[_device_endian_msb_index] = (debug_x_mag_axis & 0xFF00) >> 8;
+        // X_H_M 0x03
+        mock_x_mag[0] = (debug_x_mag_axis & 0xFF00) >> 8;
+        // X_L_M 0x04
+        mock_x_mag[1] = debug_x_mag_axis & 0x00FF;
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
 
         //region MAG Y AXIS
-        register_address = Lsm303Dlhc::Addresses::Registers::OUT_Y_L_M;
+        register_address = Lsm303Dlhc::Addresses::Registers::OUT_Y_H_M;
 
         uint8_t mock_y_mag[2] = {0};
         outbound_measurement = {
@@ -398,14 +415,16 @@ void Lsm303Dlhc::_mock_device_emulation() {
                 .size = sizeof(mock_y_mag)
         };
 
-        mock_y_mag[_device_endian_lsb_index] = debug_y_mag_axis & 0x00FF;
-        mock_y_mag[_device_endian_msb_index] = (debug_y_mag_axis & 0xFF00) >> 8;
+        // X_H_M 0x05
+        mock_y_mag[0] = (debug_y_mag_axis & 0xFF00) >> 8;
+        // X_L_M 0x06
+        mock_y_mag[1] = debug_y_mag_axis & 0x00FF;
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
 
         //region MAG Z AXIS
-        register_address = Lsm303Dlhc::Addresses::Registers::OUT_Z_L_M;
+        register_address = Lsm303Dlhc::Addresses::Registers::OUT_Z_H_M;
 
         uint8_t mock_z_mag[2] = {0};
         outbound_measurement = {
@@ -413,8 +432,10 @@ void Lsm303Dlhc::_mock_device_emulation() {
                 .size = sizeof(mock_z_mag)
         };
 
-        mock_z_mag[_device_endian_lsb_index] = debug_z_mag_axis & 0x00FF;
-        mock_z_mag[_device_endian_msb_index] = (debug_z_mag_axis & 0xFF00) >> 8;
+        // X_H_M 0x07
+        mock_z_mag[0] = (debug_z_mag_axis & 0xFF00) >> 8;
+        // X_L_M 0x08
+        mock_z_mag[1] = debug_z_mag_axis & 0x00FF;
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
@@ -447,7 +468,9 @@ void Lsm303Dlhc::_request_temperature_axis() {
 
     if(data_ok) {
         // convert back to 16-bit value
-        int16_t temp_axis = (temperature[_device_endian_msb_index] << 8) + temperature[_device_endian_lsb_index];
+        // T_H_M 0x31
+        // T_L_M 0x32
+        int16_t temp_axis = (temperature[0] << 8) + temperature[1];
         _temperature_axis = temp_axis >> 4;
 
         display_register_8bits(temperature[0], temperature[1]);
@@ -473,21 +496,27 @@ void Lsm303Dlhc::_request_accelerometer_xyz_axis() {
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _accelerometer_x_axis = (out_accel_xyz_axis[_device_endian_msb_index] << 8) + out_accel_xyz_axis[_device_endian_lsb_index];
+        // X_L_A 0x28
+        // X_H_A 0x29
+        _accelerometer_x_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
     }
 
     register_address = Lsm303Dlhc::Addresses::Registers::OUT_Y_L_A;
     data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _accelerometer_y_axis = (out_accel_xyz_axis[_device_endian_msb_index] << 8) + out_accel_xyz_axis[_device_endian_lsb_index];
+        // Y_L_A 0x2A
+        // Y_H_A 0x2B
+        _accelerometer_y_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
     }
 
     register_address = Lsm303Dlhc::Addresses::Registers::OUT_Z_L_A;
     data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _accelerometer_z_axis = (out_accel_xyz_axis[_device_endian_msb_index] << 8) + out_accel_xyz_axis[_device_endian_lsb_index];
+        // Z_L_A 0x2C
+        // Z_H_A 0x2D
+        _accelerometer_z_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
     }
 }
 
@@ -501,24 +530,30 @@ void Lsm303Dlhc::_request_magnetometer_xyz_axis() {
             .size = sizeof(out_mag_xyz_axis)
     };
 
-    register_address = Lsm303Dlhc::Addresses::Registers::OUT_X_L_M;
+    register_address = Lsm303Dlhc::Addresses::Registers::OUT_X_H_M;
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _magnetometer_x_axis = (out_mag_xyz_axis[_device_endian_msb_index] << 8) + out_mag_xyz_axis[_device_endian_lsb_index];
+        // X_H_M 0x03
+        // X_L_M 0x04
+        _magnetometer_x_axis = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
     }
 
-    register_address = Lsm303Dlhc::Addresses::Registers::OUT_Y_L_M;
+    register_address = Lsm303Dlhc::Addresses::Registers::OUT_Y_H_M;
     data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _magnetometer_y_axis = (out_mag_xyz_axis[_device_endian_msb_index] << 8) + out_mag_xyz_axis[_device_endian_lsb_index];
+        // Y_H_M 0x07
+        // Y_L_M 0x08
+        _magnetometer_y_axis = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
     }
 
-    register_address = Lsm303Dlhc::Addresses::Registers::OUT_Z_L_M;
+    register_address = Lsm303Dlhc::Addresses::Registers::OUT_Z_H_M;
     data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _magnetometer_z_axis = (out_mag_xyz_axis[_device_endian_msb_index] << 8) + out_mag_xyz_axis[_device_endian_lsb_index];
+        // Z_H_M 0x05
+        // Z_L_M 0x06
+        _magnetometer_z_axis = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
     }
 }

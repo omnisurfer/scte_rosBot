@@ -5,8 +5,6 @@
 #ifndef LSM303DLHC_H
 #define LSM303DLHC_H
 
-#define ENABLE_MOCK_LSM303DLHC_DEVICE 0
-
 #include <iostream>
 #include <iomanip>
 #include <cstring>
@@ -274,9 +272,6 @@ private:
         } SrRegM;
     };
 
-    int _device_endian_msb_index = 1;
-    int _device_endian_lsb_index = 0;
-
     int _i2c_bus_number{};
     int _i2c_device_address{};
     int _sensor_update_period_ms{};
@@ -453,7 +448,7 @@ public:
     int mock_load_data() {
 
         /* @0x19 - Running
-              0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
+             0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
         00: 80 00 01 00 00 00 00 ff 00 00 00 00 00 00 00 33    ?.?............3
         10: b2 bb b4 22 01 32 e3 9d 23 38 70 68 e0 20 80 00    ???"?2??#8ph? ?.
         20: 17 00 00 80 00 00 00 ff 80 80 80 80 80 7f 00 20    ?..?....??????.

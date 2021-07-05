@@ -64,6 +64,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+#if ENABLE_BMP180_DEVICE
     //region BMP180 device setup
     Bmp180 bmp180DeviceHandle;
 
@@ -85,7 +86,9 @@ int main(int argc, char* argv[]) {
 
     bmp180DeviceHandle.init_device();
     //endregion
+#endif
 
+#if ENABLE_L3GD20_DEVICE
     //region L3GD20 device setup
     L3gd20 l3gd20DeviceHandle;
 
@@ -109,7 +112,9 @@ int main(int argc, char* argv[]) {
 
     l3gd20DeviceHandle.init_device();
     //endregion
+#endif
 
+#if ENABLE_LSM303DLHC_DEVICE
     //region LSM303DLHC device setup
     Lsm303Dlhc lsm303DlhcDeviceHandle;
 
@@ -133,6 +138,7 @@ int main(int argc, char* argv[]) {
 
     lsm303DlhcDeviceHandle.init_device();
     //endregion
+#endif
 
     std::cout << "press any key to continue..." << std::endl;
 

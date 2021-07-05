@@ -5,8 +5,6 @@
 #ifndef BMP180_H
 #define BMP180_H
 
-#define ENABLE_MOCK_BMP180_DEVICE 0
-
 // some code taken from my github:
 // https://github.com/omnisurfer/IMUController_firmware_AtmelC/blob/master/IMU/src/app_components/sensors/bmp180/bmp180.c
 
@@ -90,9 +88,6 @@ private:
             MEASUREMENT_CONTROL_BITS = 0b00011111
         } ControlRegister;
     };
-
-    int _device_endian_msb_index = 1;
-    int _device_endian_lsb_index = 0;
 
     int _i2c_bus_number{};
     int _i2c_device_address{};
@@ -354,38 +349,60 @@ private:
         }
 
         // device seems to be big endian
-        Bmp180CalibrationCoefficients.AC1_ba[_device_endian_msb_index] = bytes[0];
-        Bmp180CalibrationCoefficients.AC1_ba[_device_endian_lsb_index] = bytes[1];
+        // MSB 0xAA
+        // LSB 0xAB
+        Bmp180CalibrationCoefficients.AC1_ba[1] = bytes[0];
+        Bmp180CalibrationCoefficients.AC1_ba[0] = bytes[1];
 
-        Bmp180CalibrationCoefficients.AC2_ba[_device_endian_msb_index] = bytes[2];
-        Bmp180CalibrationCoefficients.AC2_ba[_device_endian_lsb_index] = bytes[3];
+        // MSB 0xAC
+        // LSB 0xAD
+        Bmp180CalibrationCoefficients.AC2_ba[1] = bytes[2];
+        Bmp180CalibrationCoefficients.AC2_ba[0] = bytes[3];
 
-        Bmp180CalibrationCoefficients.AC3_ba[_device_endian_msb_index] = bytes[4];
-        Bmp180CalibrationCoefficients.AC3_ba[_device_endian_lsb_index] = bytes[5];
+        // MSB 0xAE
+        // LSB 0xAF
+        Bmp180CalibrationCoefficients.AC3_ba[1] = bytes[4];
+        Bmp180CalibrationCoefficients.AC3_ba[0] = bytes[5];
 
-        Bmp180CalibrationCoefficients.AC4_ba[_device_endian_msb_index] = bytes[6];
-        Bmp180CalibrationCoefficients.AC4_ba[_device_endian_lsb_index] = bytes[7];
+        // MSB 0xB0
+        // LSB 0xB1
+        Bmp180CalibrationCoefficients.AC4_ba[1] = bytes[6];
+        Bmp180CalibrationCoefficients.AC4_ba[0] = bytes[7];
 
-        Bmp180CalibrationCoefficients.AC5_ba[_device_endian_msb_index] = bytes[8];
-        Bmp180CalibrationCoefficients.AC5_ba[_device_endian_lsb_index] = bytes[9];
+        // MSB 0xB2
+        // LSB 0xB3
+        Bmp180CalibrationCoefficients.AC5_ba[1] = bytes[8];
+        Bmp180CalibrationCoefficients.AC5_ba[0] = bytes[9];
 
-        Bmp180CalibrationCoefficients.AC6_ba[_device_endian_msb_index] = bytes[10];
-        Bmp180CalibrationCoefficients.AC6_ba[_device_endian_lsb_index] = bytes[11];
+        // MSB 0xB4
+        // LSB 0xB5
+        Bmp180CalibrationCoefficients.AC6_ba[1] = bytes[10];
+        Bmp180CalibrationCoefficients.AC6_ba[0] = bytes[11];
 
-        Bmp180CalibrationCoefficients.B1_ba[_device_endian_msb_index] = bytes[12];
-        Bmp180CalibrationCoefficients.B1_ba[_device_endian_lsb_index] = bytes[13];
+        // MSB 0xB6
+        // LSB 0xB7
+        Bmp180CalibrationCoefficients.B1_ba[1] = bytes[12];
+        Bmp180CalibrationCoefficients.B1_ba[0] = bytes[13];
 
-        Bmp180CalibrationCoefficients.B2_ba[_device_endian_msb_index] = bytes[14];
-        Bmp180CalibrationCoefficients.B2_ba[_device_endian_lsb_index] = bytes[15];
+        // MSB 0xB8
+        // LSB 0xB9
+        Bmp180CalibrationCoefficients.B2_ba[1] = bytes[14];
+        Bmp180CalibrationCoefficients.B2_ba[0] = bytes[15];
 
-        Bmp180CalibrationCoefficients.MB_ba[_device_endian_msb_index] = bytes[16];
-        Bmp180CalibrationCoefficients.MB_ba[_device_endian_lsb_index] = bytes[17];
+        // MSB 0xBA
+        // LSB 0xBB
+        Bmp180CalibrationCoefficients.MB_ba[1] = bytes[16];
+        Bmp180CalibrationCoefficients.MB_ba[0] = bytes[17];
 
-        Bmp180CalibrationCoefficients.MC_ba[_device_endian_msb_index] = bytes[18];
-        Bmp180CalibrationCoefficients.MC_ba[_device_endian_lsb_index] = bytes[19];
+        // MSB 0xBC
+        // LSB 0xBD
+        Bmp180CalibrationCoefficients.MC_ba[1] = bytes[18];
+        Bmp180CalibrationCoefficients.MC_ba[0] = bytes[19];
 
-        Bmp180CalibrationCoefficients.MD_ba[_device_endian_msb_index] = bytes[20];
-        Bmp180CalibrationCoefficients.MD_ba[_device_endian_lsb_index] = bytes[21];
+        // MSB 0xBE
+        // LSB 0xBF
+        Bmp180CalibrationCoefficients.MD_ba[1] = bytes[20];
+        Bmp180CalibrationCoefficients.MD_ba[0] = bytes[21];
 
         sensor_calibration_read = true;
 

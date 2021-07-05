@@ -5,8 +5,6 @@
 #ifndef L3GD20_H
 #define L3GD20_H
 
-#define ENABLE_MOCK_L3GD20_DEVICE 0
-
 #include <iostream>
 #include <iomanip>
 #include <cstring>
@@ -180,9 +178,6 @@ private:
             WAIT_ENABLE = (1 << 7)
         } Int1Duration;
     };
-
-    int _device_endian_msb_index = 1;
-    int _device_endian_lsb_index = 0;
 
     int _i2c_bus_number{};
     int _i2c_device_address{};

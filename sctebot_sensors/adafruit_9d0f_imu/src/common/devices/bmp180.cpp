@@ -138,8 +138,10 @@ void Bmp180::_mock_device_emulation() {
             };
 
             // real temp ~26C
-            mock_temperature[_device_endian_lsb_index] = 0x64;
-            mock_temperature[_device_endian_msb_index] = debug_temp_counter;
+            // MSB 0xF6
+            // LSB 0xF7
+            mock_temperature[0] = 0x64;
+            mock_temperature[1] = debug_temp_counter;
 
             //debug_temp_counter = (debug_temp_counter + 1)%0x02;
 
@@ -157,8 +159,11 @@ void Bmp180::_mock_device_emulation() {
             };
 
             // real pressure ~13 PSI or ~91000 Pa @ ~26C ONLY
-            mock_pressure[_device_endian_lsb_index] = 0xa3;
-            mock_pressure[_device_endian_msb_index] = debug_press_counter;
+            // MSB 0xF6
+            // LSB 0xF7
+            // XLSB 0xF8
+            mock_pressure[0] = 0xa3;
+            mock_pressure[1] = debug_press_counter;
             mock_pressure[2] = 0x00;
 
             debug_press_counter = (debug_press_counter + 1)%0x03;
@@ -185,7 +190,6 @@ void Bmp180::_mock_device_emulation() {
                 .bytes = measurement_command,
                 .size = sizeof(measurement_command)
         };
-
 
         i2c_send(&_i2c_device_context, &outbound_message, register_address);
 
@@ -241,8 +245,9 @@ void Bmp180::_request_temperature() {
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _long_uncompensated_temperature = (uncompensated_temperature[_device_endian_lsb_index] << 8) |
-                                          uncompensated_temperature[_device_endian_msb_index];
+        // MSB 0xF6
+        // LSB 0xF7
+        _long_uncompensated_temperature = (uncompensated_temperature[0] << 8) | uncompensated_temperature[1];
     }
 
     //std::cout << "temp: " << std::hex << _long_uncompensated_temperature << std::endl;
@@ -282,7 +287,10 @@ void Bmp180::_request_pressure() {
     register_address = Bmp180::Addresses::DataRegisters::OUTPUT_MSB;
     i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-    _long_uncompensated_pressure = (uncompensated_pressure[_device_endian_lsb_index] << 8) + uncompensated_pressure[_device_endian_msb_index];
+    // MSB 0xF6
+    // LSB 0xF7
+    // XLSB 0xF8
+    _long_uncompensated_pressure = (uncompensated_pressure[0] << 8) + uncompensated_pressure[1];
     _short_uncompensated_pressure_xlsb = uncompensated_pressure[2];
 
     //std::cout << "press: " << std::hex << _long_uncompensated_pressure << std::endl;
