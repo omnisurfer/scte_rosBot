@@ -9,7 +9,7 @@
 #include "adafruit_9d0f_imu.h"
 
 void handle_bmp180_measurements(float temperature, float pressure) {
-    std::cout << "temperature (C): " << temperature << " pressure (Pa): " << pressure << std::endl;
+    std::cout << "bmp180\t\ttemperature (C): " << temperature << " pressure (Pa): " << pressure << std::endl;
     /**/
     double absolute_altitude;
     double pressure_sea_level = 1013.25 * 100;
@@ -23,16 +23,16 @@ void handle_bmp180_measurements(float temperature, float pressure) {
 
     sea_level_pressure = pressure / pow(1 - absolute_altitude/44330, 5.255);
 
-    std::cout << "abs alt (m): " << absolute_altitude << " sea level pressure (Pa): " << sea_level_pressure << std::endl;
+    std::cout << "bmp180\t\tabs alt (m): " << absolute_altitude << " sea level pressure (Pa): " << sea_level_pressure << std::endl;
      /**/
 }
 
 void handle_l3gd20_measurements(int temperature, int r_x, int r_y, int r_z) {
-    std::cout << "temp: " << (float)temperature << " x_dps: " << (float)r_x << " y_dps: " << (float)r_y << " z_dps: " << (float)r_z << std::endl;
+    std::cout << "l3gd20\t\ttemp: " << (float)temperature << " x_dps: " << (float)r_x << " y_dps: " << (float)r_y << " z_dps: " << (float)r_z << std::endl;
 }
 
 void handle_lsm303dlhc_measurements(int temperature, int a_x, int a_y, int a_z, int m_x, int m_y, int m_z) {
-    std::cout << "temp: " << (float)temperature
+    std::cout << "lsm303\t\ttemp: " << (float)temperature
         << " a_x: " << (float)a_x << " a_y: " << (float)a_y << " a_z: " << (float)a_z
         << " m_x: " << (float)m_x << " m_y: " << (float)m_y << " m_z: " << (float)m_z
         << std::endl;
