@@ -203,8 +203,8 @@ void L3gd20::_mock_device_emulation() {
                 .size = sizeof(mock_x_axis)
         };
 
-        mock_x_axis[0] = debug_x_rate_axis & 0xFF;
-        mock_x_axis[1] = (debug_x_rate_axis >> 8) & 0xFF;
+        mock_x_axis[_device_endian_lsb_index] = debug_x_rate_axis & 0xFF;
+        mock_x_axis[_device_endian_msb_index] = (debug_x_rate_axis >> 8) & 0xFF;
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
@@ -218,8 +218,8 @@ void L3gd20::_mock_device_emulation() {
                 .size = sizeof(mock_y_axis)
         };
 
-        mock_y_axis[0] = debug_y_rate_axis & 0xFF;
-        mock_y_axis[1] = (debug_y_rate_axis >> 8) & 0xFF;
+        mock_y_axis[_device_endian_lsb_index] = debug_y_rate_axis & 0xFF;
+        mock_y_axis[_device_endian_msb_index] = (debug_y_rate_axis >> 8) & 0xFF;
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
@@ -233,8 +233,8 @@ void L3gd20::_mock_device_emulation() {
                 .size = sizeof(mock_z_axis)
         };
 
-        mock_z_axis[0] = debug_z_rate_axis & 0xFF;
-        mock_z_axis[1] = (debug_z_rate_axis >> 8) & 0xFF;
+        mock_z_axis[_device_endian_lsb_index] = debug_z_rate_axis & 0xFF;
+        mock_z_axis[_device_endian_msb_index] = (debug_z_rate_axis >> 8) & 0xFF;
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
@@ -280,21 +280,21 @@ void L3gd20::_request_angular_rate_xyz_axis() {
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _angular_rate_x_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+        _angular_rate_x_axis = (out_xyz_axis[_device_endian_msb_index] << 8) + out_xyz_axis[_device_endian_lsb_index];
     }
 
     register_address = L3gd20::Addresses::Registers::OUT_Y_L;
     data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _angular_rate_y_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+        _angular_rate_y_axis = (out_xyz_axis[_device_endian_msb_index] << 8) + out_xyz_axis[_device_endian_lsb_index];
     }
 
     register_address = L3gd20::Addresses::Registers::OUT_Z_L;
     data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _angular_rate_z_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+        _angular_rate_z_axis = (out_xyz_axis[_device_endian_msb_index] << 8) + out_xyz_axis[_device_endian_lsb_index];
     }
 }
 

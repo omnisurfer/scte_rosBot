@@ -49,9 +49,9 @@ private:
 
         typedef enum DataRegisters_t {
 
-            OUTPUT_XLSB = 0xF8,
             OUTPUT_MSB = 0xF6,
             OUTPUT_LSB = 0xF7,
+            OUTPUT_XLSB = 0xF8,
             CONTROL_MEASUREMENT = 0xF4,
             SOFT_RESET = 0xE0,
             CHIP_ID = 0xD0

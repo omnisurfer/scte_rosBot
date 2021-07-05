@@ -274,6 +274,9 @@ private:
         } SrRegM;
     };
 
+    int _device_endian_msb_index = 1;
+    int _device_endian_lsb_index = 0;
+
     int _i2c_bus_number{};
     int _i2c_device_address{};
     int _sensor_update_period_ms{};
