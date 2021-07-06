@@ -19,6 +19,10 @@ namespace logging = boost::log;
 
 #include "i2c_linux.h"
 
+/*
+ * TODO CONVERT DRIVER TO L3GD20H! I WAS READING THE DATA SHEET FOR THE NON-H DEVICE TYPE.
+ * THIS EXPLAINS THE D7 WHO_AM_I INSTEAD OF D4
+ */
 class L3gd20 {
 
     // 1101 0101 0xD5 (Read address)
@@ -62,7 +66,7 @@ private:
     class MagicNumbers {
     public:
         typedef enum WhoAmI_t {
-            WHO_AM_I = 0xD7 //0xD4
+            WHO_AM_I = 0xD7
         }WhoAmI;
     };
 
