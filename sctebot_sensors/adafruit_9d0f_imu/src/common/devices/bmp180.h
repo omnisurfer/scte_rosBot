@@ -178,7 +178,7 @@ private:
 
     struct Bmp180SharedCoefficients_t {
         union {
-            float B5;
+            long B5;
         };
     } Bmp180SharedCoefficients;
 
@@ -269,17 +269,20 @@ private:
         }
 
         // refer to formula found on page 15 of datasheet
-        float _temperature = uncompensated_temperature;
+        long _temperature = uncompensated_temperature;
 
-        float X1 = (_temperature - (float)Bmp180CalibrationCoefficients.AC6) * ((float)Bmp180CalibrationCoefficients.AC5/32768);
-        float X2 = ((float)Bmp180CalibrationCoefficients.MC * 2048) / (X1 + (float)Bmp180CalibrationCoefficients.MD);
+        float FX1 = float(_temperature - Bmp180CalibrationCoefficients.AC6) * (float(Bmp180CalibrationCoefficients.AC5) / 32768);
+        float FX2 = float(Bmp180CalibrationCoefficients.MC * 2048) / float(FX1 + Bmp180CalibrationCoefficients.MD);
+
+        long X1 = long(FX1);
+        long X2 = long(FX2);
 
         Bmp180SharedCoefficients.B5 = X1 + X2;
 
-        // multiplying by 0.1 here to convert to degrees C instead of degrees 0.1C
-        _temperature = static_cast<float>(((Bmp180SharedCoefficients.B5 + 8) / 16)) * 0.1;
+        _temperature =  (Bmp180SharedCoefficients.B5 + 8) / 16;
 
-        temperature = _temperature;
+        // multiplying by 0.1 here to convert to degrees C instead of degrees 0.1C
+        temperature = (float)_temperature * 0.1f;
 
         //std::cout << "calc temp (C): " << temperature << std::endl;
 
@@ -301,40 +304,47 @@ private:
         long _pressure = (uncompensated_pressure << 8) >> (8 - 0);
         _pressure += uncompensated_pressure_xlsb;
 
+        std::cout << std::hex << "cp(1) : " << _pressure << std::endl;
+
         // refer to formula found on page 15 of datasheet
-        // all these operations in powers of 2 seem to be "hiding" bitshifts. wonder if the compiler will notice
+        // all these operations in powers of 2 seem to be "hiding" bit-shifts. wonder if the compiler will notice
         // this...
-        float _p = 0.00f,
+        long _p = 0,
                 B6 = Bmp180SharedCoefficients.B5 - 4000,
-
-                X1 = ((float)Bmp180CalibrationCoefficients.B2 * ((B6 * B6) / 4096)) / 2048,
-                X2 = ((float)Bmp180CalibrationCoefficients.AC2 * B6) / 2048,
+                X1 = (Bmp180CalibrationCoefficients.B2 * ((B6 * B6) / 4096)) / 2048,
+                X2 = (Bmp180CalibrationCoefficients.AC2 * B6) / 2048,
                 X3 = X1 + X2,
-                B3 = (((float)Bmp180CalibrationCoefficients.AC1 * 4 + X3) + 2) / 4;
+                B3 = ((Bmp180CalibrationCoefficients.AC1 * 4 + X3) + 2) / 4;
 
-        X1 = ((float)Bmp180CalibrationCoefficients.AC3 * B6) / 8192;
-        X2 = ((float)Bmp180CalibrationCoefficients.B1 * (B6 * B6 / 4096)) / 65536;
+        X1 = (Bmp180CalibrationCoefficients.AC3 * B6) / 8192;
+        X2 = (Bmp180CalibrationCoefficients.B1 * (B6 * B6 / 4096)) / 65536;
         X3 = ((X1 + X2) + 2) / 4;
 
         unsigned long B4 = (Bmp180CalibrationCoefficients.AC4 * (unsigned)(X3 * 32768)) / 32768;
 
         //note _B7 has a scaling option that is tied to the oversample (OSS). I am assuming 0 oversampling for now
-        unsigned long B7 = ((unsigned)_pressure - B3) * 50000;
+        unsigned long B7 = (_pressure - B3) * 50000;
+
+        std::cout << std::hex << "cp(2) : " << B7 << std::endl;
 
         if(B7 < 0x80000000) {
-            _p = (B7 * 2) / B4;
+            _p = long((B7 * 2) / B4);
         }
         else {
-            _p = (B7 / B4) * 2;
+            _p = long((B7 / B4) * 2);
         }
+        std::cout << std::hex << "cp(3): " << _p << std::endl;
 
-        X1 = (_p/256) * (_p/256);
+        X1 = ( _p/256) * (_p/256);
+        std::cout << std::hex << "cp(4): " << X1 << std::endl;
         X1 = (X1 * 3038) / 65536;
+        std::cout << std::hex << "cp(5): " << X1 << std::endl;
         X2 = (-7357 * _p) / 65536;
+        std::cout << std::hex << "cp(6): " << X2 << std::endl;
 
         _p = _p + ((X1 + X2 + 3791) / 16);
 
-        pressure = _p;
+        pressure = (float)_p;
 
         //std::cout << "calc pressure (Pa): " << pressure << std::endl;
 
