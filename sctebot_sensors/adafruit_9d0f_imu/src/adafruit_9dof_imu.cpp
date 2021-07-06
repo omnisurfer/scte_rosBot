@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     bmp180DeviceHandle.config_device(
             i2c_bus_number,
             i2c_device_address,
-            1000,
+            3000,
             "pressure_sensor",
             &handle_bmp180_measurements
     );

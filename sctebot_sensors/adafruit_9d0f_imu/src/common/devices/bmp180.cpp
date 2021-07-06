@@ -69,8 +69,6 @@ void Bmp180::_data_capture_worker() {
 
         this->_request_temperature();
 
-        //std::this_thread::sleep_for(std::chrono::milliseconds (5000));
-
         this->_request_pressure();
 
         uint16_t long_uncompensated_temperature = this->_get_uncompensated_temperature_count();
@@ -225,6 +223,10 @@ void Bmp180::_request_temperature() {
 
     register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
     if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+
+        // wait 4.5ms
+        std::this_thread::sleep_for(std::chrono::microseconds (4500));
+
         if(!this->_measurement_completed_ok()) {
             BOOST_LOG_TRIVIAL(error) << "failed to complete measurement";
             return;
@@ -271,6 +273,10 @@ void Bmp180::_request_pressure() {
 
     register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
     if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+
+        // wait 4.5ms
+        std::this_thread::sleep_for(std::chrono::microseconds (4500));
+
         if(!this->_measurement_completed_ok()) {
             BOOST_LOG_TRIVIAL(error) << "failed to complete measurement";
             return;
@@ -325,7 +331,7 @@ int Bmp180::_measurement_completed_ok() {
             // do nothing
         }
 
-        std::this_thread::sleep_for(std::chrono::microseconds (4500));
+        std::this_thread::sleep_for(std::chrono::microseconds (500));
 
         wait_count++;
     }

@@ -329,11 +329,12 @@ private:
 
         if(B7 < 0x80000000) {
             _p = long((B7 * 2) / B4);
+            std::cout << std::hex << "cp(3a): " << _p << std::endl;
         }
         else {
             _p = long((B7 / B4) * 2);
+            std::cout << std::hex << "cp(3b): " << _p << std::endl;
         }
-        std::cout << std::hex << "cp(3): " << _p << std::endl;
 
         X1 = ( _p/256) * (_p/256);
         std::cout << std::hex << "cp(4): " << X1 << std::endl;
@@ -346,7 +347,7 @@ private:
 
         pressure = (float)_p;
 
-        //std::cout << "calc pressure (Pa): " << pressure << std::endl;
+        std::cout << "calc _p: " << _p << std::endl;
 
         return 1;
     }
