@@ -147,7 +147,6 @@ void Bmp180::_mock_device_emulation() {
 
             register_address = Bmp180::Addresses::DataRegisters::OUTPUT_MSB;
             i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
-
         }
         else if (measurement_command[0] == Bmp180::Commands::MeasurementControlValues::PRESSURE_OSS0) {
             //std::cout << "Got press cmd: " << std::hex << int(measurement_command[0]) << std::endl;
@@ -271,7 +270,10 @@ void Bmp180::_request_pressure() {
 
     register_address = Bmp180::Addresses::DataRegisters::CONTROL_MEASUREMENT;
     if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-        this->_measurement_completed_ok();
+        if(!this->_measurement_completed_ok()) {
+            BOOST_LOG_TRIVIAL(error) << "failed to complete measurement";
+            return;
+        }
     }
     else {
         BOOST_LOG_TRIVIAL(error) << "failed to command pressure read";
@@ -322,7 +324,7 @@ int Bmp180::_measurement_completed_ok() {
             // do nothing
         }
 
-        std::this_thread::sleep_for(std::chrono::microseconds (500));
+        std::this_thread::sleep_for(std::chrono::microseconds (4500));
 
         wait_count++;
     }

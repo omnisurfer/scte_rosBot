@@ -129,7 +129,7 @@ int Lsm303Dlhc::_init_device() {
     /*
      * Enable temperature
      * Data Output rate = 15Hz (default)
-     * i2cset -y 1 0x19 0x00 0x80
+     * i2cset -y 1 0x19 0x00 0x90
      */
     register_address = Lsm303Dlhc::Addresses::CRA_REG_M;
 
@@ -290,15 +290,24 @@ void Lsm303Dlhc::_mock_device_emulation() {
     int16_t debug_y_accel_axis = -420;
     int16_t debug_z_accel_axis = 690;
 
-    /*
-    debug_x_accel_axis = 0x8080;
-    debug_y_accel_axis = 0x8080;
-    debug_z_accel_axis = 0x807f;
-     */
+    debug_x_accel_axis = 0x15ff;
+    debug_y_accel_axis = 0xea00;
+    debug_z_accel_axis = 0xf9fe;
+    //a_x: 5631 a_y: -5632 a_z: -1538
+
+    //debug_x_accel_axis = 0xc03c;
+    //debug_y_accel_axis = 0x4000;
+    //debug_z_accel_axis = 0x800a;
+    //a_x: -16324 a_y: 16384 a_z: -32758
 
     int16_t debug_x_mag_axis = 420;
     int16_t debug_y_mag_axis = -420;
     int16_t debug_z_mag_axis = 690;
+
+    debug_x_mag_axis = 0x0166;
+    debug_y_mag_axis = 0xaaa5;
+    debug_z_mag_axis = 0x82ff;
+    //m_x: 358 m_y: -21851 m_z: -32001
 
     uint8_t register_address;
 

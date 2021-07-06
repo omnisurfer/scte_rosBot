@@ -6,7 +6,7 @@
 #include <math.h>
 #include <cstring>
 
-#include "adafruit_9d0f_imu.h"
+#include "adafruit_9dof_imu.h"
 
 void handle_bmp180_measurements(float temperature, float pressure) {
     std::cout << "bmp180\t\ttemperature (C): " << temperature << " pressure (Pa): " << pressure << std::endl;
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
     //region L3GD20 device setup
     L3gd20 l3gd20DeviceHandle;
 
-    i2c_device_address = 0x6b;
+    i2c_device_address = 0x19;
 
     l3gd20DeviceHandle.config_device(
             i2c_bus_number,
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
     //region LSM303DLHC device setup
     Lsm303Dlhc lsm303DlhcDeviceHandle;
 
-    i2c_device_address = 0x19;
+    i2c_device_address = 0x6b;
 
     lsm303DlhcDeviceHandle.config_device(
             i2c_bus_number,
