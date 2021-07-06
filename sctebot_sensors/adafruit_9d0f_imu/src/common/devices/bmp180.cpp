@@ -138,8 +138,9 @@ void Bmp180::_mock_device_emulation() {
             // real temp ~26C
             // MSB 0xF6
             // LSB 0xF7
-            mock_temperature[0] = 0x64;
-            mock_temperature[1] = debug_temp_counter;
+            // 6638
+            mock_temperature[0] = 0x66; //0x64;
+            mock_temperature[1] = 0x38; //debug_temp_counter;
 
             //debug_temp_counter = (debug_temp_counter + 1)%0x02;
 
@@ -159,9 +160,9 @@ void Bmp180::_mock_device_emulation() {
             // MSB 0xF6
             // LSB 0xF7
             // XLSB 0xF8
-            // a2 60 00
-            mock_pressure[0] = 0xa3;
-            mock_pressure[1] = debug_press_counter;
+            // a2 59 00
+            mock_pressure[0] = 0xa2; //0xa3;
+            mock_pressure[1] = 0x59; //debug_press_counter;
             mock_pressure[2] = 0x00;
 
             debug_press_counter = (debug_press_counter + 1)%0x03;

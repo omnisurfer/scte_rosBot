@@ -272,7 +272,7 @@ private:
         long _temperature = uncompensated_temperature;
 
         float FX1 = float(_temperature - Bmp180CalibrationCoefficients.AC6) * (float(Bmp180CalibrationCoefficients.AC5) / 32768);
-        float FX2 = float(Bmp180CalibrationCoefficients.MC * 2048) / float(FX1 + Bmp180CalibrationCoefficients.MD);
+        float FX2 = float(Bmp180CalibrationCoefficients.MC * 2048) / (FX1 + float(Bmp180CalibrationCoefficients.MD));
 
         long X1 = long(FX1);
         long X2 = long(FX2);
@@ -297,11 +297,13 @@ private:
             return 0;
         }
 
+        uint8_t oss_temp = 0;
+
         // uint8_t ut_l = 0x23;
         // uint8_t ut_h = 0x5d;
 
-        // long _pressure = ((ut_h << 16) + (ut_l << 8) + uncompensated_pressure_xlsb) >> (8 - 0);
-        long _pressure = (uncompensated_pressure << 8) >> (8 - 0);
+        // long _pressure = ((ut_h << 16) + (ut_l << 8) + uncompensated_pressure_xlsb) >> (8 - 0); 0 is OSS@0
+        long _pressure = (uncompensated_pressure << 8) >> (8 - oss_temp);
         _pressure += uncompensated_pressure_xlsb;
 
         std::cout << std::hex << "cp(1) : " << _pressure << std::endl;
@@ -314,25 +316,25 @@ private:
                 X1 = (Bmp180CalibrationCoefficients.B2 * ((B6 * B6) / 4096)) / 2048,
                 X2 = (Bmp180CalibrationCoefficients.AC2 * B6) / 2048,
                 X3 = X1 + X2,
-                B3 = ((Bmp180CalibrationCoefficients.AC1 * 4 + X3) + 2) / 4;
+                B3 = (((Bmp180CalibrationCoefficients.AC1 * 4 + X3) << oss_temp) + 2) / 4;
 
         X1 = (Bmp180CalibrationCoefficients.AC3 * B6) / 8192;
         X2 = (Bmp180CalibrationCoefficients.B1 * (B6 * B6 / 4096)) / 65536;
         X3 = ((X1 + X2) + 2) / 4;
 
-        unsigned long B4 = (Bmp180CalibrationCoefficients.AC4 * (unsigned)(X3 * 32768)) / 32768;
+        unsigned long B4 = Bmp180CalibrationCoefficients.AC4 * (unsigned long)(X3 + 32768) / 32768;
 
         //note _B7 has a scaling option that is tied to the oversample (OSS). I am assuming 0 oversampling for now
-        unsigned long B7 = (_pressure - B3) * 50000;
+        unsigned long B7 = ((unsigned long)_pressure - B3) * (50000 >> oss_temp);
 
         std::cout << std::hex << "cp(2) : " << B7 << std::endl;
 
         if(B7 < 0x80000000) {
-            _p = long((B7 * 2) / B4);
+            _p = (B7 * 2) / B4;
             std::cout << std::hex << "cp(3a): " << _p << std::endl;
         }
         else {
-            _p = long((B7 / B4) * 2);
+            _p = (B7 / B4) * 2;
             std::cout << std::hex << "cp(3b): " << _p << std::endl;
         }
 
