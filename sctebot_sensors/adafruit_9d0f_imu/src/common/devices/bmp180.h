@@ -306,8 +306,6 @@ private:
         long _pressure = (uncompensated_pressure << 8) >> (8 - oss_temp);
         _pressure += uncompensated_pressure_xlsb;
 
-        std::cout << std::hex << "cp(1) : " << _pressure << std::endl;
-
         // refer to formula found on page 15 of datasheet
         // all these operations in powers of 2 seem to be "hiding" bit-shifts. wonder if the compiler will notice
         // this...
@@ -327,29 +325,22 @@ private:
         //note _B7 has a scaling option that is tied to the oversample (OSS). I am assuming 0 oversampling for now
         unsigned long B7 = ((unsigned long)_pressure - B3) * (50000 >> oss_temp);
 
-        std::cout << std::hex << "cp(2) : " << B7 << std::endl;
-
         if(B7 < 0x80000000) {
             _p = (B7 * 2) / B4;
-            std::cout << std::hex << "cp(3a): " << _p << std::endl;
         }
         else {
             _p = (B7 / B4) * 2;
-            std::cout << std::hex << "cp(3b): " << _p << std::endl;
         }
 
         X1 = ( _p/256) * (_p/256);
-        std::cout << std::hex << "cp(4): " << X1 << std::endl;
         X1 = (X1 * 3038) / 65536;
-        std::cout << std::hex << "cp(5): " << X1 << std::endl;
         X2 = (-7357 * _p) / 65536;
-        std::cout << std::hex << "cp(6): " << X2 << std::endl;
 
         _p = _p + ((X1 + X2 + 3791) / 16);
 
         pressure = (float)_p;
 
-        std::cout << "calc _p: " << _p << std::endl;
+        //std::cout << "calc _p: " << _p << std::endl;
 
         return 1;
     }

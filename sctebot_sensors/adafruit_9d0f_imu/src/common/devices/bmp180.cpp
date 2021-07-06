@@ -138,9 +138,8 @@ void Bmp180::_mock_device_emulation() {
             // real temp ~26C
             // MSB 0xF6
             // LSB 0xF7
-            // 6638
-            mock_temperature[0] = 0x66; //0x64;
-            mock_temperature[1] = 0x38; //debug_temp_counter;
+            mock_temperature[0] = 0x64;
+            mock_temperature[1] = debug_temp_counter;
 
             //debug_temp_counter = (debug_temp_counter + 1)%0x02;
 
@@ -160,9 +159,8 @@ void Bmp180::_mock_device_emulation() {
             // MSB 0xF6
             // LSB 0xF7
             // XLSB 0xF8
-            // a2 59 00
-            mock_pressure[0] = 0xa2; //0xa3;
-            mock_pressure[1] = 0x59; //debug_press_counter;
+            mock_pressure[0] = 0xa3;
+            mock_pressure[1] = debug_press_counter;
             mock_pressure[2] = 0x00;
 
             debug_press_counter = (debug_press_counter + 1)%0x03;
@@ -253,7 +251,7 @@ void Bmp180::_request_temperature() {
         _long_uncompensated_temperature = (uncompensated_temperature[0] << 8) | uncompensated_temperature[1];
     }
 
-    std::cout << "temp: " << std::hex << _long_uncompensated_temperature << std::endl;
+    //std::cout << "temp: " << std::hex << _long_uncompensated_temperature << std::endl;
 
 }
 
@@ -303,7 +301,7 @@ void Bmp180::_request_pressure() {
     _long_uncompensated_pressure = (uncompensated_pressure[0] << 8) + uncompensated_pressure[1];
     _short_uncompensated_pressure_xlsb = uncompensated_pressure[2];
 
-    std::cout << "press: " << std::hex << _long_uncompensated_pressure << " xlsb " << std::hex << _short_uncompensated_pressure_xlsb << std::endl;
+    //std::cout << "press: " << std::hex << _long_uncompensated_pressure << " xlsb " << std::hex << _short_uncompensated_pressure_xlsb << std::endl;
 
 }
 
