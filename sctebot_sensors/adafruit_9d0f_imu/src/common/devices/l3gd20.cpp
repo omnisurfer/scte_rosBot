@@ -43,21 +43,33 @@ int L3gd20::_init_device() {
 
     // Config CTRL_REG5
     /*
-     * DEFAULT
+     * BOOT             - 0: normal mode (default)
+     * FIFO_EN          - 0: FIFO disable (default)
+     * StopOnFTH        - 0: FIFO depth is not limited (default)
+     * HPen             - 0: HPF disabled (default)
+     * IG_Sel1-Sel0     - 00 (default)
+     * Out_Sel1-Sel0    - 00 (default)
      */
+    control_reg[0] =
+            _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_5];
 
     //region CTRL_REG4
     /*
-     * BDU = 1, read update on read
-     * 250 dps (DEFAULT)
+     * BDU              - 1: update until MSB and LSB reading
+     * BLE              - 0: Data LSB @ lower address (default)
+     * FS1-0            - 00: 245 dps (default)
+     * IMPen            - 0: level sensitive latched disabled (default)
+     * ST2-1            - 00: normal mode (default)
+     * SIM              - 1: i2c interface. CS on chip may be tied to high for I2C
      */
     register_address = L3gd20::Addresses::CTRL_REG4;
 
     control_reg[0] =
-            _control_register_1to5_buffer[3] |
-            L3gd20::BitMasks::ControlRegister4::BDU;
+            _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_4] |
+            L3gd20::BitMasks::ControlRegister4::BDU |
+            L3gd20::BitMasks::ControlRegister4::SIM_3WIRE_EN;
 
-    //display_register_8bits(_control_register_1to5_buffer[3], control_reg[0]);
+    display_register_8bits("CTRL4", _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_4], "CTRL4", control_reg[0]);
 
     outbound_message = {
             .bytes = control_reg,
@@ -76,22 +88,30 @@ int L3gd20::_init_device() {
     /*
      * Default
      */
+    control_reg[0] =
+            _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_3];
 
     // CTRL_REG2
     /*
      * Default
      */
+    control_reg[0] =
+        _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_2];
 
     //region CTRL_REG1
     /*
-     * Disable power down mode
-     * ODR = 95Hz (Default)
+     * DR1-0                    - 00: 100Hz (Low ODR is disabled by default)
+     * BW1-0                    - 00: 12.5 Hz Cut-Off
+     * PD:                      - 1: Normal Mode
+     * ZEN:                     - 1: Enabled
+     * YEN:                     - 1: Enabled
+     * XEN:                     - 1: Enabled
      * i2cset -y 1 0x6b 0x20 0x17
      */
     register_address = L3gd20::Addresses::CTRL_REG1;
 
     control_reg[0] =
-            _control_register_1to5_buffer[0] |
+            _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_1] |
             L3gd20::BitMasks::ControlRegister1::X_AXIS_ENABLE |
             L3gd20::BitMasks::ControlRegister1::Y_AXIS_ENABLE |
             L3gd20::BitMasks::ControlRegister1::Z_AXIS_ENABLE;
@@ -269,6 +289,8 @@ void L3gd20::_request_temperature_axis() {
 
     if(data_ok) {
         _temperature_axis = (int8_t)temperature[0];
+
+        display_register_8bits("temp", _temperature_axis, "temp", temperature[0]);
     }
 }
 
@@ -276,19 +298,36 @@ void L3gd20::_request_angular_rate_xyz_axis() {
 
     uint8_t register_address;
 
-    uint8_t out_xyz_axis[2] = {0};
+    uint8_t status_xyz_reg[1] = {0};
     buffer_t inbound_message = {
+            .bytes = status_xyz_reg,
+            .size = sizeof(status_xyz_reg)
+    };
+
+    register_address = L3gd20::Addresses::Registers::STATUS_REG;
+    bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+
+    if(data_ok) {
+        _status_xyz_reg = status_xyz_reg[0];
+
+        display_register_8bits("xyz status", _status_xyz_reg, "xyz status", status_xyz_reg[0]);
+    }
+
+    uint8_t out_xyz_axis[2] = {0};
+    inbound_message = {
             .bytes = out_xyz_axis,
             .size = sizeof(out_xyz_axis)
     };
 
     register_address = L3gd20::Addresses::Registers::OUT_X_L;
-    bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+    data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
         // LSB 0x28
         // MSB 0x29
-        _angular_rate_x_axis = (out_xyz_axis[1] << 8) | out_xyz_axis[0];
+        _angular_rate_x_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+
+        display_register_16bits("x axis", _angular_rate_x_axis, "x axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
     }
 
     register_address = L3gd20::Addresses::Registers::OUT_Y_L;
@@ -298,6 +337,8 @@ void L3gd20::_request_angular_rate_xyz_axis() {
         // LSB 0x2A
         // MSB 0x2B
         _angular_rate_y_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+
+        display_register_16bits("y axis", _angular_rate_y_axis, "y axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
     }
 
     register_address = L3gd20::Addresses::Registers::OUT_Z_L;
@@ -307,6 +348,8 @@ void L3gd20::_request_angular_rate_xyz_axis() {
         // LSB 0x2C
         // MSB 0x2D
         _angular_rate_z_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+
+        display_register_16bits("z axis", _angular_rate_z_axis, "z axis", ((out_xyz_axis[1] << 8) + out_xyz_axis[0]));
     }
 }
 

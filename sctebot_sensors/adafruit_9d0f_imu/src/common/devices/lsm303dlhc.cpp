@@ -58,7 +58,7 @@ int Lsm303Dlhc::_init_device() {
             Lsm303Dlhc::BitMasks::Y_AXIS_EN |
             Lsm303Dlhc::BitMasks::X_AXIS_EN;
 
-    display_register_8bits(_control_register_1to6_buffer[0], control_reg[0]);
+    display_register_8bits("REG1A", _control_register_1to6_buffer[0], "REG1A", control_reg[0]);
 
     outbound_message = {
             .bytes = control_reg,
@@ -98,7 +98,7 @@ int Lsm303Dlhc::_init_device() {
             _control_register_1to6_buffer[3] |
             Lsm303Dlhc::BitMasks::ControlRegister4::BDU_EN;
 
-    display_register_8bits(_control_register_1to6_buffer[0], control_reg[0]);
+    display_register_8bits("REG4A", _control_register_1to6_buffer[0], "REG4A", control_reg[0]);
 
     outbound_message = {
             .bytes = control_reg,
@@ -158,7 +158,7 @@ int Lsm303Dlhc::_init_device() {
             _cra_reg_m[0] |
             Lsm303Dlhc::BitMasks::CrARegM::TEMP_EN;
 
-    display_register_8bits(_control_register_1to6_buffer[0], control_reg[0]);
+    display_register_8bits("CRAREG", _control_register_1to6_buffer[0], "CRAREG", control_reg[0]);
 
     outbound_message = {
             .bytes = control_reg,
@@ -341,8 +341,8 @@ void Lsm303Dlhc::_mock_device_emulation() {
         // T_L 0x32
         mock_temperature[1] = out_temp_axis & 0x00FF;
 
-        display_register_8bits(mock_temperature[0], mock_temperature[1]);
-        display_register_16bits(temp, out_temp_axis);
+        display_register_8bits("mock temp 0", mock_temperature[0], "mock temp 1", mock_temperature[1]);
+        display_register_16bits("temp", temp, "temp_axis", out_temp_axis);
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
@@ -482,7 +482,7 @@ void Lsm303Dlhc::_request_temperature_axis() {
         int16_t temp_axis = (temperature[0] << 8) + temperature[1];
         _temperature_axis = temp_axis >> 4;
 
-        display_register_8bits(temperature[0], temperature[1]);
+        display_register_8bits("temp0", temperature[0], "temp1", temperature[1]);
     }
 }
 

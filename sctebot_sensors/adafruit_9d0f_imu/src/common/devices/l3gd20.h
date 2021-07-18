@@ -59,8 +59,17 @@ private:
             INT1_TSH_YL = 0x35,
             INT1_TSH_ZH = 0x36,
             INT1_TSH_ZL = 0x37,
-            INT1_DURATION = 0x38
+            INT1_DURATION = 0x38,
+            LOW_ODR = 0x39
         } Registers;
+
+        typedef enum ControlRegister_t {
+            CTRL_1 = 0,
+            CTRL_2 = 1,
+            CTRL_3 = 2,
+            CTRL_4 = 3,
+            CTRL_5 = 4
+        } ControlRegister;
     };
 
     class MagicNumbers {
@@ -192,6 +201,7 @@ private:
 
     uint8_t _control_register_1to5_buffer[5] = {0};
     int8_t _temperature_axis{0};
+    uint8_t _status_xyz_reg{0};
     int16_t _angular_rate_x_axis{0};
     int16_t _angular_rate_y_axis{0};
     int16_t _angular_rate_z_axis{0};
