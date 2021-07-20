@@ -206,6 +206,14 @@ private:
     int16_t _angular_rate_y_axis{0};
     int16_t _angular_rate_z_axis{0};
 
+    typedef struct l3gd20GyroData_s {
+        float x;
+        float y;
+        float z;
+    } l3gd20GyroData;
+
+    float _range_sensitivity = 0.0;
+
     bool run_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
     std::mutex data_capture_thread_run_mutex;
@@ -213,7 +221,7 @@ private:
 
     typedef void (*host_callback_function)(
             int temperature,
-            int x_axis, int y_axis, int z_axis
+            float x_axis, float y_axis, float z_axis
             );
     host_callback_function _host_callback_function{};
 
@@ -281,16 +289,16 @@ private:
         return _temperature_axis;
     }
 
-    int16_t _get_angular_rate_x_axis() const {
-        return _angular_rate_x_axis;
+    float _get_angular_rate_x_axis() const {
+        return _angular_rate_x_axis * _range_sensitivity;
     }
 
-    int16_t _get_angular_rate_y_axis() const {
-        return _angular_rate_y_axis;
+    float _get_angular_rate_y_axis() const {
+        return _angular_rate_y_axis * _range_sensitivity;
     }
 
-    int16_t _get_angular_rate_z_axis() const {
-        return _angular_rate_z_axis;
+    float _get_angular_rate_z_axis() const {
+        return _angular_rate_z_axis * _range_sensitivity;
     }
 
     int _measurement_completed_ok();

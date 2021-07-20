@@ -64,9 +64,23 @@ int L3gd20::_init_device() {
      */
     register_address = L3gd20::Addresses::CTRL_REG4;
 
+    uint8_t full_scale_selection = L3gd20::BitMasks::ControlRegister4::FS_250;
+
+    switch(full_scale_selection) {
+        case L3gd20::BitMasks::ControlRegister4::FS_250:
+            _range_sensitivity = 8.75/1000;
+        case L3gd20::BitMasks::ControlRegister4::FS_500:
+            _range_sensitivity = 17.50/1000;
+        case L3gd20::BitMasks::ControlRegister4::FS_2000:
+            _range_sensitivity = 70.0/1000;
+        default:
+            _range_sensitivity = 8.75/1000;
+    }
+
     control_reg[0] =
             _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_4] |
             L3gd20::BitMasks::ControlRegister4::BDU |
+            full_scale_selection |
             L3gd20::BitMasks::ControlRegister4::SIM_3WIRE_EN;
 
     display_register_8bits("CTRL4", _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_4], "CTRL4", control_reg[0]);
@@ -160,9 +174,9 @@ void L3gd20::_data_capture_worker() {
         // maybe make these structs and pass that? less calls?
         int8_t temperature = this->_get_temperature();
 
-        int16_t x_axis = this->_get_angular_rate_x_axis();
-        int16_t y_axis = this->_get_angular_rate_y_axis();
-        int16_t z_axis = this->_get_angular_rate_z_axis();
+        float x_axis = this->_get_angular_rate_x_axis();
+        float y_axis = this->_get_angular_rate_y_axis();
+        float z_axis = this->_get_angular_rate_z_axis();
 
         this->_host_callback_function(
                 temperature,
