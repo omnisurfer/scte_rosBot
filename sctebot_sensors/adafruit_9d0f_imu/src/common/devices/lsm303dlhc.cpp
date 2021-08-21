@@ -86,7 +86,7 @@ int Lsm303Dlhc::_init_device() {
 
     //region CTRL_REG4
     /*
-     * BDU = 1
+     * BDU = 0
      * LSB @ Lower address, LITTLE ENDIAN
      * FS Res +/- 2G
      * HiRes disabled
@@ -95,8 +95,8 @@ int Lsm303Dlhc::_init_device() {
     register_address = Lsm303Dlhc::Addresses::CTRL_REG4_A;
 
     control_reg[0] =
-            _control_register_1to6_buffer[3] |
-            Lsm303Dlhc::BitMasks::ControlRegister4::BDU_EN;
+            _control_register_1to6_buffer[3];
+            //Lsm303Dlhc::BitMasks::ControlRegister4::BDU_EN;
 
     display_register_8bits("REG4A", _control_register_1to6_buffer[0], "REG4A", control_reg[0]);
 

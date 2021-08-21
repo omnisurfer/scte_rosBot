@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     Bmp180 bmp180DeviceHandle;
 
     /* CONFIRMED FOR BMP180 on RPI4 Node */
-    i2c_device_address = 0x77;
+    i2c_device_address = BMP180_RPI_ADDRESS;
 
     bmp180DeviceHandle.config_device(
             i2c_bus_number,
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
     //region L3GD20 device setup
     L3gd20 l3gd20DeviceHandle;
 
-    i2c_device_address = 0x6b;
+    i2c_device_address = L3GD20_RPI_ADDRESS;
 
     l3gd20DeviceHandle.config_device(
             i2c_bus_number,
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
     //region LSM303DLHC device setup
     Lsm303Dlhc lsm303DlhcDeviceHandle;
 
-    i2c_device_address = 0x19;
+    i2c_device_address = LSM303DLHC_ADDRESS;
 
     lsm303DlhcDeviceHandle.config_device(
             i2c_bus_number,
