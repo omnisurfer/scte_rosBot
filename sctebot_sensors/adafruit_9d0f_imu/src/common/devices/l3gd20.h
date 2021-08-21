@@ -248,9 +248,7 @@ private:
             return 0;
         }
 
-#if ENABLE_MOCK_L3GD20_DEVICE
         mock_load_data();
-#endif
 
         // try read whoami
         uint8_t chip_id[1] = {0};

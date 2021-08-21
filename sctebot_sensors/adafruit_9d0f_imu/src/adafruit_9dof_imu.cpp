@@ -31,15 +31,21 @@ void handle_l3gd20_measurements(int temperature, float r_x, float r_y, float r_z
     std::cout << "l3gd20\t\ttemp: " << temperature << " x_dps: " << r_x << " y_dps: " << r_y << " z_dps: " << r_z << std::endl;
 }
 
-void handle_lsm303dlhc_measurements(int temperature, int a_x, int a_y, int a_z, int m_x, int m_y, int m_z) {
-    std::cout << "lsm303\t\ttemp: " << (float)temperature
-        << " a_x: " << (float)a_x << " a_y: " << (float)a_y << " a_z: " << (float)a_z
+void handle_lsm303dlhc_accel_measurements(int a_x, int a_y, int a_z) {
+    std::cout
+        << "lsm303\t\t a_x: " << (float)a_x << " a_y: " << (float)a_y << " a_z: " << (float)a_z
+        << std::endl;
+}
+
+void handle_lsm303dlhc_mag_measurements(int temperature, int m_x, int m_y, int m_z) {
+    std::cout
+        << "lsm303\t\ttemp: " << (float)temperature
         << " m_x: " << (float)m_x << " m_y: " << (float)m_y << " m_z: " << (float)m_z
         << std::endl;
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Hello World adafruit 9dof IMU" << std::endl;
+    std::cout << "Hello World adafruit 10dof IMU" << std::endl;
 
     int i2c_bus_number = 0;
     int i2c_device_address = 0x77;
@@ -64,7 +70,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-#if ENABLE_BMP180_DEVICE
+#if 1
     //region BMP180 device setup
     Bmp180 bmp180DeviceHandle;
 
@@ -83,15 +89,13 @@ int main(int argc, char* argv[]) {
         return 0;
     };
 
-#if ENABLE_MOCK_BMP180_DEVICE
     bmp180DeviceHandle.mock_run_device_emulation();
-#endif
 
     bmp180DeviceHandle.init_device();
     //endregion
 #endif
 
-#if ENABLE_L3GD20_DEVICE
+#if 1
     //region L3GD20 device setup
     L3gd20 l3gd20DeviceHandle;
 
@@ -109,17 +113,15 @@ int main(int argc, char* argv[]) {
         return 0;
     };
 
-#if ENABLE_MOCK_L3GD20_DEVICE
     l3gd20DeviceHandle.mock_run_device_emulation();
-#endif
 
     l3gd20DeviceHandle.init_device();
     //endregion
 #endif
 
-#if ENABLE_LSM303DLHC_DEVICE
-    //region LSM303DLHC device setup
-    Lsm303Dlhc lsm303DlhcDeviceHandle;
+#if 1
+    //region LSM303DLHC Accel device setup
+    Lsm303DlhcAccelerometer lsm303DlhcDeviceHandle;
 
     //LSM303DLHC may have two addresses, 0x19 for Accel, 0x1e for Mag/Temp
 
@@ -130,16 +132,14 @@ int main(int argc, char* argv[]) {
             i2c_device_address,
             1000,
             "3d_accel",
-            &handle_lsm303dlhc_measurements
-    );
+            &handle_lsm303dlhc_accel_measurements
+            );
 
     if(!lsm303DlhcDeviceHandle.connect_to_device()) {
         return 0;
     }
 
-#if ENABLE_MOCK_LSM303DLHC_DEVICE
     lsm303DlhcDeviceHandle.mock_run_device_emulation();
-#endif
 
     lsm303DlhcDeviceHandle.init_device();
     //endregion

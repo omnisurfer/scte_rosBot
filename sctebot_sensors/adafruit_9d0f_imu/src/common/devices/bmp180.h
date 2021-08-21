@@ -109,6 +109,7 @@ private:
     typedef void (*host_callback_function)(
             float calculated_temperature, float calculated_pressure
             );
+
     host_callback_function _host_callback_function{};
 
     bool mock_run_device_thread = false;
@@ -198,9 +199,7 @@ private:
             return 0;
         }
 
-#if ENABLE_MOCK_BMP180_DEVICE
         mock_load_calibration_data();
-#endif
 
         // try read chip id
         uint8_t chip_id[1] = {0};

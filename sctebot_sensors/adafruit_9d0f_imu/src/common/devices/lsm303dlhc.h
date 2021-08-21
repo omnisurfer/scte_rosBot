@@ -19,7 +19,7 @@ namespace logging = boost::log;
 
 #include "i2c_linux.h"
 
-class Lsm303Dlhc {
+class Lsm303DlhcAccelerometer {
 
 private:
 
@@ -56,22 +56,7 @@ private:
             CLICK_THS_A	= 0x3A,
             TIME_LIMIT_A = 0x3B,
             TIME_LATENCY_A = 0x3C,
-            TIME_WINDOW_A = 0x3D,
-            CRA_REG_M = 0x00,
-            CRB_REG_M = 0x01,
-            MR_REG_M = 0x02,
-            OUT_X_H_M = 0x03,
-            OUT_X_L_M = 0x04,
-            OUT_Z_H_M = 0x05,
-            OUT_Z_L_M = 0x06,
-            OUT_Y_H_M = 0x07,
-            OUT_Y_L_M = 0x08,
-            SR_REG_Mg = 0x09,
-            IRA_REG_M = 0x0A,
-            IRB_REG_M = 0x0B,
-            IRC_REG_M = 0x0C,
-            TEMP_OUT_H_M = 0x31,
-            TEMP_OUT_L_M = 0x32
+            TIME_WINDOW_A = 0x3D
 
         } Registers;
     };
@@ -280,18 +265,10 @@ private:
     context_t _i2c_device_context{};
 
     uint8_t _control_register_1to6_buffer[6] = {0};
-    uint8_t _cra_reg_m[1] = {0};
-    uint8_t _crb_reg_m[1] = {0};
-    uint8_t _mr_reg_m[1] = {0};
+
     int16_t _accelerometer_x_axis{0};
     int16_t _accelerometer_y_axis{0};
     int16_t _accelerometer_z_axis{0};
-
-    int16_t _magnetometer_x_axis{0};
-    int16_t _magnetometer_y_axis{0};
-    int16_t _magnetometer_z_axis{0};
-
-    int16_t _temperature_axis{0};
 
     bool run_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
@@ -299,9 +276,7 @@ private:
     std::thread data_capture_thread;
 
     typedef void (*host_callback_function)(
-            int temperature,
-            int x_accel_axis, int y_accel_axis, int z_accel_axis,
-            int x_mag_axis, int y_mag_axis, int z_mag_axis
+            int x_accel_axis, int y_accel_axis, int z_accel_axis
             );
 
     host_callback_function _host_callback_function{};
@@ -313,48 +288,15 @@ private:
 
     int _init_device();
 
-    int _connect_to_device() {
+    int _connect_to_device();
 
-        _i2c_device_context = {0};
-        if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
-            BOOST_LOG_TRIVIAL(error) << "failed to open device";
-            return 0;
-        }
-
-        if(!i2c_is_connected(&_i2c_device_context)) {
-            BOOST_LOG_TRIVIAL(error) << "failed to connect to device\n";
-            return 0;
-        }
-
-#if ENABLE_MOCK_LSM303DLHC_DEVICE
-        mock_load_data();
-#endif
-
-        // TBD
-
-        return 1;
-    }
-
-    int _close_device() {
-        i2c_dev_close(&_i2c_device_context, _i2c_bus_number);
-
-        return 0;
-    }
+    int _close_device();
 
     void _data_capture_worker();
 
     void _mock_device_emulation();
 
-    void _request_temperature_axis();
-
     void _request_accelerometer_xyz_axis();
-
-    void _request_magnetometer_xyz_axis();
-
-    int16_t _get_temperature() const {
-        // TODO manipulate the bits to convert the 12-bit value to 16-bit
-        return _temperature_axis;
-    }
 
     int16_t _get_accel_x_axis() const {
         return _accelerometer_x_axis;
@@ -368,23 +310,11 @@ private:
         return _accelerometer_z_axis;
     }
 
-    int16_t _get_magnetic_x_axis() const {
-        return _magnetometer_x_axis;
-    }
-
-    int16_t _get_magnetic_y_axis() const {
-        return _magnetometer_y_axis;
-    }
-
-    int16_t _get_magnetic_z_axis() const {
-        return _magnetometer_z_axis;
-    }
-
 public:
 
-    Lsm303Dlhc() = default;
+    Lsm303DlhcAccelerometer() = default;
 
-    ~Lsm303Dlhc() {
+    ~Lsm303DlhcAccelerometer() {
 
         this->_close_device();
 
@@ -424,7 +354,7 @@ public:
 
         _host_callback_function = function_pointer;
 
-        data_capture_thread = std::thread(&Lsm303Dlhc::_data_capture_worker, this);
+        data_capture_thread = std::thread(&Lsm303DlhcAccelerometer::_data_capture_worker, this);
 
         return 0;
     }
@@ -472,7 +402,7 @@ public:
 
     int mock_run_device_emulation() {
 
-        mock_device_thread = std::thread(&Lsm303Dlhc::_mock_device_emulation, this);
+        mock_device_thread = std::thread(&Lsm303DlhcAccelerometer::_mock_device_emulation, this);
 
         // wait a little bit for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));
@@ -487,6 +417,246 @@ public:
 
 };
 
+#if 0
+class Lsm303DlhcMagnetometer {
+
+private:
+
+    class Addresses {
+
+    public:
+        typedef enum Registers_t {
+            CRA_REG_M = 0x00,
+            CRB_REG_M = 0x01,
+            MR_REG_M = 0x02,
+            OUT_X_H_M = 0x03,
+            OUT_X_L_M = 0x04,
+            OUT_Z_H_M = 0x05,
+            OUT_Z_L_M = 0x06,
+            OUT_Y_H_M = 0x07,
+            OUT_Y_L_M = 0x08,
+            SR_REG_Mg = 0x09,
+            IRA_REG_M = 0x0A,
+            IRB_REG_M = 0x0B,
+            IRC_REG_M = 0x0C,
+            TEMP_OUT_H_M = 0x31,
+            TEMP_OUT_L_M = 0x32
+
+        } Registers;
+    };
+
+    class MagicNumbers {
+
+    };
+
+    class BitMasks {
+
+    public:
+        typedef enum CrARegM_t {
+            TEMP_EN = (1 << 7),
+            DATA_OUTPUT_RATE_0P75_HZ = 0b00000000,
+            DATA_OUTPUT_RATE_1P5_HZ = 0b00000100,
+            DATA_OUTPUT_RATE_3P0_HZ = 0b00001000,
+            DATA_OUTPUT_RATE_7P5_HZ = 0b00001100,
+
+            DATA_OUTPUT_RATE_15P0_HZ = 0b00010000,
+            DATA_OUTPUT_RATE_30P0_HZ = 0b00010100,
+            DATA_OUTPUT_RATE_75P0_HZ = 0b00011000,
+            DATA_OUTPUT_RATE_200P0_HZ = 0b00011100
+        } CrARegM;
+
+        typedef enum CrBRegM_t {
+            GAIN_CONFIG_0 = 0b00100000,
+            GAIN_CONFIG_1 = 0b01000000,
+            GAIN_CONFIG_2 = 0b01100000,
+            GAIN_CONFIG_3 = 0b10000000,
+            GAIN_CONFIG_4 = 0b10100000,
+            GAIN_CONFIG_5 = 0b11000000,
+            GAIN_CONFIG_6 = 0b11100000
+        } CrBRegM;
+
+        typedef enum MrRegM_t {
+            CONTINUOUS_CONVERSION = 0b00000000,
+            SINGLE_CONVERSION = 0b00000001,
+            SLEEP_MODE = 0b00000010
+        } MrRegM;
+
+        typedef enum SrRegM_t {
+            LOCK = (1 << 1),
+            DATA_READY = (1 << 0)
+        } SrRegM;
+    };
+
+    int _i2c_bus_number{};
+    int _i2c_device_address{};
+    int _sensor_update_period_ms{};
+    std::string _device_name;
+
+    context_t _i2c_device_context{};
+
+    uint8_t _cra_reg_m[1] = {0};
+    uint8_t _crb_reg_m[1] = {0};
+    uint8_t _mr_reg_m[1] = {0};
+
+    int16_t _magnetometer_x_axis{0};
+    int16_t _magnetometer_y_axis{0};
+    int16_t _magnetometer_z_axis{0};
+
+    int16_t _temperature_axis{0};
+
+    bool run_data_capture_thread = false;
+    std::condition_variable data_capture_thread_run_cv;
+    std::mutex data_capture_thread_run_mutex;
+    std::thread data_capture_thread;
+
+    typedef void (*host_callback_function)(
+            int temperature,
+            int x_mag_axis, int y_mag_axis, int z_mag_axis
+            );
+
+    host_callback_function _host_callback_function{};
+
+    bool mock_run_device_thread = false;
+    std::condition_variable mock_device_thread_run_cv;
+    std::mutex mock_device_thread_run_mutex;
+    std::thread mock_device_thread;
+
+    int _init_device();
+
+    int _connect_to_device();
+
+    int _close_device();
+
+    void _data_capture_worker();
+
+    void _mock_device_emulation();
+
+    void _request_temperature_axis();
+
+    void _request_magnetometer_xyz_axis();
+
+    int16_t _get_temperature() const {
+        // TODO manipulate the bits to convert the 12-bit value to 16-bit
+        return _temperature_axis;
+    }
+
+    int16_t _get_magnetic_x_axis() const {
+        return _magnetometer_x_axis;
+    }
+
+    int16_t _get_magnetic_y_axis() const {
+        return _magnetometer_y_axis;
+    }
+
+    int16_t _get_magnetic_z_axis() const {
+        return _magnetometer_z_axis;
+    }
+
+public:
+
+    Lsm303DlhcMagnetometer() = default;
+
+    ~Lsm303DlhcMagnetometer() {
+        this->_close_device();
+
+        this->run_data_capture_thread = false;
+
+        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+        this->data_capture_thread_run_cv.notify_one();
+        data_lock.unlock();
+
+        if(data_capture_thread.joinable()) {
+            data_capture_thread.join();
+        }
+
+        this->mock_run_device_thread = false;
+
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        this->mock_device_thread_run_cv.notify_one();
+        device_lock.unlock();
+
+        if(mock_device_thread.joinable()) {
+            mock_device_thread.join();
+        }
+    }
+
+    int config_device(
+            int bus_number,
+            int device_address,
+            int update_period_ms,
+            std::string device_name,
+            host_callback_function function_pointer
+            ) {
+        _i2c_bus_number = bus_number;
+        _i2c_device_address = device_address;
+        _sensor_update_period_ms = update_period_ms;
+        _device_name = std::move(device_name);
+
+        _host_callback_function = function_pointer;
+
+        data_capture_thread = std::thread(&Lsm303DlhcMagnetometer::_data_capture_worker, this);
+
+        return 0;
+    }
+
+    int connect_to_device() {
+
+        int status = 1;
+
+        status &= this->_connect_to_device();
+
+        return status;
+    }
+
+    int init_device() {
+
+        this->_init_device();
+
+        return 1;
+    }
+
+    int mock_load_data() {
+
+        /* @0x19 - Running
+             0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
+        00: 80 00 01 00 00 00 00 ff 00 00 00 00 00 00 00 33    ?.?............3
+        10: b2 bb b4 22 01 32 e3 9d 23 38 70 68 e0 20 80 00    ???"?2??#8ph? ?.
+        20: 17 00 00 80 00 00 00 ff 80 80 80 80 80 7f 00 20    ?..?....??????.
+        30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        80: 80 00 01 00 00 00 00 00 00 00 00 00 00 00 00 33    ?.?............3
+        90: b2 bb b4 22 01 32 e3 9d 23 38 70 68 e0 20 80 00    ???"?2??#8ph? ?.
+        a0: 17 00 00 80 00 00 00 00 80 80 80 80 80 7f 00 20    ?..?....??????.
+        b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+         */
+
+        return 0;
+    }
+
+    int mock_run_device_emulation() {
+
+        mock_device_thread = std::thread(&Lsm303DlhcMagnetometer::_mock_device_emulation, this);
+
+        // wait a little bit for the thread to get started
+        std::this_thread::sleep_for(std::chrono::milliseconds (10));
+
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        this->mock_device_thread_run_cv.notify_one();
+        this->mock_run_device_thread = true;
+        device_lock.unlock();
+
+        return 1;
+    }
+
+};
+#endif
 #endif //LSM303DLHC_H
 
 
