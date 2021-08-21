@@ -177,10 +177,10 @@ add_executable(
 # )
 target_link_libraries(
         adafruit_9dof_imu
-        i2c_linux
         bmp180
         l3gd20
         lsm303dlhc
+        i2c_linux
         pthread
         Boost::log
 )

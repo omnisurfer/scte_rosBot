@@ -149,9 +149,7 @@ int Lsm303DlhcAccelerometer::_connect_to_device() {
         return 0;
     }
 
-#if ENABLE_MOCK_LSM303DLHC_ACCEL_DEVICE
     mock_load_data();
-#endif
 
     // TBD
 

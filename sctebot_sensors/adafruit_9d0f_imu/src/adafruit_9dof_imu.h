@@ -11,7 +11,7 @@
 #define ENABLE_LSM303DLHC_MAG_DEVICE 1
 
 #define ENABLE_MOCK_BMP180_DEVICE 0
-#define ENABLE_MOCK_L3GD20_DEVICE 0
+#define ENABLE_MOCK_L3GD20_DEVICE 1
 #define ENABLE_MOCK_LSM303DLHC_ACCEL_DEVICE 1
 #define ENABLE_MOCK_LSM303DLHC_MAG_DEVICE 1
 
@@ -24,8 +24,6 @@
 #include <thread>
 #include <utility>
 #include <condition_variable>
-
-#include "common/i2c/i2c_linux.h"
 
 #include "common/devices/bmp180.h"
 #include "common/devices/l3gd20.h"

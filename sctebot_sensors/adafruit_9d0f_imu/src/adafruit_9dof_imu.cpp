@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-#if ENABLE_BMP180_DEVICE
+#if 1
     //region BMP180 device setup
     Bmp180 bmp180DeviceHandle;
 
@@ -89,15 +89,13 @@ int main(int argc, char* argv[]) {
         return 0;
     };
 
-#if ENABLE_MOCK_BMP180_DEVICE
     bmp180DeviceHandle.mock_run_device_emulation();
-#endif
 
     bmp180DeviceHandle.init_device();
     //endregion
 #endif
 
-#if ENABLE_L3GD20_DEVICE
+#if 1
     //region L3GD20 device setup
     L3gd20 l3gd20DeviceHandle;
 
@@ -115,16 +113,14 @@ int main(int argc, char* argv[]) {
         return 0;
     };
 
-#if ENABLE_MOCK_L3GD20_DEVICE
     l3gd20DeviceHandle.mock_run_device_emulation();
-#endif
 
     l3gd20DeviceHandle.init_device();
     //endregion
 #endif
 
-#if ENABLE_LSM303DLHC_ACCEL_DEVICE
-    //region LSM303DLHC device setup
+#if 1
+    //region LSM303DLHC Accel device setup
     Lsm303DlhcAccelerometer lsm303DlhcDeviceHandle;
 
     //LSM303DLHC may have two addresses, 0x19 for Accel, 0x1e for Mag/Temp
@@ -137,15 +133,13 @@ int main(int argc, char* argv[]) {
             1000,
             "3d_accel",
             &handle_lsm303dlhc_accel_measurements
-    );
+            );
 
     if(!lsm303DlhcDeviceHandle.connect_to_device()) {
         return 0;
     }
 
-#if ENABLE_MOCK_LSM303DLHC_ACCEL_DEVICE
     lsm303DlhcDeviceHandle.mock_run_device_emulation();
-#endif
 
     lsm303DlhcDeviceHandle.init_device();
     //endregion
