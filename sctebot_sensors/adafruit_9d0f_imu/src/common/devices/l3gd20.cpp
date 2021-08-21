@@ -5,7 +5,7 @@
 #include "l3gd20.h"
 #include "shared_util.h"
 
-int L3gd20::_init_device() {
+int L3gd20Gyro::_init_device() {
 
     logging::core::get()->set_filter
     (
@@ -18,7 +18,7 @@ int L3gd20::_init_device() {
     uint8_t control_reg[1] = {0};
 
     // CONTROL REGISTERS 1 to 5
-    register_address = L3gd20::Addresses::CTRL_REG1;
+    register_address = L3gd20Gyro::Addresses::CTRL_REG1;
 
     inbound_message = {
             .bytes = _control_register_1to5_buffer,
@@ -51,7 +51,7 @@ int L3gd20::_init_device() {
      * Out_Sel1-Sel0    - 00 (default)
      */
     control_reg[0] =
-            _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_5];
+            _control_register_1to5_buffer[L3gd20Gyro::Addresses::ControlRegister::CTRL_5];
 
     //region CTRL_REG4
     /*
@@ -62,28 +62,28 @@ int L3gd20::_init_device() {
      * ST2-1            - 00: normal mode (default)
      * SIM              - 1: i2c interface. CS on chip may be tied to high for I2C
      */
-    register_address = L3gd20::Addresses::CTRL_REG4;
+    register_address = L3gd20Gyro::Addresses::CTRL_REG4;
 
-    uint8_t full_scale_selection = L3gd20::BitMasks::ControlRegister4::FS_250;
+    uint8_t full_scale_selection = L3gd20Gyro::BitMasks::ControlRegister4::FS_250;
 
     switch(full_scale_selection) {
-        case L3gd20::BitMasks::ControlRegister4::FS_250:
+        case L3gd20Gyro::BitMasks::ControlRegister4::FS_250:
             _range_sensitivity = 8.75/1000;
-        case L3gd20::BitMasks::ControlRegister4::FS_500:
+        case L3gd20Gyro::BitMasks::ControlRegister4::FS_500:
             _range_sensitivity = 17.50/1000;
-        case L3gd20::BitMasks::ControlRegister4::FS_2000:
+        case L3gd20Gyro::BitMasks::ControlRegister4::FS_2000:
             _range_sensitivity = 70.0/1000;
         default:
             _range_sensitivity = 8.75/1000;
     }
 
     control_reg[0] =
-            _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_4] |
-            L3gd20::BitMasks::ControlRegister4::BDU |
+            _control_register_1to5_buffer[L3gd20Gyro::Addresses::ControlRegister::CTRL_4] |
+            L3gd20Gyro::BitMasks::ControlRegister4::BDU |
             full_scale_selection |
-            L3gd20::BitMasks::ControlRegister4::SIM_3WIRE_EN;
+            L3gd20Gyro::BitMasks::ControlRegister4::SIM_3WIRE_EN;
 
-    display_register_8bits("CTRL4", _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_4], "CTRL4", control_reg[0]);
+    display_register_8bits("CTRL4", _control_register_1to5_buffer[L3gd20Gyro::Addresses::ControlRegister::CTRL_4], "CTRL4", control_reg[0]);
 
     outbound_message = {
             .bytes = control_reg,
@@ -103,14 +103,14 @@ int L3gd20::_init_device() {
      * Default
      */
     control_reg[0] =
-            _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_3];
+            _control_register_1to5_buffer[L3gd20Gyro::Addresses::ControlRegister::CTRL_3];
 
     // CTRL_REG2
     /*
      * Default
      */
     control_reg[0] =
-        _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_2];
+        _control_register_1to5_buffer[L3gd20Gyro::Addresses::ControlRegister::CTRL_2];
 
     //region CTRL_REG1
     /*
@@ -122,15 +122,15 @@ int L3gd20::_init_device() {
      * XEN:                     - 1: Enabled
      * i2cset -y 1 0x6b 0x20 0x17
      */
-    register_address = L3gd20::Addresses::CTRL_REG1;
+    register_address = L3gd20Gyro::Addresses::CTRL_REG1;
 
     control_reg[0] =
-            _control_register_1to5_buffer[L3gd20::Addresses::ControlRegister::CTRL_1] |
-            L3gd20::BitMasks::ControlRegister1::X_AXIS_ENABLE |
-            L3gd20::BitMasks::ControlRegister1::Y_AXIS_ENABLE |
-            L3gd20::BitMasks::ControlRegister1::Z_AXIS_ENABLE;
+            _control_register_1to5_buffer[L3gd20Gyro::Addresses::ControlRegister::CTRL_1] |
+            L3gd20Gyro::BitMasks::ControlRegister1::X_AXIS_ENABLE |
+            L3gd20Gyro::BitMasks::ControlRegister1::Y_AXIS_ENABLE |
+            L3gd20Gyro::BitMasks::ControlRegister1::Z_AXIS_ENABLE;
 
-    control_reg[0] |= L3gd20::BitMasks::ControlRegister1::POWER_DOWN_DISABLE;
+    control_reg[0] |= L3gd20Gyro::BitMasks::ControlRegister1::POWER_DOWN_DISABLE;
 
     //display_register_8bits(_control_register_1to5_buffer[0], control_reg[0]);
 
@@ -154,7 +154,7 @@ int L3gd20::_init_device() {
     return 0;
 }
 
-void L3gd20::_data_capture_worker() {
+void L3gd20Gyro::_data_capture_worker() {
     BOOST_LOG_TRIVIAL(debug) << "_data_capture_worker starting";
 
     std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
@@ -191,7 +191,11 @@ void L3gd20::_data_capture_worker() {
     BOOST_LOG_TRIVIAL(debug) << "_data_capture_worker exiting";
 }
 
-void L3gd20::_mock_device_emulation() {
+void L3gd20Gyro::enable_load_mock_data() {
+    _enable_load_mock_data = true;
+}
+
+void L3gd20Gyro::_mock_device_emulation() {
     BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation starting";
 
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
@@ -215,7 +219,7 @@ void L3gd20::_mock_device_emulation() {
         device_lock.unlock();
 
         //region TEMP AXIS
-        register_address = L3gd20::Addresses::Registers::OUT_TEMP;
+        register_address = L3gd20Gyro::Addresses::Registers::OUT_TEMP;
 
         uint8_t mock_temperature[1] = {0};
         buffer_t outbound_measurement = {
@@ -229,7 +233,7 @@ void L3gd20::_mock_device_emulation() {
         //endregion
 
         //region X AXIS
-        register_address = L3gd20::Addresses::Registers::OUT_X_L;
+        register_address = L3gd20Gyro::Addresses::Registers::OUT_X_L;
 
         uint8_t mock_x_axis[2] = {0};
         outbound_measurement = {
@@ -246,7 +250,7 @@ void L3gd20::_mock_device_emulation() {
         //endregion
 
         //region Y AXIS
-        register_address = L3gd20::Addresses::Registers::OUT_Y_L;
+        register_address = L3gd20Gyro::Addresses::Registers::OUT_Y_L;
 
         uint8_t mock_y_axis[2] = {0};
         outbound_measurement = {
@@ -263,7 +267,7 @@ void L3gd20::_mock_device_emulation() {
         //endregion
 
         //region Z AXIS
-        register_address = L3gd20::Addresses::Registers::OUT_Z_L;
+        register_address = L3gd20Gyro::Addresses::Registers::OUT_Z_L;
 
         uint8_t mock_z_axis[2] = {0};
         outbound_measurement = {
@@ -288,7 +292,7 @@ void L3gd20::_mock_device_emulation() {
     BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation exiting";
 }
 
-void L3gd20::_request_temperature_axis() {
+void L3gd20Gyro::_request_temperature_axis() {
 
     uint8_t register_address;
 
@@ -298,7 +302,7 @@ void L3gd20::_request_temperature_axis() {
             .size = sizeof(temperature)
     };
 
-    register_address = L3gd20::Addresses::Registers::OUT_TEMP;
+    register_address = L3gd20Gyro::Addresses::Registers::OUT_TEMP;
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
@@ -308,7 +312,7 @@ void L3gd20::_request_temperature_axis() {
     }
 }
 
-void L3gd20::_request_angular_rate_xyz_axis() {
+void L3gd20Gyro::_request_angular_rate_xyz_axis() {
 
     uint8_t register_address;
 
@@ -318,7 +322,7 @@ void L3gd20::_request_angular_rate_xyz_axis() {
             .size = sizeof(status_xyz_reg)
     };
 
-    register_address = L3gd20::Addresses::Registers::STATUS_REG;
+    register_address = L3gd20Gyro::Addresses::Registers::STATUS_REG;
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
@@ -333,7 +337,7 @@ void L3gd20::_request_angular_rate_xyz_axis() {
             .size = sizeof(out_xyz_axis)
     };
 
-    register_address = L3gd20::Addresses::Registers::OUT_X_L;
+    register_address = L3gd20Gyro::Addresses::Registers::OUT_X_L;
     data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
@@ -344,7 +348,7 @@ void L3gd20::_request_angular_rate_xyz_axis() {
         display_register_16bits("x axis", _angular_rate_x_axis, "x axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
     }
 
-    register_address = L3gd20::Addresses::Registers::OUT_Y_L;
+    register_address = L3gd20Gyro::Addresses::Registers::OUT_Y_L;
     data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
@@ -355,7 +359,7 @@ void L3gd20::_request_angular_rate_xyz_axis() {
         display_register_16bits("y axis", _angular_rate_y_axis, "y axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
     }
 
-    register_address = L3gd20::Addresses::Registers::OUT_Z_L;
+    register_address = L3gd20Gyro::Addresses::Registers::OUT_Z_L;
     data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
@@ -367,7 +371,7 @@ void L3gd20::_request_angular_rate_xyz_axis() {
     }
 }
 
-int L3gd20::_measurement_completed_ok() {
+int L3gd20Gyro::_measurement_completed_ok() {
 
     return 0;
 }

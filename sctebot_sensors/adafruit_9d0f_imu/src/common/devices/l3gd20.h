@@ -23,7 +23,7 @@ namespace logging = boost::log;
  * TODO CONVERT DRIVER TO L3GD20H! I WAS READING THE DATA SHEET FOR THE NON-H DEVICE TYPE.
  * THIS EXPLAINS THE D7 WHO_AM_I INSTEAD OF D4
  */
-class L3gd20 {
+class L3gd20Gyro {
 
     // 1101 0101 0xD5 (Read address)
     // 1101 0100 0xD4 (Write address)
@@ -199,6 +199,8 @@ private:
 
     context_t _i2c_device_context{};
 
+    bool _enable_load_mock_data = false;
+
     uint8_t _control_register_1to5_buffer[5] = {0};
     int8_t _temperature_axis{0};
     uint8_t _status_xyz_reg{0};
@@ -248,7 +250,9 @@ private:
             return 0;
         }
 
-        mock_load_data();
+        if(_enable_load_mock_data) {
+            _mock_load_data();
+        }
 
         // try read whoami
         uint8_t chip_id[1] = {0};
@@ -258,10 +262,10 @@ private:
         };
 
         uint8_t register_address;
-        register_address = L3gd20::Addresses::Registers::WHO_AM_I;
+        register_address = L3gd20Gyro::Addresses::Registers::WHO_AM_I;
         i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-        if(chip_id[0] != L3gd20::MagicNumbers::WhoAmI::WHO_AM_I) {
+        if(chip_id[0] != L3gd20Gyro::MagicNumbers::WhoAmI::WHO_AM_I) {
             BOOST_LOG_TRIVIAL(error) << "failed to read device WHO_AM_I register";
             return 0;
         }
@@ -275,97 +279,7 @@ private:
         return 0;
     }
 
-    void _data_capture_worker();
-
-    void _mock_device_emulation();
-
-    void _request_temperature_axis();
-
-    void _request_angular_rate_xyz_axis();
-
-    int8_t _get_temperature() const {
-        return _temperature_axis;
-    }
-
-    float _get_angular_rate_x_axis() const {
-        return _angular_rate_x_axis * _range_sensitivity;
-    }
-
-    float _get_angular_rate_y_axis() const {
-        return _angular_rate_y_axis * _range_sensitivity;
-    }
-
-    float _get_angular_rate_z_axis() const {
-        return _angular_rate_z_axis * _range_sensitivity;
-    }
-
-    int _measurement_completed_ok();
-
-public:
-
-    L3gd20() = default;
-
-    ~L3gd20() {
-
-        this->_close_device();
-
-        this->run_data_capture_thread = false;
-
-        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-        this->data_capture_thread_run_cv.notify_one();
-        data_lock.unlock();
-
-        if(data_capture_thread.joinable()) {
-            data_capture_thread.join();
-        }
-
-        this->mock_run_device_thread = false;
-
-        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-        this->mock_device_thread_run_cv.notify_one();
-        device_lock.unlock();
-
-        if(mock_device_thread.joinable()) {
-            mock_device_thread.join();
-        }
-
-    }
-
-    int config_device(
-            int bus_number,
-            int device_address,
-            int update_period_ms,
-            std::string device_name,
-            host_callback_function
-            function_pointer
-            ) {
-        _i2c_bus_number = bus_number;
-        _i2c_device_address = device_address;
-        _sensor_update_period_ms = update_period_ms;
-        _device_name = std::move(device_name);
-
-        _host_callback_function = function_pointer;
-
-        data_capture_thread = std::thread(&L3gd20::_data_capture_worker, this);
-
-        return 0;
-    }
-
-    int connect_to_device() {
-        int status = 1;
-
-        status &= this->_connect_to_device();
-
-        return status;
-    }
-
-    int init_device() {
-        this->_init_device();
-
-        return 1;
-    }
-
-    int mock_load_data() {
+    int _mock_load_data() {
         /*
          * @77 bmp180 (?)
          * @6b l3gd20 (?)
@@ -396,7 +310,7 @@ public:
         70: 70 -- -- -- -- -- -- --
          */
 
-        /* @6b Idle
+        /* @6b Idle?
              0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
         00: a0 d6 7c 01 66 aa a5 82 ff c0 00 00 00 00 00 d7    ??|?f???.?.....?
         10: 43 a0 dc 40 83 32 16 22 a2 bb c5 83 88 38 36 09    C??@?2?"?????86?
@@ -409,26 +323,6 @@ public:
         80: a0 d6 7c 01 66 aa a5 82 ff c0 00 00 00 00 00 d7    ??|?f???.?.....?
         90: 43 a0 dc 40 83 32 16 22 a2 bb c5 83 88 38 36 09    C??@?2?"?????86?
         a0: 07 00 00 00 00 00 04 00 18 ff ed 00 f3 fe 00 20    ?.....?.?.?.??.
-        b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-         */
-
-        /* Running
-              0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
-        00: a0 d6 7c 01 66 aa a5 82 ff c0 00 00 00 00 00 d7    ??|?f???.?.....?
-        10: 43 a0 dc 40 83 32 16 22 a2 bb c5 83 88 38 36 09    C??@?2?"?????86?
-        20: 0f 00 00 80 00 00 01 ff 07 01 4f 00 25 00 00 20    ?..?..?.??O.%..
-        30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        80: a0 d6 7c 01 66 aa a5 82 ff c0 00 00 00 00 00 d7    ??|?f???.?.....?
-        90: 43 a0 dc 40 83 32 16 22 a2 bb c5 83 88 38 36 09    C??@?2?"?????86?
-        a0: 0f 00 00 80 00 00 01 ff c3 00 52 00 20 00 00 20    ?..?..?.?.R. ..
         b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
         c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
         d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
@@ -486,9 +380,101 @@ public:
         }
     }
 
+    void _data_capture_worker();
+
+    void _mock_device_emulation();
+
+    void _request_temperature_axis();
+
+    void _request_angular_rate_xyz_axis();
+
+    int8_t _get_temperature() const {
+        return _temperature_axis;
+    }
+
+    float _get_angular_rate_x_axis() const {
+        return _angular_rate_x_axis * _range_sensitivity;
+    }
+
+    float _get_angular_rate_y_axis() const {
+        return _angular_rate_y_axis * _range_sensitivity;
+    }
+
+    float _get_angular_rate_z_axis() const {
+        return _angular_rate_z_axis * _range_sensitivity;
+    }
+
+    int _measurement_completed_ok();
+
+public:
+
+    L3gd20Gyro() = default;
+
+    ~L3gd20Gyro() {
+
+        this->_close_device();
+
+        this->run_data_capture_thread = false;
+
+        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+        this->data_capture_thread_run_cv.notify_one();
+        data_lock.unlock();
+
+        if(data_capture_thread.joinable()) {
+            data_capture_thread.join();
+        }
+
+        this->mock_run_device_thread = false;
+
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        this->mock_device_thread_run_cv.notify_one();
+        device_lock.unlock();
+
+        if(mock_device_thread.joinable()) {
+            mock_device_thread.join();
+        }
+
+    }
+
+    int config_device(
+            int bus_number,
+            int device_address,
+            int update_period_ms,
+            std::string device_name,
+            host_callback_function
+            function_pointer
+            ) {
+        _i2c_bus_number = bus_number;
+        _i2c_device_address = device_address;
+        _sensor_update_period_ms = update_period_ms;
+        _device_name = std::move(device_name);
+
+        _host_callback_function = function_pointer;
+
+        data_capture_thread = std::thread(&L3gd20Gyro::_data_capture_worker, this);
+
+        return 0;
+    }
+
+    int connect_to_device() {
+        int status = 1;
+
+        status &= this->_connect_to_device();
+
+        return status;
+    }
+
+    int init_device() {
+        this->_init_device();
+
+        return 1;
+    }
+
+    void enable_load_mock_data();
+
     int mock_run_device_emulation() {
 
-        mock_device_thread = std::thread(&L3gd20::_mock_device_emulation, this);
+        mock_device_thread = std::thread(&L3gd20Gyro::_mock_device_emulation, this);
 
         // wait a little bit for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));

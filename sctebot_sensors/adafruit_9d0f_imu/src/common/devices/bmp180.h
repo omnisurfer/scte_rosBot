@@ -22,7 +22,7 @@ namespace logging = boost::log;
 
 #include "i2c_linux.h"
 
-class Bmp180 {
+class Bmp180Pressure {
 
 private:
 
@@ -95,6 +95,8 @@ private:
     std::string _device_name;
 
     context_t _i2c_device_context{};
+
+    bool _enable_load_mock_data = false;
 
     uint8_t _calibration_data_buffer[11 * 2] = {0};
     uint16_t _long_uncompensated_temperature{};
@@ -199,7 +201,10 @@ private:
             return 0;
         }
 
-        mock_load_calibration_data();
+        if(_enable_load_mock_data) {
+            _mock_load_calibration_data();
+        }
+
 
         // try read chip id
         uint8_t chip_id[1] = {0};
@@ -209,10 +214,10 @@ private:
         };
 
         uint8_t register_address;
-        register_address = Bmp180::Addresses::DataRegisters::CHIP_ID;
+        register_address = Bmp180Pressure::Addresses::DataRegisters::CHIP_ID;
         i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-        if(chip_id[0] != Bmp180::MagicNumbers::ChipId::CHIP_ID) {
+        if(chip_id[0] != Bmp180Pressure::MagicNumbers::ChipId::CHIP_ID) {
             BOOST_LOG_TRIVIAL(error) << "failed to read device chip id";
             return 0;
         }
@@ -227,6 +232,94 @@ private:
         i2c_dev_close(&_i2c_device_context, _i2c_bus_number);
 
         return 0;
+    }
+
+    int _mock_load_calibration_data() {
+
+        /*
+         * RPI4 is little endian, x86 = little endian  (use lscpu | grep -i byte)
+         * https://betterexplained.com/articles/understanding-big-and-little-endian-byte-order/
+         */
+
+        /* Memory dump from real device @0x77 on ros-pi-node - Idle?
+        00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        80: a5 94 45 09 8d 27 29 3e 7a 55 1e d4 fb b2 c7 27    ??E??')>zU?????'
+        90: 83 3b 63 e7 42 65 19 73 00 28 80 00 d1 f6 09 a6    ?;c?Be?s.(?.????
+        a0: a5 94 45 09 8d 27 29 3e 7a 55 1e d4 fb b2 c7 27    ??E??')>zU?????'
+        b0: 83 3b 63 e7 42 65 19 73 00 28 80 00 d1 f6 09 a6    ?;c?Be?s.(?.????
+        c0: 00 00 bc 33 00 00 00 00 00 00 00 10 00 00 00 03    ..?3.......?...?
+        d0: 55 02 06 00 00 00 00 00 00 00 00 00 00 00 00 00    U??.............
+        e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+        f0: 00 00 00 00 00 00 80 00 00 00 00 00 00 00 00 00    ......?.........
+         */
+
+        /* Calibration data from real sensor
+        d41e b2fb 27c7
+        3b83 e763 6542 7319 2800 0080 f6d1 a609
+         */
+
+
+        /*
+         * real temp 0x6496 ~ 26C - 78F
+         * real pressure 0xa307 - ~ 11PSI, 114F
+         */
+
+        uint16_t _mock_device_memory[] = {
+                0xDADE, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0xa594, 0x4509, 0x8d27, 0x293e, 0x7a55, 0x1ed4, 0xfbb2, 0xc727,
+                0x833b, 0x63e7, 0x4265, 0x1973, 0x0028, 0x8000, 0xd1f6, 0x09a6,
+                0xa594, 0x4509, 0x8d27, 0x293e, 0x7a55, 0x1ed4, 0xfbb2, 0xc727,
+                0x833b, 0x63e7, 0x4265, 0x1973, 0x0028, 0x8000, 0xd1f6, 0x09a6,
+                0x0000, 0xbc33, 0x0000, 0x0000, 0x0000, 0x0010, 0x0000, 0x0003,
+                0x5502, 0x0600, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+                0x0000, 0xBABE, 0x0000,
+                0xa307, // data word for temp/pressure
+                0xDEAF, 0xFFFF, 0xFFFF, 0xFFFF
+        };
+
+        uint8_t send_buffer[sizeof(_mock_device_memory)];
+        std::memset(&send_buffer, 0, sizeof(send_buffer));
+
+        /*
+         * the mock memory buffer is big endian because it was copied straight from the device.
+         * this is why I need to swap bytes manually to store as little endian in memory.
+         */
+
+        for(uint i = 0; i < sizeof(_mock_device_memory)/sizeof(*_mock_device_memory); i++) {
+
+            //std::cout << "i " << i << std::endl;
+            send_buffer[i + (i * 1)] = (_mock_device_memory[i] >> 8) & 0xff;
+            send_buffer[i + (i * 1) + 1] = (_mock_device_memory[i]) & 0xff;
+        }
+
+        buffer_t outbound_message = {
+                .bytes = send_buffer,
+                .size = sizeof(send_buffer)
+        };
+
+        int8_t register_address = 0x00;
+
+        if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+            BOOST_LOG_TRIVIAL(debug) << "sent mock calibration data to device OK";
+            return 0;
+        }
+
+        return -1;
     }
 
     void _data_capture_worker();
@@ -414,9 +507,9 @@ private:
 
 public:
 
-    Bmp180() = default;
+    Bmp180Pressure() = default;
 
-    ~Bmp180() {
+    ~Bmp180Pressure() {
         BOOST_LOG_TRIVIAL(debug) << "bmp180 destructor called";
 
         this->_close_device();
@@ -457,7 +550,7 @@ public:
 
         _host_callback_function = function_pointer;
 
-        data_capture_thread = std::thread(&Bmp180::_data_capture_worker, this);
+        data_capture_thread = std::thread(&Bmp180Pressure::_data_capture_worker, this);
 
         return 0;
     }
@@ -476,116 +569,11 @@ public:
         return 1;
     }
 
-    int mock_load_calibration_data() {
-
-        /*
-         * RPI4 is little endian, x86 = little endian  (use lscpu | grep -i byte)
-         * https://betterexplained.com/articles/understanding-big-and-little-endian-byte-order/
-         */
-
-        /* Memory dump from real device @0x77 on ros-pi-node
-        00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        80: a5 94 45 09 8d 27 29 3e 7a 55 1e d4 fb b2 c7 27    ??E??')>zU?????'
-        90: 83 3b 63 e7 42 65 19 73 00 28 80 00 d1 f6 09 a6    ?;c?Be?s.(?.????
-        a0: a5 94 45 09 8d 27 29 3e 7a 55 1e d4 fb b2 c7 27    ??E??')>zU?????'
-        b0: 83 3b 63 e7 42 65 19 73 00 28 80 00 d1 f6 09 a6    ?;c?Be?s.(?.????
-        c0: 00 00 bc 33 00 00 00 00 00 00 00 10 00 00 00 03    ..?3.......?...?
-        d0: 55 02 06 00 00 00 00 00 00 00 00 00 00 00 00 00    U??.............
-        e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        f0: 00 00 00 00 00 00 80 00 00 00 00 00 00 00 00 00    ......?.........
-         */
-        /* Running
-              0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
-        00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        80: a5 94 45 09 8d 27 29 3e 7a 55 1e d4 fb b2 c7 27    ??E??')>zU?????'
-        90: 83 3b 63 e7 42 65 19 73 00 28 80 00 d1 f6 09 a6    ?;c?Be?s.(?.????
-        a0: a5 94 45 09 8d 27 29 3e 7a 55 1e d4 fb b2 c7 27    ??E??')>zU?????'
-        b0: 83 3b 63 e7 42 65 19 73 00 28 80 00 d1 f6 09 a6    ?;c?Be?s.(?.????
-        c0: 00 00 bc 33 00 00 00 00 00 00 00 10 00 00 00 03    ..?3.......?...?
-        d0: 55 02 06 00 00 00 00 00 00 00 00 00 00 00 00 00    U??.............
-        e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
-        f0: 00 00 00 04 10 00 a2 5e 00 00 00 00 00 00 00 00    ...??.?^........
-         */
-
-        /* Calibration data from real sensor
-        d41e b2fb 27c7
-        3b83 e763 6542 7319 2800 0080 f6d1 a609
-         */
-
-
-        /*
-         * real temp 0x6496 ~ 26C - 78F
-         * real pressure 0xa307 - ~ 11PSI, 114F
-         */
-
-        uint16_t _mock_device_memory[] = {
-                0xDADE, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0xa594, 0x4509, 0x8d27, 0x293e, 0x7a55, 0x1ed4, 0xfbb2, 0xc727,
-                0x833b, 0x63e7, 0x4265, 0x1973, 0x0028, 0x8000, 0xd1f6, 0x09a6,
-                0xa594, 0x4509, 0x8d27, 0x293e, 0x7a55, 0x1ed4, 0xfbb2, 0xc727,
-                0x833b, 0x63e7, 0x4265, 0x1973, 0x0028, 0x8000, 0xd1f6, 0x09a6,
-                0x0000, 0xbc33, 0x0000, 0x0000, 0x0000, 0x0010, 0x0000, 0x0003,
-                0x5502, 0x0600, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
-                0x0000, 0xBABE, 0x0000,
-                0xa307, // data word for temp/pressure
-                0xDEAF, 0xFFFF, 0xFFFF, 0xFFFF
-        };
-
-        uint8_t send_buffer[sizeof(_mock_device_memory)];
-        std::memset(&send_buffer, 0, sizeof(send_buffer));
-
-        /*
-         * the mock memory buffer is big endian because it was copied straight from the device.
-         * this is why I need to swap bytes manually to store as little endian in memory.
-         */
-
-        for(uint i = 0; i < sizeof(_mock_device_memory)/sizeof(*_mock_device_memory); i++) {
-
-            //std::cout << "i " << i << std::endl;
-            send_buffer[i + (i * 1)] = (_mock_device_memory[i] >> 8) & 0xff;
-            send_buffer[i + (i * 1) + 1] = (_mock_device_memory[i]) & 0xff;
-        }
-
-        buffer_t outbound_message = {
-                .bytes = send_buffer,
-                .size = sizeof(send_buffer)
-        };
-
-        int8_t register_address = 0x00;
-
-        if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-            BOOST_LOG_TRIVIAL(debug) << "sent mock calibration data to device OK";
-            return 0;
-        }
-
-        return -1;
-    }
+    void enable_load_mock_data();
 
     int mock_run_device_emulation() {
 
-        mock_device_thread = std::thread(&Bmp180::_mock_device_emulation, this);
+        mock_device_thread = std::thread(&Bmp180Pressure::_mock_device_emulation, this);
 
         // wait a little bit for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));

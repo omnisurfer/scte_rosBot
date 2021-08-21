@@ -9,8 +9,10 @@
 #include "adafruit_9dof_imu.h"
 
 void handle_bmp180_measurements(float temperature, float pressure) {
-    std::cout << "bmp180\t\ttemperature (C): " << temperature << " pressure (Pa): " << pressure << std::endl;
-    /**/
+    std::cout
+        << "bmp180\t\ttemp (C): " << temperature
+        << " pressure (Pa): " << pressure << std::endl;
+
     double absolute_altitude;
     double pressure_sea_level = 1013.25 * 100;
 
@@ -23,23 +25,27 @@ void handle_bmp180_measurements(float temperature, float pressure) {
 
     sea_level_pressure = pressure / pow(1 - absolute_altitude/44330, 5.255);
 
-    std::cout << "bmp180\t\tabs alt (m): " << absolute_altitude << " sea level pressure (Pa): " << sea_level_pressure << std::endl;
-     /**/
+    std::cout
+        << "bmp180\t\tabs alt (m): " << absolute_altitude
+        << " sea level pressure (Pa): " << sea_level_pressure << std::endl;
 }
 
 void handle_l3gd20_measurements(int temperature, float r_x, float r_y, float r_z) {
-    std::cout << "l3gd20\t\ttemp: " << temperature << " x_dps: " << r_x << " y_dps: " << r_y << " z_dps: " << r_z << std::endl;
+    std::cout
+        << "l3gd20 gyro\t\ttemp: " << temperature
+        << " x_dps: " << r_x << " y_dps: " << r_y << " z_dps: " << r_z
+        << std::endl;
 }
 
 void handle_lsm303dlhc_accel_measurements(int a_x, int a_y, int a_z) {
     std::cout
-        << "lsm303\t\t a_x: " << (float)a_x << " a_y: " << (float)a_y << " a_z: " << (float)a_z
-        << std::endl;
+        << "lsm303 accel\t a_x: "
+        << (float)a_x << " a_y: " << (float)a_y << " a_z: " << (float)a_z << std::endl;
 }
 
 void handle_lsm303dlhc_mag_measurements(int temperature, int m_x, int m_y, int m_z) {
     std::cout
-        << "lsm303\t\ttemp: " << (float)temperature
+        << "lsm303 mag\t\t\ttemp: " << (float)temperature
         << " m_x: " << (float)m_x << " m_y: " << (float)m_y << " m_z: " << (float)m_z
         << std::endl;
 }
@@ -70,9 +76,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-#if 1
+#if ENABLE_BMP180_DEVICE
     //region BMP180 device setup
-    Bmp180 bmp180DeviceHandle;
+    Bmp180Pressure bmp180DeviceHandle;
 
     /* CONFIRMED FOR BMP180 on RPI4 Node */
     i2c_device_address = BMP180_RPI_ADDRESS;
@@ -85,23 +91,29 @@ int main(int argc, char* argv[]) {
             &handle_bmp180_measurements
     );
 
+#if ENABLE_MOCK_BMP180_DEVICE
+    bmp180DeviceHandle.enable_load_mock_data();
+#endif
+
     if(!bmp180DeviceHandle.connect_to_device()) {
         return 0;
     };
 
+#if ENABLE_MOCK_BMP180_DEVICE
     bmp180DeviceHandle.mock_run_device_emulation();
+#endif
 
     bmp180DeviceHandle.init_device();
     //endregion
 #endif
 
-#if 1
+#if ENABLE_L3GD20_DEVICE
     //region L3GD20 device setup
-    L3gd20 l3gd20DeviceHandle;
+    L3gd20Gyro l3gd20GyroDeviceHandle;
 
     i2c_device_address = L3GD20_RPI_ADDRESS;
 
-    l3gd20DeviceHandle.config_device(
+    l3gd20GyroDeviceHandle.config_device(
             i2c_bus_number,
             i2c_device_address,
             1000,
@@ -109,25 +121,31 @@ int main(int argc, char* argv[]) {
             &handle_l3gd20_measurements
     );
 
-    if(!l3gd20DeviceHandle.connect_to_device()) {
+#if ENABLE_MOCK_L3GD20_DEVICE
+    l3gd20GyroDeviceHandle.enable_load_mock_data();
+#endif
+
+    if(!l3gd20GyroDeviceHandle.connect_to_device()) {
         return 0;
     };
 
-    l3gd20DeviceHandle.mock_run_device_emulation();
+#if ENABLE_MOCK_L3GD20_DEVICE
+    l3gd20GyroDeviceHandle.mock_run_device_emulation();
+#endif
 
-    l3gd20DeviceHandle.init_device();
+    l3gd20GyroDeviceHandle.init_device();
     //endregion
 #endif
 
-#if 1
+#if ENABLE_LSM303DLHC_ACCEL_DEVICE
     //region LSM303DLHC Accel device setup
-    Lsm303DlhcAccelerometer lsm303DlhcDeviceHandle;
+    Lsm303DlhcAccelerometer lsm303DlhcAccelDeviceHandle;
 
     //LSM303DLHC may have two addresses, 0x19 for Accel, 0x1e for Mag/Temp
 
     i2c_device_address = LSM303DLHC_ACCEL_RPI_ADDRESS;
 
-    lsm303DlhcDeviceHandle.config_device(
+    lsm303DlhcAccelDeviceHandle.config_device(
             i2c_bus_number,
             i2c_device_address,
             1000,
@@ -135,13 +153,49 @@ int main(int argc, char* argv[]) {
             &handle_lsm303dlhc_accel_measurements
             );
 
-    if(!lsm303DlhcDeviceHandle.connect_to_device()) {
+    #if ENABLE_MOCK_LSM303DLHC_ACCEL_DEVICE
+        lsm303DlhcAccelDeviceHandle.enable_load_mock_data();
+    #endif
+
+    if(!lsm303DlhcAccelDeviceHandle.connect_to_device()) {
         return 0;
     }
 
-    lsm303DlhcDeviceHandle.mock_run_device_emulation();
+#if ENABLE_MOCK_LSM303DLHC_ACCEL_DEVICE
+    lsm303DlhcAccelDeviceHandle.mock_run_device_emulation();
+#endif
 
-    lsm303DlhcDeviceHandle.init_device();
+    lsm303DlhcAccelDeviceHandle.init_device();
+    //endregion
+#endif
+
+#if ENABLE_LSM303DLHC_MAG_DEVICE
+    //region LSM303DLHC Mag device setup
+    Lsm303DlhcMagnetometer lsm303DlhcMagDeviceHandle;
+
+    i2c_device_address = LSM303DLHC_MAG_RPI_ADDRESS;
+
+    lsm303DlhcMagDeviceHandle.config_device(
+            i2c_bus_number,
+            i2c_device_address,
+            1000,
+            "3d_mag",
+            &handle_lsm303dlhc_mag_measurements
+            );
+
+    #if ENABLE_MOCK_LSM303DLHC_MAG_DEVICE
+    lsm303DlhcMagDeviceHandle.enable_load_mock_data();
+    #endif
+
+    if(!lsm303DlhcMagDeviceHandle.connect_to_device()) {
+        return 0;
+    }
+
+    #if ENABLE_MOCK_LSM303DLHC_MAG_DEVICE
+        lsm303DlhcMagDeviceHandle.mock_run_device_emulation();
+    #endif
+
+    lsm303DlhcMagDeviceHandle.init_device();
     //endregion
 #endif
 

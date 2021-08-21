@@ -149,9 +149,9 @@ int Lsm303DlhcAccelerometer::_connect_to_device() {
         return 0;
     }
 
-    mock_load_data();
-
-    // TBD
+    if(_enable_load_mock_data) {
+        _mock_load_accel_data();
+    }
 
     return 1;
 }
@@ -279,6 +279,10 @@ void Lsm303DlhcAccelerometer::_mock_device_emulation() {
 
 }
 
+void Lsm303DlhcAccelerometer::enable_load_mock_data() {
+    _enable_load_mock_data = true;
+}
+
 void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
 
     uint8_t register_address;
@@ -325,7 +329,7 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
 // endregion
 
 // region Magnetometer
-#if 0
+
 int Lsm303DlhcMagnetometer::_init_device() {
 
     logging::core::get()->set_filter
@@ -496,9 +500,9 @@ int Lsm303DlhcMagnetometer::_connect_to_device() {
         return 0;
     }
 
-#if ENABLE_MOCK_LSM303DLHC_MAG_DEVICE
-    mock_load_data();
-#endif
+    if(_enable_load_mock_data) {
+        _mock_load_mag_data();
+    }
 
     // TBD
 
@@ -544,6 +548,10 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
     }
 
     BOOST_LOG_TRIVIAL(debug) << "magnetometer _data_capture_worker exiting";
+}
+
+void Lsm303DlhcMagnetometer::enable_load_mock_data() {
+    _enable_load_mock_data = true;
 }
 
 void Lsm303DlhcMagnetometer::_mock_device_emulation() {
@@ -731,5 +739,5 @@ void Lsm303DlhcMagnetometer::_request_magnetometer_xyz_axis() {
         _magnetometer_z_axis = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
     }
 }
-#endif
+
 // endregion
