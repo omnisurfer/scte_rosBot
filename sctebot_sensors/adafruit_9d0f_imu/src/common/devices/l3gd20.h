@@ -202,11 +202,17 @@ private:
     bool _enable_load_mock_data = false;
 
     uint8_t _control_register_1to5_buffer[5] = {0};
-    int8_t _temperature_axis{0};
     uint8_t _status_xyz_reg{0};
-    int16_t _angular_rate_x_axis{0};
-    int16_t _angular_rate_y_axis{0};
-    int16_t _angular_rate_z_axis{0};
+
+    int8_t _temperature_axis_byte{0};
+    float temperature_axis_deg_c{0};
+
+    int16_t _angular_rate_x_axis_bytes{0};
+    int16_t _angular_rate_y_axis_bytes{0};
+    int16_t _angular_rate_z_axis_bytes{0};
+    float angular_rate_x_axis_deg_ps{0};
+    float angular_rate_y_axis_deg_ps{0};
+    float angular_rate_z_axis_deg_ps{0};
 
     typedef struct l3gd20GyroData_s {
         float x;
@@ -222,7 +228,7 @@ private:
     std::thread data_capture_thread;
 
     typedef void (*host_callback_function)(
-            int temperature,
+            float temperature,
             float x_axis, float y_axis, float z_axis
             );
     host_callback_function _host_callback_function{};
@@ -389,19 +395,19 @@ private:
     void _request_angular_rate_xyz_axis();
 
     int8_t _get_temperature() const {
-        return _temperature_axis;
+        return _temperature_axis_byte;
     }
 
     float _get_angular_rate_x_axis() const {
-        return _angular_rate_x_axis * _range_sensitivity;
+        return _angular_rate_x_axis_bytes * _range_sensitivity;
     }
 
     float _get_angular_rate_y_axis() const {
-        return _angular_rate_y_axis * _range_sensitivity;
+        return _angular_rate_y_axis_bytes * _range_sensitivity;
     }
 
     float _get_angular_rate_z_axis() const {
-        return _angular_rate_z_axis * _range_sensitivity;
+        return _angular_rate_z_axis_bytes * _range_sensitivity;
     }
 
     int _measurement_completed_ok();

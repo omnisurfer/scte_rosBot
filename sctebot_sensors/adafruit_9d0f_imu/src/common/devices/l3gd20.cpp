@@ -172,11 +172,11 @@ void L3gd20Gyro::_data_capture_worker() {
         this->_request_angular_rate_xyz_axis();
 
         // maybe make these structs and pass that? less calls?
-        int8_t temperature = this->_get_temperature();
+        float temperature = temperature_axis_deg_c;
 
-        float x_axis = this->_get_angular_rate_x_axis();
-        float y_axis = this->_get_angular_rate_y_axis();
-        float z_axis = this->_get_angular_rate_z_axis();
+        float x_axis = angular_rate_x_axis_deg_ps;
+        float y_axis = angular_rate_y_axis_deg_ps;
+        float z_axis = angular_rate_z_axis_deg_ps;
 
         this->_host_callback_function(
                 temperature,
@@ -211,6 +211,13 @@ void L3gd20Gyro::_mock_device_emulation() {
     int16_t debug_y_rate_axis = -420;
     int16_t debug_z_rate_axis = 69;
     int8_t debug_temp_axis = -42;
+
+    /* Real values from sensor */
+    debug_x_rate_axis = 0x0130;
+    debug_y_rate_axis = 0x0044;
+    debug_z_rate_axis = 0x001e;
+
+    debug_temp_axis = 0x01;
 
     uint8_t register_address;
 
@@ -306,9 +313,12 @@ void L3gd20Gyro::_request_temperature_axis() {
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _temperature_axis = (int8_t)temperature[0];
+        _temperature_axis_byte = (int8_t)temperature[0];
 
-        display_register_8bits("temp", _temperature_axis, "temp", temperature[0]);
+        // TODO perform scaling conversion
+        temperature_axis_deg_c = (float)_temperature_axis_byte;
+
+        display_register_8bits("temp", _temperature_axis_byte, "temp", temperature[0]);
     }
 }
 
@@ -343,9 +353,12 @@ void L3gd20Gyro::_request_angular_rate_xyz_axis() {
     if(data_ok) {
         // LSB 0x28
         // MSB 0x29
-        _angular_rate_x_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+        _angular_rate_x_axis_bytes = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
 
-        display_register_16bits("x axis", _angular_rate_x_axis, "x axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
+        // TODO perform scaling conversion
+        angular_rate_x_axis_deg_ps = float(_angular_rate_x_axis_bytes) * _range_sensitivity;
+
+        display_register_16bits("x axis", _angular_rate_x_axis_bytes, "x axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
     }
 
     register_address = L3gd20Gyro::Addresses::Registers::OUT_Y_L;
@@ -354,9 +367,12 @@ void L3gd20Gyro::_request_angular_rate_xyz_axis() {
     if(data_ok) {
         // LSB 0x2A
         // MSB 0x2B
-        _angular_rate_y_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+        _angular_rate_y_axis_bytes = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
 
-        display_register_16bits("y axis", _angular_rate_y_axis, "y axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
+        // TODO perform scaling conversion
+        angular_rate_y_axis_deg_ps = float(_angular_rate_y_axis_bytes) * _range_sensitivity;
+
+        display_register_16bits("y axis", _angular_rate_y_axis_bytes, "y axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
     }
 
     register_address = L3gd20Gyro::Addresses::Registers::OUT_Z_L;
@@ -365,9 +381,12 @@ void L3gd20Gyro::_request_angular_rate_xyz_axis() {
     if(data_ok) {
         // LSB 0x2C
         // MSB 0x2D
-        _angular_rate_z_axis = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+        _angular_rate_z_axis_bytes = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
 
-        display_register_16bits("z axis", _angular_rate_z_axis, "z axis", ((out_xyz_axis[1] << 8) + out_xyz_axis[0]));
+        // TODO perform scaling conversion
+        angular_rate_z_axis_deg_ps = float(_angular_rate_z_axis_bytes) * _range_sensitivity;
+
+        display_register_16bits("z axis", _angular_rate_z_axis_bytes, "z axis", ((out_xyz_axis[1] << 8) + out_xyz_axis[0]));
     }
 }
 

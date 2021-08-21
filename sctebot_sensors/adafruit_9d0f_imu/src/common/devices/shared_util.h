@@ -5,7 +5,7 @@
 #ifndef ADAFRUIT_9D0F_IMU_SHARED_UTIL_H
 #define ADAFRUIT_9D0F_IMU_SHARED_UTIL_H
 
-#define ENABLE_REGISTER_DISPLAY 1
+#define ENABLE_REGISTER_DISPLAY 0
 
 #include <bitset>
 #include <string>

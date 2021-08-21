@@ -271,6 +271,11 @@ private:
     int16_t _accelerometer_x_axis{0};
     int16_t _accelerometer_y_axis{0};
     int16_t _accelerometer_z_axis{0};
+    float accelerometer_x_axis_g{0};
+    float accelerometer_y_axis_g{0};
+    float accelerometer_z_axis_g{0};
+
+    float _linear_acceleration_sensitivity{0};
 
     bool run_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
@@ -278,7 +283,7 @@ private:
     std::thread data_capture_thread;
 
     typedef void (*host_callback_function)(
-            int x_accel_axis, int y_accel_axis, int z_accel_axis
+            float x_accel_axis, float y_accel_axis, float z_accel_axis
             );
 
     host_callback_function _host_callback_function{};
@@ -549,11 +554,18 @@ private:
     uint8_t _crb_reg_m[1] = {0};
     uint8_t _mr_reg_m[1] = {0};
 
-    int16_t _magnetometer_x_axis{0};
-    int16_t _magnetometer_y_axis{0};
-    int16_t _magnetometer_z_axis{0};
+    int16_t _magnetometer_x_axis_bytes{0};
+    int16_t _magnetometer_y_axis_bytes{0};
+    int16_t _magnetometer_z_axis_bytes{0};
+    float magnetometer_x_axis_gauss{0};
+    float magnetometer_y_axis_gauss{0};
+    float magnetometer_z_axis_gauss{0};
 
-    int16_t _temperature_axis{0};
+    int16_t _temperature_axis_bytes{0};
+    float temperature_axis_degrees_c{0};
+
+    float _mag_xy_gain_config{0};
+    float _mag_z_gain_config{0};
 
     bool run_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
@@ -561,8 +573,8 @@ private:
     std::thread data_capture_thread;
 
     typedef void (*host_callback_function)(
-            int temperature,
-            int x_mag_axis, int y_mag_axis, int z_mag_axis
+            float temperature_deg_c,
+            float x_mag_axis, float y_mag_axis, float z_mag_axis
             );
 
     host_callback_function _host_callback_function{};
@@ -658,20 +670,19 @@ private:
     void _request_magnetometer_xyz_axis();
 
     int16_t _get_temperature() const {
-        // TODO manipulate the bits to convert the 12-bit value to 16-bit
-        return _temperature_axis;
+        return _temperature_axis_bytes;
     }
 
     int16_t _get_magnetic_x_axis() const {
-        return _magnetometer_x_axis;
+        return _magnetometer_x_axis_bytes;
     }
 
     int16_t _get_magnetic_y_axis() const {
-        return _magnetometer_y_axis;
+        return _magnetometer_y_axis_bytes;
     }
 
     int16_t _get_magnetic_z_axis() const {
-        return _magnetometer_z_axis;
+        return _magnetometer_z_axis_bytes;
     }
 
 public:

@@ -30,24 +30,24 @@ void handle_bmp180_measurements(float temperature, float pressure) {
         << " sea level pressure (Pa): " << sea_level_pressure << std::endl;
 }
 
-void handle_l3gd20_measurements(int temperature, float r_x, float r_y, float r_z) {
+void handle_l3gd20_measurements(float temperature, float r_x, float r_y, float r_z) {
     std::cout
-        << "l3gd20 gyro\t\ttemp: " << temperature
+        << "l3gd20 gyro\t\ttemp (C): " << temperature
         << " x_dps: " << r_x << " y_dps: " << r_y << " z_dps: " << r_z
         << std::endl;
 }
 
-void handle_lsm303dlhc_accel_measurements(int a_x, int a_y, int a_z) {
+void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
     std::cout
-        << "lsm303 accel\t a_x: "
-        << (float)a_x << " a_y: " << (float)a_y << " a_z: " << (float)a_z << std::endl;
+            << "lsm303 accel\t x_gs: "
+            << x_gs << " y_gs: " << y_gs << " z_gs: " << z_gs << std::endl;
 }
 
-void handle_lsm303dlhc_mag_measurements(int temperature, int m_x, int m_y, int m_z) {
+void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_ga, float y_ga, float z_ga) {
     std::cout
-        << "lsm303 mag\t\t\ttemp: " << (float)temperature
-        << " m_x: " << (float)m_x << " m_y: " << (float)m_y << " m_z: " << (float)m_z
-        << std::endl;
+            << "lsm303 mag\t\t\ttemp (C): " << temperature_deg_c
+            << " x_ga: " << x_ga << " y_ga: " << y_ga << " z_ga: " << z_ga
+            << std::endl;
 }
 
 int main(int argc, char* argv[]) {

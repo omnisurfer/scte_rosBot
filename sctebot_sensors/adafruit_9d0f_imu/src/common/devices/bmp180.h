@@ -352,7 +352,7 @@ private:
         return sizeof(_calibration_data_buffer);
     }
 
-    // Note, temperature must be read first, then pressure so that B5 value can be populated
+    // Note, temperature_deg_c must be read first, then pressure so that B5 value can be populated
     int _calculate_temperature(uint16_t uncompensated_temperature, float &temperature) {
 
         if(!sensor_calibration_read) {
@@ -376,7 +376,7 @@ private:
         // multiplying by 0.1 here to convert to degrees C instead of degrees 0.1C
         temperature = (float)_temperature * 0.1f;
 
-        //std::cout << "calc temp (C): " << temperature << std::endl;
+        //std::cout << "calc temp (C): " << temperature_deg_c << std::endl;
 
         return 1;
 

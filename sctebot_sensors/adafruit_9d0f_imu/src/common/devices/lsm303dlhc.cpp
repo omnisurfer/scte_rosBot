@@ -70,8 +70,34 @@ int Lsm303DlhcAccelerometer::_init_device() {
      */
     register_address = Lsm303DlhcAccelerometer::Addresses::CTRL_REG4_A;
 
+    uint8_t accel_sensitivity_config = Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::FS_2G_SEL;
+
+    /*
+    FS bit set to 00 1
+    FS bit set to 01 2
+    FS bit set to 10 4
+    FS bit set to 11 12
+     */
+
+    switch(accel_sensitivity_config) {
+        case Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::FS_2G_SEL:
+            _linear_acceleration_sensitivity = 1.0/1000;
+            break;
+        case Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::FS_4G_SEL:
+            _linear_acceleration_sensitivity = 2.0/1000;
+            break;
+        case Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::FS_8G_SEL:
+            _linear_acceleration_sensitivity = 4.0/1000;
+            break;
+        case Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::FS_16G_SEL:
+            _linear_acceleration_sensitivity = 12.0/1000;
+            break;
+        default:
+            _linear_acceleration_sensitivity = 1.0/1000;
+    }
+
     control_reg[0] =
-            Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::FS_2G_SEL |
+            accel_sensitivity_config |
             Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::HI_RES_OUT_EN;
             //Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::BDU_EN;
 
@@ -178,9 +204,9 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
 
         this->_request_accelerometer_xyz_axis();
 
-        int16_t x_accel_axis = this->_get_accel_x_axis();
-        int16_t y_accel_axis = this->_get_accel_y_axis();
-        int16_t z_accel_axis = this->_get_accel_z_axis();
+        float x_accel_axis = accelerometer_x_axis_g;
+        float y_accel_axis = accelerometer_y_axis_g;
+        float z_accel_axis = accelerometer_z_axis_g;
 
         this->_host_callback_function(
                 x_accel_axis, y_accel_axis, z_accel_axis
@@ -210,9 +236,10 @@ void Lsm303DlhcAccelerometer::_mock_device_emulation() {
     int16_t debug_y_accel_axis = -420;
     int16_t debug_z_accel_axis = 690;
 
-    debug_x_accel_axis = 0x15ff;
-    debug_y_accel_axis = 0xea00;
-    debug_z_accel_axis = 0xf9fe;
+    /* Real values from sensor */
+    debug_x_accel_axis = 0xff70;
+    debug_y_accel_axis = 0x3f40;
+    debug_z_accel_axis = 0x000f;
 
     uint8_t register_address;
 
@@ -305,6 +332,9 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
         // X_L_A 0x28
         // X_H_A 0x29
         _accelerometer_x_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+
+        // TODO perform scaling conversion
+        accelerometer_x_axis_g = float(_accelerometer_x_axis) * _linear_acceleration_sensitivity;
     }
 
     register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Y_L_A;
@@ -314,6 +344,9 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
         // Y_L_A 0x2A
         // Y_H_A 0x2B
         _accelerometer_y_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+
+        // TODO perform scaling conversion
+        accelerometer_y_axis_g = float(_accelerometer_y_axis) * _linear_acceleration_sensitivity;
     }
 
     register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Z_L_A;
@@ -323,6 +356,9 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
         // Z_L_A 0x2C
         // Z_H_A 0x2D
         _accelerometer_z_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+
+        // TODO perform scaling conversion
+        accelerometer_z_axis_g = float(_accelerometer_z_axis) * _linear_acceleration_sensitivity;
     }
 }
 
@@ -342,11 +378,9 @@ int Lsm303DlhcMagnetometer::_init_device() {
     uint8_t register_address;
     uint8_t control_reg[1] = {0};
 
-    // MAGNETIC REGISTERS
-
     //region CRA_REG_M
     /*
-     * Enable temperature
+     * Enable temperature_deg_c
      * Data Output rate = 15Hz (default)
      * i2cset -y 1 0x19 0x00 0x90
      */
@@ -417,9 +451,69 @@ int Lsm303DlhcMagnetometer::_init_device() {
         BOOST_LOG_TRIVIAL(info) << output_string;
     }
 
+    uint8_t mag_gain_config = Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_0;
+
+    /*
+        GN bits set to 001 (X,Y) 1100
+        GN bits set to 001 (Z) 980
+
+        GN bits set to 010 (X,Y) 855
+        GN bits set to 010 (Z) 760
+
+        GN bits set to 011 (X,Y) 670
+        GN bits set to 011 (Z) 600
+
+        GN bits set to 100 (X,Y) 450
+        GN bits set to 100 (Z) 400
+
+        GN bits set to 101 (X,Y) 400
+        GN bits set to 101 (Z) 355
+
+        GN bits set to 110 (X,Y) 330
+        GN bits set to 110 (Z) 295
+
+        GN bits set to 111(2) (X,Y) 230
+        GN bits set to 111(2) (Z) 205
+
+     */
+
+    switch(mag_gain_config) {
+        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_0:
+            _mag_xy_gain_config = 1.0/1100;
+            _mag_z_gain_config = 1.0/980;
+            break;
+        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_1:
+            _mag_xy_gain_config = 1.0/855;
+            _mag_z_gain_config = 1.0/760;
+            break;
+        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_2:
+            _mag_xy_gain_config = 1.0/670;
+            _mag_z_gain_config = 1.0/600;
+            break;
+        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_3:
+            _mag_xy_gain_config = 1.0/450;
+            _mag_z_gain_config = 1.0/450;
+            break;
+        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_4:
+            _mag_xy_gain_config = 1.0/400;
+            _mag_z_gain_config = 1.0/355;
+            break;
+        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_5:
+            _mag_xy_gain_config = 1.0/330;
+            _mag_z_gain_config = 1.0/295;
+            break;
+        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_6:
+            _mag_xy_gain_config = 1.0/230;
+            _mag_z_gain_config = 1.0/205;
+            break;
+        default:
+            _mag_xy_gain_config = 1.0/1100;
+            _mag_z_gain_config = 1.0/980;
+    }
+
     control_reg[0] =
             //_crb_reg_m[0] |
-            Lsm303DlhcMagnetometer::BitMasks::CrBRegM ::GAIN_CONFIG_0;
+            mag_gain_config;
 
     outbound_message = {
             .bytes = control_reg,
@@ -530,15 +624,15 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
         data_lock.unlock();
 
         this->_request_temperature_axis();
-        int16_t temperature = this->_get_temperature();
+        float temperature_deg_c = temperature_axis_degrees_c;
 
         this->_request_magnetometer_xyz_axis();
-        int16_t x_mag_axis = this->_get_magnetic_x_axis();
-        int16_t y_mag_axis = this->_get_magnetic_y_axis();
-        int16_t z_mag_axis = this->_get_magnetic_z_axis();
+        float x_mag_axis = magnetometer_x_axis_gauss;
+        float y_mag_axis = magnetometer_y_axis_gauss;
+        float z_mag_axis = magnetometer_z_axis_gauss;
 
         this->_host_callback_function(
-                temperature,
+                temperature_deg_c,
                 x_mag_axis, y_mag_axis, z_mag_axis
                 );
 
@@ -572,9 +666,12 @@ void Lsm303DlhcMagnetometer::_mock_device_emulation() {
     int16_t debug_y_mag_axis = -420;
     int16_t debug_z_mag_axis = 690;
 
-    debug_x_mag_axis = 0x0166;
-    debug_y_mag_axis = 0xaaa5;
-    debug_z_mag_axis = 0x82ff;
+    /* Real sensor values - NOTE Byte order is Big Endian:0xMSB-LSB*/
+    debug_x_mag_axis = 0x0129;
+    debug_z_mag_axis = 0xfe95;
+    debug_y_mag_axis = 0xffbd;
+
+    debug_temp_axis = 0x04c0;
 
     uint8_t register_address;
 
@@ -599,17 +696,18 @@ void Lsm303DlhcMagnetometer::_mock_device_emulation() {
          *  0000 0000 1111 1100
          */
 
-        // convert to 12-bit value
+#if 0
+        // convert to 12-bit value - skip this, conversion only occurs on read
         int16_t temp = debug_temp_axis;
         int16_t out_temp_axis = debug_temp_axis << 4;
+#endif
 
         // T_H 0x31
-        mock_temperature[0] = (out_temp_axis & 0xFF00) >> 8;
+        mock_temperature[0] = (debug_temp_axis & 0xFF00) >> 8;
         // T_L 0x32
-        mock_temperature[1] = out_temp_axis & 0x00FF;
+        mock_temperature[1] = debug_temp_axis & 0x00FF;
 
         display_register_8bits("mock temp 0", mock_temperature[0], "mock temp 1", mock_temperature[1]);
-        display_register_16bits("temp", temp, "temp_axis", out_temp_axis);
 
         i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
         //endregion
@@ -692,11 +790,22 @@ void Lsm303DlhcMagnetometer::_request_temperature_axis() {
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        // convert back to 16-bit value
+        // convert to 16-bit value
         // T_H_M 0x31
         // T_L_M 0x32
         int16_t temp_axis = (temperature[0] << 8) + temperature[1];
-        _temperature_axis = temp_axis >> 4;
+        _temperature_axis_bytes = temp_axis >> 4;
+
+        // per https://electronics.stackexchange.com/questions/219032/how-to-determine-temperature-with-lsm303dlhc
+
+        // Reference temperature_deg_c is 25C, count = 0
+        // +8 counts = 1C worth of change
+        // +80 counts = ~10C worth of change
+
+        float transfer_funciton = (1.0/8.0);
+        float sensor_offset = 20.0;
+
+        temperature_axis_degrees_c = sensor_offset + (_temperature_axis_bytes * transfer_funciton);
 
         display_register_8bits("temp0", temperature[0], "temp1", temperature[1]);
     }
@@ -718,7 +827,10 @@ void Lsm303DlhcMagnetometer::_request_magnetometer_xyz_axis() {
     if(data_ok) {
         // X_H_M 0x03
         // X_L_M 0x04
-        _magnetometer_x_axis = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
+        _magnetometer_x_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
+
+        // TODO perform scaling conversion
+        magnetometer_x_axis_gauss = float(_magnetometer_x_axis_bytes) * _mag_xy_gain_config;
     }
 
     register_address = Lsm303DlhcMagnetometer::Addresses::Registers::OUT_Y_H_M;
@@ -727,7 +839,10 @@ void Lsm303DlhcMagnetometer::_request_magnetometer_xyz_axis() {
     if(data_ok) {
         // Y_H_M 0x07
         // Y_L_M 0x08
-        _magnetometer_y_axis = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
+        _magnetometer_y_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
+
+        // TODO perform scaling conversion
+        magnetometer_y_axis_gauss = float(_magnetometer_y_axis_bytes) * _mag_xy_gain_config;
     }
 
     register_address = Lsm303DlhcMagnetometer::Addresses::Registers::OUT_Z_H_M;
@@ -736,7 +851,10 @@ void Lsm303DlhcMagnetometer::_request_magnetometer_xyz_axis() {
     if(data_ok) {
         // Z_H_M 0x05
         // Z_L_M 0x06
-        _magnetometer_z_axis = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
+        _magnetometer_z_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
+
+        // TODO perform scaling conversion
+        magnetometer_z_axis_gauss = float(_magnetometer_z_axis_bytes) * _mag_z_gain_config;
     }
 }
 

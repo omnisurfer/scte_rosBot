@@ -132,7 +132,7 @@ void Bmp180Pressure::_mock_device_emulation() {
         if(measurement_command[0] == Bmp180Pressure::Commands::MeasurementControlValues::TEMPERATURE) {
             //std::cout << "Got temp cmd: " << std::hex << int(measurement_command[0]) << std::endl;
 
-            //set the temperature value in memory
+            //set the temperature_deg_c value in memory
             uint8_t mock_temperature[2] = {0};
             buffer_t outbound_measurement = {
                     .bytes = mock_temperature,
@@ -236,10 +236,10 @@ void Bmp180Pressure::_request_temperature() {
         }
     }
     else {
-        BOOST_LOG_TRIVIAL(error) << "failed to command temperature read";
+        BOOST_LOG_TRIVIAL(error) << "failed to command temperature_deg_c read";
     }
 
-    // read back temperature
+    // read back temperature_deg_c
     uint8_t uncompensated_temperature[2] = {0};
     buffer_t inbound_message = {
             .bytes = uncompensated_temperature,
