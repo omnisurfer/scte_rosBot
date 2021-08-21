@@ -45,6 +45,60 @@ int Lsm303Dlhc::_init_device() {
         BOOST_LOG_TRIVIAL(error) << "failed to read lsm303dlhc control registers";
     }
 
+    /* REGISTER SETUP ORDER MAY MATTER */
+
+    // CTRL_REG6
+    /*
+     * DEFAULT
+     */
+
+    // CTRL_REG5
+    /*
+     * DEFAULT
+     */
+
+    //region CTRL_REG4
+    /*
+     * BDU = 0
+     * LSB @ Lower address, LITTLE ENDIAN
+     * FS Res +/- 2G
+     * HiRes disabled
+     * i2cset -y 1 0x19 0x23 0x80
+     */
+    register_address = Lsm303Dlhc::Addresses::CTRL_REG4_A;
+
+    control_reg[0] =
+            _control_register_1to6_buffer[3] |
+            Lsm303Dlhc::BitMasks::ControlRegister4::FS_2G_SEL |
+            Lsm303Dlhc::BitMasks::ControlRegister4::HI_RES_OUT_EN;
+            //Lsm303Dlhc::BitMasks::ControlRegister4::BDU_EN;
+
+    display_register_8bits("REG4A", _control_register_1to6_buffer[0], "REG4A", control_reg[0]);
+
+    outbound_message = {
+            .bytes = control_reg,
+            .size = sizeof(control_reg)
+    };
+
+    if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+        BOOST_LOG_TRIVIAL(info) << "CTRL_REG4_A configure OK";
+    }
+    else {
+        BOOST_LOG_TRIVIAL(error) << "CTRL_REG4_A configure failed";
+    }
+    //endregion
+
+    // CTRL_REG3
+    /*
+     * DEFAULT
+     */
+
+    // CTRL_REG2
+    /*
+     * DEFAULT
+     * HPF @ 0.02Hz
+     */
+
     //region CTRL_REG1
     /*
      * 1HZ
@@ -53,7 +107,7 @@ int Lsm303Dlhc::_init_device() {
     register_address = Lsm303Dlhc::Addresses::CTRL_REG1_A;
 
     control_reg[0] =
-            Lsm303Dlhc::BitMasks::ControlRegister1::ODR_1HZ |
+            Lsm303Dlhc::BitMasks::ControlRegister1::ODR_50HZ |
             Lsm303Dlhc::BitMasks::Z_AXIS_EN |
             Lsm303Dlhc::BitMasks::Y_AXIS_EN |
             Lsm303Dlhc::BitMasks::X_AXIS_EN;
@@ -72,56 +126,6 @@ int Lsm303Dlhc::_init_device() {
         BOOST_LOG_TRIVIAL(error) << "CTRL_REG1_A configure failed";
     }
     //endregion
-
-    // CTRL_REG2
-    /*
-     * DEFAULT
-     * HPF @ 0.02Hz
-     */
-
-    // CTRL_REG3
-    /*
-     * DEFAULT
-     */
-
-    //region CTRL_REG4
-    /*
-     * BDU = 0
-     * LSB @ Lower address, LITTLE ENDIAN
-     * FS Res +/- 2G
-     * HiRes disabled
-     * i2cset -y 1 0x19 0x23 0x80
-     */
-    register_address = Lsm303Dlhc::Addresses::CTRL_REG4_A;
-
-    control_reg[0] =
-            _control_register_1to6_buffer[3];
-            //Lsm303Dlhc::BitMasks::ControlRegister4::BDU_EN;
-
-    display_register_8bits("REG4A", _control_register_1to6_buffer[0], "REG4A", control_reg[0]);
-
-    outbound_message = {
-            .bytes = control_reg,
-            .size = sizeof(control_reg)
-    };
-
-    if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(info) << "CTRL_REG4_A configure OK";
-    }
-    else {
-        BOOST_LOG_TRIVIAL(error) << "CTRL_REG4_A configure failed";
-    }
-    //endregion
-
-    // CTRL_REG5
-    /*
-     * DEFAULT
-     */
-
-    // CTRL_REG6
-    /*
-     * DEFAULT
-     */
 
     // MAGNETIC REGISTERS
 
@@ -156,7 +160,8 @@ int Lsm303Dlhc::_init_device() {
 
     control_reg[0] =
             _cra_reg_m[0] |
-            Lsm303Dlhc::BitMasks::CrARegM::TEMP_EN;
+            Lsm303Dlhc::BitMasks::CrARegM::TEMP_EN |
+            Lsm303Dlhc::BitMasks::CrARegM::DATA_OUTPUT_RATE_7P5_HZ;
 
     display_register_8bits("CRAREG", _control_register_1to6_buffer[0], "CRAREG", control_reg[0]);
 
@@ -175,8 +180,48 @@ int Lsm303Dlhc::_init_device() {
 
     // CRB_REG_M
     /*
-     * Default gain (TBD)
+     * +/- 1.3 guass
      */
+    register_address = Lsm303Dlhc::Addresses::CRB_REG_M;
+
+    inbound_message = {
+            .bytes = _crb_reg_m,
+            .size = sizeof(_crb_reg_m)
+    };
+
+    if(i2c_recv(&_i2c_device_context, &inbound_message, register_address)) {
+
+        std::string output_string;
+        std::stringstream ss;
+
+        ss << "lsm303dlhc config: ";
+
+        for(uint i = 0; i < sizeof(_crb_reg_m); ++i) {
+            ss << std::hex << std::setfill('0') << std::setw(2) << (int)_crb_reg_m[i] << " ";
+        }
+
+        output_string = ss.str();
+
+        BOOST_LOG_TRIVIAL(info) << output_string;
+    }
+
+    control_reg[0] =
+            _crb_reg_m[0] |
+            Lsm303Dlhc::BitMasks::CrBRegM ::GAIN_CONFIG_0;
+
+    display_register_8bits("CRBREG", _control_register_1to6_buffer[0], "CRBREG", control_reg[0]);
+
+    outbound_message = {
+            .bytes = control_reg,
+            .size = sizeof(control_reg)
+    };
+
+    if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+        BOOST_LOG_TRIVIAL(info) << "CRB_REG_M configure OK";
+    }
+    else {
+        BOOST_LOG_TRIVIAL(error) << "CRB_REG_M configure failed";
+    }
 
     //region MR_REG_M
     /*
@@ -208,7 +253,7 @@ int Lsm303Dlhc::_init_device() {
 
     control_reg[0] =
             _mr_reg_m[0] |
-            Lsm303Dlhc::BitMasks::MrRegM::SINGLE_CONVERSION;
+            Lsm303Dlhc::BitMasks::MrRegM::CONTINUOUS_CONVERSION;
 
     outbound_message = {
             .bytes = control_reg,
