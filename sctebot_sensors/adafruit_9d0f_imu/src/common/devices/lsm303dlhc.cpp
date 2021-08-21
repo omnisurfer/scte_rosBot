@@ -45,7 +45,7 @@ int Lsm303Dlhc::_init_device() {
         BOOST_LOG_TRIVIAL(error) << "failed to read lsm303dlhc control registers";
     }
 
-    /* REGISTER SETUP ORDER MAY MATTER */
+    /* REGISTER SETUP ORDER MAY MATTER - Or the way I am executing the config is screwing up the device */
 
     // CTRL_REG6
     /*
@@ -68,7 +68,7 @@ int Lsm303Dlhc::_init_device() {
     register_address = Lsm303Dlhc::Addresses::CTRL_REG4_A;
 
     control_reg[0] =
-            _control_register_1to6_buffer[3] |
+            //_control_register_1to6_buffer[3] |
             Lsm303Dlhc::BitMasks::ControlRegister4::FS_2G_SEL |
             Lsm303Dlhc::BitMasks::ControlRegister4::HI_RES_OUT_EN;
             //Lsm303Dlhc::BitMasks::ControlRegister4::BDU_EN;
@@ -159,7 +159,7 @@ int Lsm303Dlhc::_init_device() {
     }
 
     control_reg[0] =
-            _cra_reg_m[0] |
+            //_cra_reg_m[0] |
             Lsm303Dlhc::BitMasks::CrARegM::TEMP_EN |
             Lsm303Dlhc::BitMasks::CrARegM::DATA_OUTPUT_RATE_7P5_HZ;
 
@@ -206,7 +206,7 @@ int Lsm303Dlhc::_init_device() {
     }
 
     control_reg[0] =
-            _crb_reg_m[0] |
+            //_crb_reg_m[0] |
             Lsm303Dlhc::BitMasks::CrBRegM ::GAIN_CONFIG_0;
 
     display_register_8bits("CRBREG", _control_register_1to6_buffer[0], "CRBREG", control_reg[0]);
