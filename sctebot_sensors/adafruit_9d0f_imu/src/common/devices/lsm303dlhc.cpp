@@ -161,7 +161,7 @@ int Lsm303Dlhc::_init_device() {
 
     control_reg[0] =
             //_cra_reg_m[0] |
-            Lsm303Dlhc::BitMasks::CrARegM::TEMP_EN |
+            //Lsm303Dlhc::BitMasks::CrARegM::TEMP_EN |
             Lsm303Dlhc::BitMasks::CrARegM::DATA_OUTPUT_RATE_7P5_HZ;
 
     display_register_8bits("CRAREG", _control_register_1to6_buffer[0], "CRAREG", control_reg[0]);
@@ -253,7 +253,7 @@ int Lsm303Dlhc::_init_device() {
     }
 
     control_reg[0] =
-            _mr_reg_m[0] |
+            //_mr_reg_m[0] |
             Lsm303Dlhc::BitMasks::MrRegM::CONTINUOUS_CONVERSION;
 
     outbound_message = {
