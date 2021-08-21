@@ -121,7 +121,9 @@ int main(int argc, char* argv[]) {
     //region LSM303DLHC device setup
     Lsm303Dlhc lsm303DlhcDeviceHandle;
 
-    i2c_device_address = LSM303DLHC_ADDRESS;
+    //LSM303DLHC may have two addresses, 0x19 for Accel, 0x1e for Mag/Temp
+
+    i2c_device_address = LSM303DLHC_ACCEL_RPI_ADDRESS;
 
     lsm303DlhcDeviceHandle.config_device(
             i2c_bus_number,
