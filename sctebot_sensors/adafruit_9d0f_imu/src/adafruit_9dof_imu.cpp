@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
     //region LSM303DLHC device setup
     Lsm303Dlhc lsm303DlhcDeviceHandle;
 
-    i2c_device_address = 0x6b;
+    i2c_device_address = 0x19;
 
     lsm303DlhcDeviceHandle.config_device(
             i2c_bus_number,

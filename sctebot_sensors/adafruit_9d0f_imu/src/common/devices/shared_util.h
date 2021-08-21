@@ -9,6 +9,7 @@
 
 #include <bitset>
 #include <string>
+#include <sstream>
 
 void display_register_8bits(const std::string& reg_a_name, uint8_t reg_a, const std::string& reg_b_name, uint8_t reg_b) {
 

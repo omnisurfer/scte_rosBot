@@ -244,19 +244,35 @@ void Lsm303Dlhc::_data_capture_worker() {
     while(this->run_data_capture_thread) {
         data_lock.unlock();
 
+        int16_t temperature = 0;
+
+        int16_t x_accel_axis = 0;
+        int16_t y_accel_axis = 0;
+        int16_t z_accel_axis = 0;
+
+        int16_t x_mag_axis = 0;
+        int16_t y_mag_axis = 0;
+        int16_t z_mag_axis = 0;
+
+#if 0
         this->_request_temperature_axis();
+
+        temperature = this->_get_temperature();
+#endif
+
         this->_request_accelerometer_xyz_axis();
+
+        x_accel_axis = this->_get_accel_x_axis();
+        y_accel_axis = this->_get_accel_y_axis();
+        z_accel_axis = this->_get_accel_z_axis();
+
+#if 0
         this->_request_magnetometer_xyz_axis();
 
-        int16_t temperature = this->_get_temperature();
-
-        int16_t x_accel_axis = this->_get_accel_x_axis();
-        int16_t y_accel_axis = this->_get_accel_y_axis();
-        int16_t z_accel_axis = this->_get_accel_z_axis();
-
-        int16_t x_mag_axis = this->_get_magnetic_x_axis();
-        int16_t y_mag_axis = this->_get_magnetic_y_axis();
-        int16_t z_mag_axis = this->_get_magnetic_z_axis();
+        x_mag_axis = this->_get_magnetic_x_axis();
+        y_mag_axis = this->_get_magnetic_y_axis();
+        z_mag_axis = this->_get_magnetic_z_axis();
+#endif
 
         this->_host_callback_function(
                 temperature,
