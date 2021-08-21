@@ -46,6 +46,7 @@ int Lsm303Dlhc::_init_device() {
     }
 
     /* REGISTER SETUP ORDER MAY MATTER - Or the way I am executing the config is screwing up the device */
+    /* Issue may have been enable temp sensor?? */
 
     // CTRL_REG6
     /*
@@ -299,7 +300,7 @@ void Lsm303Dlhc::_data_capture_worker() {
         int16_t y_mag_axis = 0;
         int16_t z_mag_axis = 0;
 
-#if 0
+#if 1
         this->_request_temperature_axis();
 
         temperature = this->_get_temperature();
@@ -311,7 +312,7 @@ void Lsm303Dlhc::_data_capture_worker() {
         y_accel_axis = this->_get_accel_y_axis();
         z_accel_axis = this->_get_accel_z_axis();
 
-#if 0
+#if 1
         this->_request_magnetometer_xyz_axis();
 
         x_mag_axis = this->_get_magnetic_x_axis();
