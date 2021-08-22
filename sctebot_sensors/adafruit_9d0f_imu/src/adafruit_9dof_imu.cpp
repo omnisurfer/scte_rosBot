@@ -2,6 +2,7 @@
 // Created by user on 4/9/21.
 //
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <math.h>
 #include <cstring>
@@ -9,9 +10,12 @@
 #include "adafruit_9dof_imu.h"
 
 void handle_bmp180_measurements(float temperature, float pressure) {
+
     std::cout
-        << "bmp180\t\ttemp (C): " << temperature
-        << " pressure (Pa): " << pressure << std::endl;
+        << "[bmp180]"
+        << "\t\t temp (C): " << std::fixed << std::setprecision(2) << temperature
+        << "\t\t pressure (Pa): " << std::fixed << std::setprecision(2) << pressure
+        << std::endl;
 
     double absolute_altitude;
     double pressure_sea_level = 1013.25 * 100;
@@ -26,27 +30,41 @@ void handle_bmp180_measurements(float temperature, float pressure) {
     sea_level_pressure = pressure / pow(1 - absolute_altitude/44330, 5.255);
 
     std::cout
-        << "bmp180\t\tabs alt (m): " << absolute_altitude
-        << " sea level pressure (Pa): " << sea_level_pressure << std::endl;
+        << "[bmp180]"
+        << "\t\t abs alt (m): " << std::fixed << std::setprecision(2) << absolute_altitude
+        << "\t\t sea (Pa): " << std::fixed << std::setprecision(2) << sea_level_pressure
+        << std::endl;
 }
 
 void handle_l3gd20_measurements(float temperature, float r_x, float r_y, float r_z) {
+
     std::cout
-        << "l3gd20 gyro\t\ttemp (C): " << temperature
-        << " x_dps: " << r_x << " y_dps: " << r_y << " z_dps: " << r_z
+        << "[l3gd20 gyro]"
+        << "\t temp (C): " << std::fixed << std::setprecision(2) << temperature
+        << "\t x_dps: " << std::fixed << std::setprecision(2) << r_x
+        << "\t y_dps: " << std::fixed << std::setprecision(2) << r_y
+        << "\t z_dps: " << std::fixed << std::setprecision(2) << r_z
         << std::endl;
 }
 
 void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
+
     std::cout
-            << "lsm303 accel\t x_gs: "
-            << x_gs << " y_gs: " << y_gs << " z_gs: " << z_gs << std::endl;
+            << "[lsm303 accel]"
+            << "\t x_gs: " << std::fixed << std::setprecision(2) << x_gs
+            << "\t y_gs: " << std::fixed << std::setprecision(2) << y_gs
+            << "\t z_gs: " << std::fixed << std::setprecision(2) << z_gs
+            << std::endl;
 }
 
 void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_ga, float y_ga, float z_ga) {
+
     std::cout
-            << "lsm303 mag\t\t\ttemp (C): " << temperature_deg_c
-            << " x_ga: " << x_ga << " y_ga: " << y_ga << " z_ga: " << z_ga
+            << "[lsm303 mag]"
+            << "\t temp (C): " << std::fixed << std::setprecision(2) << temperature_deg_c
+            << "\t x_ga: " << std::fixed << std::setprecision(2) << x_ga
+            << "\t y_ga: " << std::fixed << std::setprecision(2) << y_ga
+            << "\t z_ga: " << std::fixed << std::setprecision(2) << z_ga
             << std::endl;
 }
 

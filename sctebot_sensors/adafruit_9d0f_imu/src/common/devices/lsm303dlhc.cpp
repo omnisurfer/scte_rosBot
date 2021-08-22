@@ -81,7 +81,7 @@ int Lsm303DlhcAccelerometer::_init_device() {
 
     switch(accel_sensitivity_config) {
         case Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::FS_2G_SEL:
-            _linear_acceleration_sensitivity = 1.0/1000;
+            _linear_acceleration_sensitivity = (1.0/1000);
             break;
         case Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::FS_4G_SEL:
             _linear_acceleration_sensitivity = 2.0/1000;
@@ -333,7 +333,10 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
         // X_H_A 0x29
         _accelerometer_x_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
-        // TODO perform scaling conversion
+        // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
+        // https://github.com/pololu/lsm303-arduino/blob/master/LSM303.cpp
+        _accelerometer_x_axis = _accelerometer_x_axis >> 4;
+
         accelerometer_x_axis_g = float(_accelerometer_x_axis) * _linear_acceleration_sensitivity;
     }
 
@@ -345,7 +348,9 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
         // Y_H_A 0x2B
         _accelerometer_y_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
-        // TODO perform scaling conversion
+        // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
+        _accelerometer_y_axis = _accelerometer_y_axis >> 4;
+
         accelerometer_y_axis_g = float(_accelerometer_y_axis) * _linear_acceleration_sensitivity;
     }
 
@@ -357,7 +362,9 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
         // Z_H_A 0x2D
         _accelerometer_z_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
-        // TODO perform scaling conversion
+        // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
+        _accelerometer_z_axis = _accelerometer_z_axis >> 4;
+
         accelerometer_z_axis_g = float(_accelerometer_z_axis) * _linear_acceleration_sensitivity;
     }
 }
