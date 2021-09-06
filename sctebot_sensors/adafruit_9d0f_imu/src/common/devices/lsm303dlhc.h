@@ -262,13 +262,14 @@ private:
     int _sensor_update_period_ms{};
     std::string _device_name;
 
-    uint8_t _status_register{0};
-
     context_t _i2c_device_context{};
 
     bool _enable_load_mock_data = false;
 
     uint8_t _control_register_1to6_buffer[6] = {0};
+
+    std::mutex accelerometer_data_mutex;
+    uint8_t _status_register{0};
 
     int16_t _raw_accelerometer_x_axis{0};
     int16_t _raw_accelerometer_y_axis{0};
@@ -390,7 +391,7 @@ private:
         return _raw_accelerometer_z_axis;
     }
 
-    void _update_accelerometer_status();
+    uint8_t _update_accelerometer_status();
 
 public:
 

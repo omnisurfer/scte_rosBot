@@ -191,32 +191,52 @@ int Lsm303DlhcAccelerometer::_close_device() {
 void Lsm303DlhcAccelerometer::_data_capture_worker() {
     BOOST_LOG_TRIVIAL(debug) << "_data_capture_worker starting";
 
-    std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+    std::unique_lock<std::mutex> data_run_thread_lock(this->data_capture_thread_run_mutex);
     BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc accelerometer waiting to run...";
-    this->data_capture_thread_run_cv.wait(data_lock);
-    data_lock.unlock();
+    this->data_capture_thread_run_cv.wait(data_run_thread_lock);
+    data_run_thread_lock.unlock();
 
     BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc accelerometer running...";
 
-    data_lock.lock();
+    data_run_thread_lock.lock();
     while(this->run_data_capture_thread) {
-        data_lock.unlock();
+        data_run_thread_lock.unlock();
 
-        this->_update_accelerometer_status();
+        float x_accel_axis = 0.0f;
+        float y_accel_axis = 0.0f;
+        float z_accel_axis = 0.0f;
 
-        this->_update_accelerometer_xyz_axis();
+        uint8_t accel_status = 0;
 
-        float x_accel_axis = accelerometer_x_axis_g;
-        float y_accel_axis = accelerometer_y_axis_g;
-        float z_accel_axis = accelerometer_z_axis_g;
+        // update the accel status
+        accel_status = this->_update_accelerometer_status();
 
-        this->_host_callback_function(
-                x_accel_axis, y_accel_axis, z_accel_axis
-                );
+        // check if data is available and if so, read it. otherwise just pass until data may be available
+        if ((accel_status & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE) == false) {
+            // do nothing
+            BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc no zxy data available";
+        }
+        else {
+            this->_update_accelerometer_xyz_axis();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
+            std::lock_guard<std::mutex> accelerometer_data_lock(this->accelerometer_data_mutex);
+            {
 
-        data_lock.lock();
+                x_accel_axis = accelerometer_x_axis_g;
+                y_accel_axis = accelerometer_y_axis_g;
+                z_accel_axis = accelerometer_z_axis_g;
+
+            }
+
+            this->_host_callback_function(
+                    x_accel_axis, y_accel_axis, z_accel_axis
+                    );
+
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms * (1/3)));
+
+        data_run_thread_lock.lock();
     }
 
     BOOST_LOG_TRIVIAL(debug) << "accelerometer _data_capture_worker exiting";
@@ -327,51 +347,56 @@ void Lsm303DlhcAccelerometer::_update_accelerometer_xyz_axis() {
      * i2cget -y 1 0x1e 0x29 (L)
     */
 
-    register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_X_L_A;
-    bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+    std::lock_guard<std::mutex> accelerometer_data_lock(this->accelerometer_data_mutex);
+    {
+        register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_X_L_A;
+        bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-    if(data_ok) {
-        // X_L_A 0x28
-        // X_H_A 0x29
-        _raw_accelerometer_x_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+        if (data_ok) {
+            // X_L_A 0x28
+            // X_H_A 0x29
+            _raw_accelerometer_x_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
-        // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
-        // https://github.com/pololu/lsm303-arduino/blob/master/LSM303.cpp
-        _raw_accelerometer_x_axis = _raw_accelerometer_x_axis >> 4;
+            // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
+            // https://github.com/pololu/lsm303-arduino/blob/master/LSM303.cpp
+            _raw_accelerometer_x_axis = _raw_accelerometer_x_axis >> 4;
 
-        accelerometer_x_axis_g = float(_raw_accelerometer_x_axis) * _linear_acceleration_sensitivity;
-    }
+            accelerometer_x_axis_g = float(_raw_accelerometer_x_axis) * _linear_acceleration_sensitivity;
+        }
 
-    register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Y_L_A;
-    data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Y_L_A;
+        data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-    if(data_ok) {
-        // Y_L_A 0x2A
-        // Y_H_A 0x2B
-        _raw_accelerometer_y_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+        if (data_ok) {
+            // Y_L_A 0x2A
+            // Y_H_A 0x2B
+            _raw_accelerometer_y_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
-        // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
-        _raw_accelerometer_y_axis = _raw_accelerometer_y_axis >> 4;
+            // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
+            _raw_accelerometer_y_axis = _raw_accelerometer_y_axis >> 4;
 
-        accelerometer_y_axis_g = float(_raw_accelerometer_y_axis) * _linear_acceleration_sensitivity;
-    }
+            accelerometer_y_axis_g = float(_raw_accelerometer_y_axis) * _linear_acceleration_sensitivity;
+        }
 
-    register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Z_L_A;
-    data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Z_L_A;
+        data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-    if(data_ok) {
-        // Z_L_A 0x2C
-        // Z_H_A 0x2D
-        _raw_accelerometer_z_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+        if (data_ok) {
+            // Z_L_A 0x2C
+            // Z_H_A 0x2D
+            _raw_accelerometer_z_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
-        // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
-        _raw_accelerometer_z_axis = _raw_accelerometer_z_axis >> 4;
+            // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
+            _raw_accelerometer_z_axis = _raw_accelerometer_z_axis >> 4;
 
-        accelerometer_z_axis_g = float(_raw_accelerometer_z_axis) * _linear_acceleration_sensitivity;
+            accelerometer_z_axis_g = float(_raw_accelerometer_z_axis) * _linear_acceleration_sensitivity;
+        }
     }
 }
 
-void Lsm303DlhcAccelerometer::_update_accelerometer_status() {
+uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
+
+    uint8_t status_register = 0;
 
     uint8_t register_address;
 
@@ -385,11 +410,33 @@ void Lsm303DlhcAccelerometer::_update_accelerometer_status() {
     bool status_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(status_ok) {
-        _status_register = accel_status[0];
 
-        std::bitset<8> x(_status_register);
-        std::cout << "status reg: " << x << std::endl;
+        std::lock_guard<std::mutex> accelerometer_data_lock(this->accelerometer_data_mutex);
+        {
+            _status_register = accel_status[0];
+            status_register = _status_register;
+        }
+
+        std::bitset<8> x(status_register);
+        BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
+
+        bool zyx_or_status = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_OVERRUN;
+
+        bool z_or = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Z_OVERRUN;
+        bool y_or = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Y_OVERRUN;
+        bool x_or = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::X_OVERRUN;
+
+        bool zyx_da_status = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE;
+
+        bool z_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Z_DATA_AVAILABLE;
+        bool y_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Y_DATA_AVAILABLE;
+        bool x_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::X_DATA_AVAILABLE;
+
+        BOOST_LOG_TRIVIAL(debug) << "zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
+        BOOST_LOG_TRIVIAL(debug) << "zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
     }
+
+    return status_register;
 }
 
 // endregion
