@@ -202,7 +202,9 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
     while(this->run_data_capture_thread) {
         data_lock.unlock();
 
-        this->_request_accelerometer_xyz_axis();
+        this->_update_accelerometer_status();
+
+        this->_update_accelerometer_xyz_axis();
 
         float x_accel_axis = accelerometer_x_axis_g;
         float y_accel_axis = accelerometer_y_axis_g;
@@ -310,7 +312,7 @@ void Lsm303DlhcAccelerometer::enable_load_mock_data() {
     _enable_load_mock_data = true;
 }
 
-void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
+void Lsm303DlhcAccelerometer::_update_accelerometer_xyz_axis() {
 
     uint8_t register_address;
 
@@ -331,13 +333,13 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
     if(data_ok) {
         // X_L_A 0x28
         // X_H_A 0x29
-        _accelerometer_x_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+        _raw_accelerometer_x_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
         // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
         // https://github.com/pololu/lsm303-arduino/blob/master/LSM303.cpp
-        _accelerometer_x_axis = _accelerometer_x_axis >> 4;
+        _raw_accelerometer_x_axis = _raw_accelerometer_x_axis >> 4;
 
-        accelerometer_x_axis_g = float(_accelerometer_x_axis) * _linear_acceleration_sensitivity;
+        accelerometer_x_axis_g = float(_raw_accelerometer_x_axis) * _linear_acceleration_sensitivity;
     }
 
     register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Y_L_A;
@@ -346,12 +348,12 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
     if(data_ok) {
         // Y_L_A 0x2A
         // Y_H_A 0x2B
-        _accelerometer_y_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+        _raw_accelerometer_y_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
         // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
-        _accelerometer_y_axis = _accelerometer_y_axis >> 4;
+        _raw_accelerometer_y_axis = _raw_accelerometer_y_axis >> 4;
 
-        accelerometer_y_axis_g = float(_accelerometer_y_axis) * _linear_acceleration_sensitivity;
+        accelerometer_y_axis_g = float(_raw_accelerometer_y_axis) * _linear_acceleration_sensitivity;
     }
 
     register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Z_L_A;
@@ -360,12 +362,33 @@ void Lsm303DlhcAccelerometer::_request_accelerometer_xyz_axis() {
     if(data_ok) {
         // Z_L_A 0x2C
         // Z_H_A 0x2D
-        _accelerometer_z_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+        _raw_accelerometer_z_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
         // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
-        _accelerometer_z_axis = _accelerometer_z_axis >> 4;
+        _raw_accelerometer_z_axis = _raw_accelerometer_z_axis >> 4;
 
-        accelerometer_z_axis_g = float(_accelerometer_z_axis) * _linear_acceleration_sensitivity;
+        accelerometer_z_axis_g = float(_raw_accelerometer_z_axis) * _linear_acceleration_sensitivity;
+    }
+}
+
+void Lsm303DlhcAccelerometer::_update_accelerometer_status() {
+
+    uint8_t register_address;
+
+    uint8_t accel_status[1] = {0};
+    buffer_t inbound_message = {
+            .bytes = accel_status,
+            .size = sizeof(accel_status)
+    };
+
+    register_address = Lsm303DlhcAccelerometer::Addresses::Registers::STATUS_REG_A;
+    bool status_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+
+    if(status_ok) {
+        _status_register = accel_status[0];
+
+        std::bitset<8> x(_status_register);
+        std::cout << "status reg: " << x << std::endl;
     }
 }
 
@@ -836,7 +859,6 @@ void Lsm303DlhcMagnetometer::_request_magnetometer_xyz_axis() {
         // X_L_M 0x04
         _magnetometer_x_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
 
-        // TODO perform scaling conversion
         magnetometer_x_axis_gauss = float(_magnetometer_x_axis_bytes) * _mag_xy_gain_config;
     }
 
@@ -848,7 +870,6 @@ void Lsm303DlhcMagnetometer::_request_magnetometer_xyz_axis() {
         // Y_L_M 0x08
         _magnetometer_y_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
 
-        // TODO perform scaling conversion
         magnetometer_y_axis_gauss = float(_magnetometer_y_axis_bytes) * _mag_xy_gain_config;
     }
 
@@ -860,7 +881,6 @@ void Lsm303DlhcMagnetometer::_request_magnetometer_xyz_axis() {
         // Z_L_M 0x06
         _magnetometer_z_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
 
-        // TODO perform scaling conversion
         magnetometer_z_axis_gauss = float(_magnetometer_z_axis_bytes) * _mag_z_gain_config;
     }
 }

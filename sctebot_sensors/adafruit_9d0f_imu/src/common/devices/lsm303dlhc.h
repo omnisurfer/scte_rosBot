@@ -262,15 +262,17 @@ private:
     int _sensor_update_period_ms{};
     std::string _device_name;
 
+    uint8_t _status_register{0};
+
     context_t _i2c_device_context{};
 
     bool _enable_load_mock_data = false;
 
     uint8_t _control_register_1to6_buffer[6] = {0};
 
-    int16_t _accelerometer_x_axis{0};
-    int16_t _accelerometer_y_axis{0};
-    int16_t _accelerometer_z_axis{0};
+    int16_t _raw_accelerometer_x_axis{0};
+    int16_t _raw_accelerometer_y_axis{0};
+    int16_t _raw_accelerometer_z_axis{0};
     float accelerometer_x_axis_g{0};
     float accelerometer_y_axis_g{0};
     float accelerometer_z_axis_g{0};
@@ -374,19 +376,21 @@ private:
 
     void _mock_device_emulation();
 
-    void _request_accelerometer_xyz_axis();
+    void _update_accelerometer_xyz_axis();
 
     int16_t _get_accel_x_axis() const {
-        return _accelerometer_x_axis;
+        return _raw_accelerometer_x_axis;
     }
 
     int16_t _get_accel_y_axis() const {
-        return _accelerometer_y_axis;
+        return _raw_accelerometer_y_axis;
     }
 
     int16_t _get_accel_z_axis() const {
-        return _accelerometer_z_axis;
+        return _raw_accelerometer_z_axis;
     }
+
+    void _update_accelerometer_status();
 
 public:
 
