@@ -4,6 +4,10 @@
 
 // I2C based on code from https://git.amongbytes.com/kris/i2c-stub-toy/src/branch/master/src/i2c.c
 
+// The Linux Kernel:
+// https://01.org/linuxgraphics/gfx-docs/drm/driver-api/i2c.html
+
+
 #ifdef __cplusplus
 extern "C"
 {

@@ -98,8 +98,8 @@ int Lsm303DlhcAccelerometer::_init_device() {
 
     control_reg[0] =
             accel_sensitivity_config |
-            Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::HI_RES_OUT_EN;
-            //Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::BDU_EN;
+            Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::HI_RES_OUT_EN |
+            Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::BDU_EN;
 
     display_register_8bits("REG4A", _control_register_1to6_buffer[0], "REG4A", control_reg[0]);
 
@@ -135,7 +135,7 @@ int Lsm303DlhcAccelerometer::_init_device() {
     register_address = Lsm303DlhcAccelerometer::Addresses::CTRL_REG1_A;
 
     control_reg[0] =
-            Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_50HZ |
+            Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1HZ |
             Lsm303DlhcAccelerometer::BitMasks::Z_AXIS_EN |
             Lsm303DlhcAccelerometer::BitMasks::Y_AXIS_EN |
             Lsm303DlhcAccelerometer::BitMasks::X_AXIS_EN;
