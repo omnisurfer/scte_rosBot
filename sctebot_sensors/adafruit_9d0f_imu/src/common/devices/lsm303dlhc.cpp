@@ -417,23 +417,26 @@ uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
             status_register = _status_register;
         }
 
-        std::bitset<8> x(status_register);
-        BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
+        if (status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE) {
 
-        bool zyx_or_status = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_OVERRUN;
+            std::bitset<8> x(status_register);
+            BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
 
-        bool z_or = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Z_OVERRUN;
-        bool y_or = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Y_OVERRUN;
-        bool x_or = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::X_OVERRUN;
+            bool zyx_or_status = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_OVERRUN;
 
-        bool zyx_da_status = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE;
+            bool z_or = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Z_OVERRUN;
+            bool y_or = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Y_OVERRUN;
+            bool x_or = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::X_OVERRUN;
 
-        bool z_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Z_DATA_AVAILABLE;
-        bool y_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Y_DATA_AVAILABLE;
-        bool x_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::X_DATA_AVAILABLE;
+            bool zyx_da_status = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE;
 
-        BOOST_LOG_TRIVIAL(debug) << "zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
-        BOOST_LOG_TRIVIAL(debug) << "zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
+            bool z_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Z_DATA_AVAILABLE;
+            bool y_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Y_DATA_AVAILABLE;
+            bool x_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::X_DATA_AVAILABLE;
+
+            BOOST_LOG_TRIVIAL(debug) << "zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
+            BOOST_LOG_TRIVIAL(debug) << "zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
+        }
     }
 
     return status_register;
