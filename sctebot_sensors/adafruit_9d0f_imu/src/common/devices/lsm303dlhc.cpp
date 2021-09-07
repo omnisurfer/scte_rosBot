@@ -8,7 +8,7 @@
 
 // region Accelerometer
 
-int Lsm303DlhcAccelerometer::_init_device() {
+int Lsm303DlhcAccelerometer::_init_device(Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate) {
 
     logging::core::get()->set_filter
     (
@@ -135,7 +135,8 @@ int Lsm303DlhcAccelerometer::_init_device() {
     register_address = Lsm303DlhcAccelerometer::Addresses::CTRL_REG1_A;
 
     control_reg[0] =
-            Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1HZ |
+            //Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1HZ |
+            sample_rate_to_register_bitmask[output_data_rate] |
             Lsm303DlhcAccelerometer::BitMasks::Z_AXIS_EN |
             Lsm303DlhcAccelerometer::BitMasks::Y_AXIS_EN |
             Lsm303DlhcAccelerometer::BitMasks::X_AXIS_EN;
@@ -234,7 +235,7 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
 
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms * (1/3)));
+        std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
         data_run_thread_lock.lock();
     }

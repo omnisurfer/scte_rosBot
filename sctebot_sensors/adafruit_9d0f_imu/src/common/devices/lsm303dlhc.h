@@ -11,6 +11,8 @@
 #include <thread>
 #include <condition_variable>
 
+#include <math.h>
+
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
@@ -21,7 +23,45 @@ namespace logging = boost::log;
 
 class Lsm303DlhcAccelerometer {
 
+public:
+
+    typedef enum OutputDataRates_t {
+        ODR_1HZ = 0,
+        ODR_10HZ,
+        ODR_25HZ,
+        ODR_50HZ,
+        ODR_100HZ,
+        ODR_200HZ,
+        ODR_400HZ,
+        ODR_1620HZ,
+        ODR_1344HZ
+    } OutputDataRates;
+
+    std::map<int, int> data_rate_sample_rate{
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1HZ, 1},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_10HZ, 10},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_25HZ, 25},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_50HZ, 50},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_100HZ, 100},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_200HZ, 200},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_400HZ, 400},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1620HZ, 1620},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1344HZ, 1344},
+    };
+
 private:
+
+    std::map<int, int> sample_rate_to_register_bitmask{
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_10HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_10HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_25HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_25HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_50HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_50HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_100HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_100HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_200HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_200HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_400HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_400HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1620HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1620HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1344HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1344HZ}
+    };
 
     class Addresses {
 
@@ -296,7 +336,7 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
-    int _init_device();
+    int _init_device(Lsm303DlhcAccelerometer::OutputDataRates_t);
 
     int _connect_to_device();
 
@@ -426,13 +466,13 @@ public:
     int config_device(
             int bus_number,
             int device_address,
-            int update_period_ms,
+            //int update_period_ms,
             std::string device_name,
             host_callback_function function_pointer
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
-        _sensor_update_period_ms = update_period_ms;
+        _sensor_update_period_ms = 0;
         _device_name = std::move(device_name);
 
         _host_callback_function = function_pointer;
@@ -451,9 +491,13 @@ public:
         return status;
     }
 
-    int init_device() {
+    int init_device(Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate) {
 
-        this->_init_device();
+        int data_rate = this->data_rate_sample_rate[output_data_rate];
+
+        this->_sensor_update_period_ms = int(ceil(1 / data_rate) * 1000 * (1/3.0f));
+
+        this->_init_device(output_data_rate);
 
         return 1;
     }
