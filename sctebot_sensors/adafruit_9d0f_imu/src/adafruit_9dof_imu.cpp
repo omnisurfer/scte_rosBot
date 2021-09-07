@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
     lsm303DlhcMagDeviceHandle.config_device(
             i2c_bus_number,
             i2c_device_address,
-            1000,
+            //1000,
             "3d_mag",
             &handle_lsm303dlhc_mag_measurements
             );
@@ -213,7 +213,7 @@ int main(int argc, char* argv[]) {
         lsm303DlhcMagDeviceHandle.mock_run_device_emulation();
     #endif
 
-    lsm303DlhcMagDeviceHandle.init_device();
+    lsm303DlhcMagDeviceHandle.init_device(Lsm303DlhcMagnetometer::ODR_15P0_HZ);
     //endregion
 #endif
 

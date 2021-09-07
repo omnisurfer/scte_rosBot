@@ -215,7 +215,7 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
         // check if data is available and if so, read it. otherwise just pass until data may be available
         if ((accel_status & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE) == false) {
             // do nothing
-            //BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc no zxy data available";
+            //BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc no accel zxy data available";
         }
         else {
             this->_update_accelerometer_xyz_axis();
@@ -356,13 +356,13 @@ void Lsm303DlhcAccelerometer::_update_accelerometer_xyz_axis() {
         if (data_ok) {
             // X_L_A 0x28
             // X_H_A 0x29
-            _raw_accelerometer_x_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+            _accelerometer_x_axis_bytes = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
             // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
             // https://github.com/pololu/lsm303-arduino/blob/master/LSM303.cpp
-            _raw_accelerometer_x_axis = _raw_accelerometer_x_axis >> 4;
+            _accelerometer_x_axis_bytes = _accelerometer_x_axis_bytes >> 4;
 
-            accelerometer_x_axis_g = float(_raw_accelerometer_x_axis) * _linear_acceleration_sensitivity;
+            accelerometer_x_axis_g = float(_accelerometer_x_axis_bytes) * _linear_acceleration_sensitivity;
         }
 
         register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Y_L_A;
@@ -371,12 +371,12 @@ void Lsm303DlhcAccelerometer::_update_accelerometer_xyz_axis() {
         if (data_ok) {
             // Y_L_A 0x2A
             // Y_H_A 0x2B
-            _raw_accelerometer_y_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+            _accelerometer_y_axis_bytes = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
             // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
-            _raw_accelerometer_y_axis = _raw_accelerometer_y_axis >> 4;
+            _accelerometer_y_axis_bytes = _accelerometer_y_axis_bytes >> 4;
 
-            accelerometer_y_axis_g = float(_raw_accelerometer_y_axis) * _linear_acceleration_sensitivity;
+            accelerometer_y_axis_g = float(_accelerometer_y_axis_bytes) * _linear_acceleration_sensitivity;
         }
 
         register_address = Lsm303DlhcAccelerometer::Addresses::Registers::OUT_Z_L_A;
@@ -385,12 +385,12 @@ void Lsm303DlhcAccelerometer::_update_accelerometer_xyz_axis() {
         if (data_ok) {
             // Z_L_A 0x2C
             // Z_H_A 0x2D
-            _raw_accelerometer_z_axis = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
+            _accelerometer_z_axis_bytes = (out_accel_xyz_axis[1] << 8) + out_accel_xyz_axis[0];
 
             // Shift to 12-bit value as it seems the DLHC modem may not actually support 16-bit
-            _raw_accelerometer_z_axis = _raw_accelerometer_z_axis >> 4;
+            _accelerometer_z_axis_bytes = _accelerometer_z_axis_bytes >> 4;
 
-            accelerometer_z_axis_g = float(_raw_accelerometer_z_axis) * _linear_acceleration_sensitivity;
+            accelerometer_z_axis_g = float(_accelerometer_z_axis_bytes) * _linear_acceleration_sensitivity;
         }
     }
 }
@@ -447,7 +447,7 @@ uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
 
 // region Magnetometer
 
-int Lsm303DlhcMagnetometer::_init_device() {
+int Lsm303DlhcMagnetometer::_init_device(Lsm303DlhcMagnetometer::OutputDataRates_t output_data_rate) {
 
     logging::core::get()->set_filter
     (
@@ -489,8 +489,9 @@ int Lsm303DlhcMagnetometer::_init_device() {
     }
 
     control_reg[0] =
-            Lsm303DlhcMagnetometer::BitMasks::CrARegM::TEMP_EN |
-            Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_7P5_HZ;
+            //Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_7P5_HZ
+            sample_rate_to_register_bitmask[output_data_rate] |
+            Lsm303DlhcMagnetometer::BitMasks::CrARegM::TEMP_EN;
 
     outbound_message = {
             .bytes = control_reg,
@@ -693,33 +694,53 @@ int Lsm303DlhcMagnetometer::_close_device() {
 void Lsm303DlhcMagnetometer::_data_capture_worker() {
     BOOST_LOG_TRIVIAL(debug) << "_data_capture_worker starting";
 
-    std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+    std::unique_lock<std::mutex> data_run_thread_lock(this->data_capture_thread_run_mutex);
     BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc magnetometer waiting to run...";
-    this->data_capture_thread_run_cv.wait(data_lock);
-    data_lock.unlock();
+    this->data_capture_thread_run_cv.wait(data_run_thread_lock);
+    data_run_thread_lock.unlock();
 
     BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc magnetometer running...";
 
-    data_lock.lock();
+    data_run_thread_lock.lock();
     while(this->run_data_capture_thread) {
-        data_lock.unlock();
+        data_run_thread_lock.unlock();
 
-        this->_request_temperature_axis();
-        float temperature_deg_c = temperature_axis_degrees_c;
+        float temperature_deg_c = 0.0f;
 
-        this->_request_magnetometer_xyz_axis();
-        float x_mag_axis = magnetometer_x_axis_gauss;
-        float y_mag_axis = magnetometer_y_axis_gauss;
-        float z_mag_axis = magnetometer_z_axis_gauss;
+        float x_mag_axis = 0.0f;
+        float y_mag_axis = 0.0f;
+        float z_mag_axis = 0.0f;
 
-        this->_host_callback_function(
-                temperature_deg_c,
-                x_mag_axis, y_mag_axis, z_mag_axis
-                );
+        uint8_t mag_status = 0;
+
+        mag_status = this->_update_magnetometer_status();
+
+        if((mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY) == false) {
+            //do nothing
+            //BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc no mag xyz data available";
+        }
+        else {
+            this->_update_temperature_axis();
+            this->_update_magnetometer_xyz_axis();
+
+            std::lock_guard<std::mutex> magnetometer_data_lock(this->magnetometer_data_mutex);
+            {
+                temperature_deg_c = temperature_axis_degrees_c;
+
+                x_mag_axis = magnetometer_x_axis_gauss;
+                y_mag_axis = magnetometer_y_axis_gauss;
+                z_mag_axis = magnetometer_z_axis_gauss;
+            }
+
+            this->_host_callback_function(
+                    temperature_deg_c,
+                    x_mag_axis, y_mag_axis, z_mag_axis
+                    );
+        }
 
         std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
-        data_lock.lock();
+        data_run_thread_lock.lock();
     }
 
     BOOST_LOG_TRIVIAL(debug) << "magnetometer _data_capture_worker exiting";
@@ -852,7 +873,7 @@ void Lsm303DlhcMagnetometer::_mock_device_emulation() {
 
 }
 
-void Lsm303DlhcMagnetometer::_request_temperature_axis() {
+void Lsm303DlhcMagnetometer::_update_temperature_axis() {
 
     uint8_t register_address;
 
@@ -870,29 +891,34 @@ void Lsm303DlhcMagnetometer::_request_temperature_axis() {
     register_address = Lsm303DlhcMagnetometer::Addresses::Registers::TEMP_OUT_H_M;
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-    if(data_ok) {
-        // convert to 16-bit value
-        // T_H_M 0x31
-        // T_L_M 0x32
-        int16_t temp_axis = (temperature[0] << 8) + temperature[1];
-        _temperature_axis_bytes = temp_axis >> 4;
+    std::lock_guard<std::mutex> magnetometer_data_lock(this->magnetometer_data_mutex);
+    {
 
-        // per https://electronics.stackexchange.com/questions/219032/how-to-determine-temperature-with-lsm303dlhc
+        if (data_ok) {
+            // convert to 16-bit value
+            // T_H_M 0x31
+            // T_L_M 0x32
+            int16_t temp_axis = (temperature[0] << 8) + temperature[1];
+            _temperature_axis_bytes = temp_axis >> 4;
 
-        // Reference temperature_deg_c is 25C, count = 0
-        // +8 counts = 1C worth of change
-        // +80 counts = ~10C worth of change
+            // per https://electronics.stackexchange.com/questions/219032/how-to-determine-temperature-with-lsm303dlhc
 
-        float transfer_funciton = (1.0/8.0);
-        float sensor_offset = 20.0;
+            // Reference temperature_deg_c is 25C, count = 0
+            // +8 counts = 1C worth of change
+            // +80 counts = ~10C worth of change
 
-        temperature_axis_degrees_c = sensor_offset + (_temperature_axis_bytes * transfer_funciton);
+            float transfer_funciton = (1.0 / 8.0);
+            float sensor_offset = 20.0;
 
-        display_register_8bits("temp0", temperature[0], "temp1", temperature[1]);
+            temperature_axis_degrees_c = sensor_offset + (_temperature_axis_bytes * transfer_funciton);
+
+            display_register_8bits("temp0", temperature[0], "temp1", temperature[1]);
+        }
+
     }
 }
 
-void Lsm303DlhcMagnetometer::_request_magnetometer_xyz_axis() {
+void Lsm303DlhcMagnetometer::_update_magnetometer_xyz_axis() {
 
     uint8_t register_address;
 
@@ -905,35 +931,76 @@ void Lsm303DlhcMagnetometer::_request_magnetometer_xyz_axis() {
     register_address = Lsm303DlhcMagnetometer::Addresses::Registers::OUT_X_H_M;
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-    if(data_ok) {
-        // X_H_M 0x03
-        // X_L_M 0x04
-        _magnetometer_x_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
+    std::lock_guard<std::mutex> magnetometer_data_lock(this->magnetometer_data_mutex);
+    {
+        if (data_ok) {
+            // X_H_M 0x03
+            // X_L_M 0x04
+            _magnetometer_x_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
 
-        magnetometer_x_axis_gauss = float(_magnetometer_x_axis_bytes) * _mag_xy_gain_config;
+            magnetometer_x_axis_gauss = float(_magnetometer_x_axis_bytes) * _mag_xy_gain_config;
+        }
+
+        register_address = Lsm303DlhcMagnetometer::Addresses::Registers::OUT_Y_H_M;
+        data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+
+        if (data_ok) {
+            // Y_H_M 0x07
+            // Y_L_M 0x08
+            _magnetometer_y_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
+
+            magnetometer_y_axis_gauss = float(_magnetometer_y_axis_bytes) * _mag_xy_gain_config;
+        }
+
+        register_address = Lsm303DlhcMagnetometer::Addresses::Registers::OUT_Z_H_M;
+        data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+
+        if (data_ok) {
+            // Z_H_M 0x05
+            // Z_L_M 0x06
+            _magnetometer_z_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
+
+            magnetometer_z_axis_gauss = float(_magnetometer_z_axis_bytes) * _mag_z_gain_config;
+        }
+    }
+}
+
+uint8_t Lsm303DlhcMagnetometer::_update_magnetometer_status() {
+
+    uint8_t status_register = 0;
+
+    uint8_t register_address;
+
+    uint8_t mag_status[1] = {0};
+    buffer_t inbound_message = {
+            .bytes = mag_status,
+            .size = sizeof(mag_status)
+    };
+
+    register_address = Lsm303DlhcMagnetometer::Addresses::Registers::SR_REG_Mg;
+    bool status_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+
+    if(status_ok) {
+
+        std::lock_guard<std::mutex> magnetometer_data_lock(this->magnetometer_data_mutex);
+        {
+            _status_register = mag_status[0];
+            status_register = _status_register;
+        }
+
+        if (status_register & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY) {
+
+            std::bitset<8> x(status_register);
+            BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
+
+            bool mag_data_ready = status_register & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY;
+            bool lock_set = status_register & Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK;
+
+            BOOST_LOG_TRIVIAL(debug) << "mag_data_rdy: " << mag_data_ready << " lock_set: " << lock_set;
+        }
     }
 
-    register_address = Lsm303DlhcMagnetometer::Addresses::Registers::OUT_Y_H_M;
-    data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
-
-    if(data_ok) {
-        // Y_H_M 0x07
-        // Y_L_M 0x08
-        _magnetometer_y_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
-
-        magnetometer_y_axis_gauss = float(_magnetometer_y_axis_bytes) * _mag_xy_gain_config;
-    }
-
-    register_address = Lsm303DlhcMagnetometer::Addresses::Registers::OUT_Z_H_M;
-    data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
-
-    if(data_ok) {
-        // Z_H_M 0x05
-        // Z_L_M 0x06
-        _magnetometer_z_axis_bytes = (out_mag_xyz_axis[0] << 8) + out_mag_xyz_axis[1];
-
-        magnetometer_z_axis_gauss = float(_magnetometer_z_axis_bytes) * _mag_z_gain_config;
-    }
+    return status_register;
 }
 
 // endregion

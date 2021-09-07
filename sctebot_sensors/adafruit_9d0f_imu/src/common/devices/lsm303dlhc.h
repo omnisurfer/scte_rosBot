@@ -311,9 +311,9 @@ private:
     std::mutex accelerometer_data_mutex;
     uint8_t _status_register{0};
 
-    int16_t _raw_accelerometer_x_axis{0};
-    int16_t _raw_accelerometer_y_axis{0};
-    int16_t _raw_accelerometer_z_axis{0};
+    int16_t _accelerometer_x_axis_bytes{0};
+    int16_t _accelerometer_y_axis_bytes{0};
+    int16_t _accelerometer_z_axis_bytes{0};
     float accelerometer_x_axis_g{0};
     float accelerometer_y_axis_g{0};
     float accelerometer_z_axis_g{0};
@@ -419,19 +419,19 @@ private:
 
     void _update_accelerometer_xyz_axis();
 
+    uint8_t _update_accelerometer_status();
+
     int16_t _get_accel_x_axis() const {
-        return _raw_accelerometer_x_axis;
+        return _accelerometer_x_axis_bytes;
     }
 
     int16_t _get_accel_y_axis() const {
-        return _raw_accelerometer_y_axis;
+        return _accelerometer_y_axis_bytes;
     }
 
     int16_t _get_accel_z_axis() const {
-        return _raw_accelerometer_z_axis;
+        return _accelerometer_z_axis_bytes;
     }
-
-    uint8_t _update_accelerometer_status();
 
 public:
 
@@ -523,7 +523,42 @@ public:
 
 class Lsm303DlhcMagnetometer {
 
+public:
+
+    typedef enum OutputDataRates_t {
+        ODR_0P75_HZ = 0,
+        ODR_1P5_HZ,
+        ODR_3P0_HZ,
+        ODR_7P5_HZ,
+        ODR_15P0_HZ,
+        ODR_30P0_HZ,
+        ODR_75P0_HZ,
+        ODR_220P0_HZ
+    } OutputDataRates;
+
+    std::map<int, float> data_rate_sample_rate{
+            {Lsm303DlhcMagnetometer::ODR_0P75_HZ, 0.75},
+            {Lsm303DlhcMagnetometer::ODR_1P5_HZ, 1.5},
+            {Lsm303DlhcMagnetometer::ODR_3P0_HZ, 3.0},
+            {Lsm303DlhcMagnetometer::ODR_7P5_HZ, 7.5},
+            {Lsm303DlhcMagnetometer::ODR_15P0_HZ, 15.0},
+            {Lsm303DlhcMagnetometer::ODR_30P0_HZ, 30.0},
+            {Lsm303DlhcMagnetometer::ODR_75P0_HZ, 75.0},
+            {Lsm303DlhcMagnetometer::ODR_220P0_HZ, 220.0}
+    };
+
 private:
+
+    std::map<int, int> sample_rate_to_register_bitmask{
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_0P75_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_0P75_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_15P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_1P5_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_3P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_3P0_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_7P5_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_7P5_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_15P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_15P0_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_30P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_30P0_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_75P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_75P0_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_220P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_220P0_HZ}
+    };
 
     class Addresses {
 
@@ -565,7 +600,7 @@ private:
             DATA_OUTPUT_RATE_15P0_HZ = 0b00010000,
             DATA_OUTPUT_RATE_30P0_HZ = 0b00010100,
             DATA_OUTPUT_RATE_75P0_HZ = 0b00011000,
-            DATA_OUTPUT_RATE_200P0_HZ = 0b00011100
+            DATA_OUTPUT_RATE_220P0_HZ = 0b00011100
         } CrARegM;
 
         typedef enum CrBRegM_t {
@@ -598,6 +633,9 @@ private:
     context_t _i2c_device_context{};
 
     bool _enable_load_mock_data = false;
+
+    std::mutex magnetometer_data_mutex;
+    uint8_t _status_register{0};
 
     uint8_t _cra_reg_m[1] = {0};
     uint8_t _crb_reg_m[1] = {0};
@@ -633,7 +671,7 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
-    int _init_device();
+    int _init_device(Lsm303DlhcMagnetometer::OutputDataRates_t);
 
     int _connect_to_device();
 
@@ -714,9 +752,11 @@ private:
 
     void _mock_device_emulation();
 
-    void _request_temperature_axis();
+    void _update_temperature_axis();
 
-    void _request_magnetometer_xyz_axis();
+    void _update_magnetometer_xyz_axis();
+
+    uint8_t _update_magnetometer_status();
 
     int16_t _get_temperature() const {
         return _temperature_axis_bytes;
@@ -765,13 +805,13 @@ public:
     int config_device(
             int bus_number,
             int device_address,
-            int update_period_ms,
+            //int update_period_ms,
             std::string device_name,
             host_callback_function function_pointer
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
-        _sensor_update_period_ms = update_period_ms;
+        _sensor_update_period_ms = 0;
         _device_name = std::move(device_name);
 
         _host_callback_function = function_pointer;
@@ -790,9 +830,13 @@ public:
         return status;
     }
 
-    int init_device() {
+    int init_device(Lsm303DlhcMagnetometer::OutputDataRates_t output_data_rates) {
 
-        this->_init_device();
+        float data_rate = this->data_rate_sample_rate[output_data_rates];
+
+        this->_sensor_update_period_ms = int(ceil(1 / data_rate) * 1000 * (1/3.0f));
+
+        this->_init_device(output_data_rates);
 
         return 1;
     }
