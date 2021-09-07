@@ -495,7 +495,9 @@ public:
 
         int data_rate = this->data_rate_sample_rate[output_data_rate];
 
-        this->_sensor_update_period_ms = int(ceil(1 / data_rate) * 1000 * (1/3.0f));
+        float rate = (1.0f / float(data_rate)) * (1.0f / 3);
+
+        this->_sensor_update_period_ms = int(rate * 1000);
 
         this->_init_device(output_data_rate);
 
@@ -834,7 +836,9 @@ public:
 
         float data_rate = this->data_rate_sample_rate[output_data_rates];
 
-        this->_sensor_update_period_ms = int(ceil(1 / data_rate) * 1000 * (1/3.0f));
+        float rate = (1.0f / float(data_rate)) * (1.0f / 3);
+
+        this->_sensor_update_period_ms = int(rate * 1000);
 
         this->_init_device(output_data_rates);
 

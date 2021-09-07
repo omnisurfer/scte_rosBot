@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
     lsm303DlhcAccelDeviceHandle.mock_run_device_emulation();
 #endif
 
-    lsm303DlhcAccelDeviceHandle.init_device(Lsm303DlhcAccelerometer::OutputDataRates::ODR_1HZ);
+    lsm303DlhcAccelDeviceHandle.init_device(Lsm303DlhcAccelerometer::OutputDataRates::ODR_100HZ);
     //endregion
 #endif
 
@@ -213,7 +213,7 @@ int main(int argc, char* argv[]) {
         lsm303DlhcMagDeviceHandle.mock_run_device_emulation();
     #endif
 
-    lsm303DlhcMagDeviceHandle.init_device(Lsm303DlhcMagnetometer::ODR_15P0_HZ);
+    lsm303DlhcMagDeviceHandle.init_device(Lsm303DlhcMagnetometer::ODR_75P0_HZ);
     //endregion
 #endif
 
