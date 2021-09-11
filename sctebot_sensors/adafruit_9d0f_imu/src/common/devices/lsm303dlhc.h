@@ -26,41 +26,55 @@ class Lsm303DlhcAccelerometer {
 public:
 
     typedef enum OutputDataRates_t {
-        ODR_1HZ = 0,
-        ODR_10HZ,
-        ODR_25HZ,
-        ODR_50HZ,
-        ODR_100HZ,
-        ODR_200HZ,
-        ODR_400HZ,
-        ODR_1620HZ,
-        ODR_1344HZ
+        ODR_1P0HZ = 0,
+        ODR_10P0HZ,
+        ODR_25P0HZ,
+        ODR_50P0HZ,
+        ODR_100P0HZ,
+        ODR_200P0HZ,
+        ODR_400P0HZ,
+        ODR_1620P0HZ,
+        ODR_1344P0HZ
     } OutputDataRates;
 
+    typedef enum HighPassFilterCutoff_t {
+        MIN_CUT_OFF = 0,
+        MED_CUT_OFF,
+        HIGH_CUT_OFF,
+        MAX_CUT_OFF
+    } HighPassFilterCutoff;
+
     std::map<int, int> data_rate_sample_rate{
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1HZ, 1},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_10HZ, 10},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_25HZ, 25},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_50HZ, 50},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_100HZ, 100},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_200HZ, 200},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_400HZ, 400},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1620HZ, 1620},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1344HZ, 1344},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1P0HZ,    1},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_10P0HZ,   10},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_25P0HZ,   25},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_50P0HZ,   50},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_100P0HZ,  100},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_200P0HZ,  200},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_400P0HZ,  400},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1620P0HZ, 1620},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1344P0HZ, 1344},
     };
 
 private:
 
     std::map<int, int> sample_rate_to_register_bitmask{
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_10HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_10HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_25HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_25HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_50HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_50HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_100HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_100HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_200HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_200HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_400HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_400HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1620HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1620HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1344HZ, Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1344HZ}
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1P0HZ,    Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_1P0HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_10P0HZ,   Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_10P0HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_25P0HZ,   Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_25P0HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_50P0HZ,   Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_50P0HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_100P0HZ,  Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_100P0HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_200P0HZ,  Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_200P0HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_400P0HZ,  Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_400P0HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1620P0HZ, Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_1620P0HZ},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1344P0HZ, Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_1344P0HZ}
+    };
+
+    std::map<int, int> high_pass_filter_cutoff_register_bitmasks{
+            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::MIN_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::MIN_CUT_OFF},
+            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::MED_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::MED_CUT_OFF},
+            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::HIGH_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::HIGH_CUT_OFF},
+            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::MAX_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::MAX_CUT_OFF}
     };
 
     class Addresses {
@@ -108,17 +122,28 @@ private:
     class BitMasks {
 
     public:
+
+        typedef enum DataRates_t {
+            ODR_1P0HZ = (1 << 6),
+            ODR_10P0HZ = (2 << 6),
+            ODR_25P0HZ = (3 << 6),
+            ODR_50P0HZ = (4 << 6),
+            ODR_100P0HZ = (5 << 6),
+            ODR_200P0HZ = (6 << 6),
+            ODR_400P0HZ = (7 << 6),
+            ODR_1620P0HZ = (8 << 6),
+            ODR_1344P0HZ = (9 << 6)
+        } DataRates;
+
+        typedef enum HighPassFilterCutoff_t {
+            MIN_CUT_OFF = (0 << 4),
+            MED_CUT_OFF = (1 << 4),
+            HIGH_CUT_OFF = (2 << 4),
+            MAX_CUT_OFF = (3 << 4)
+        } HighPassFilterCutoff;
+
         typedef enum ControlRegister1_t {
             ODR_POWER_DOWN = 0b00000000,
-            ODR_1HZ = 0b00010000,
-            ODR_10HZ = 0b00100000,
-            ODR_25HZ = 0b00110000,
-            ODR_50HZ = 0b01000000,
-            ODR_100HZ = 0b01010000,
-            ODR_200HZ = 0b01100000,
-            ODR_400HZ = 0b01110000,
-            ODR_1620HZ = 0b10000000,
-            ODR_1344HZ = 0b10010000,
             LOW_POWER_EN = (1 << 3),
             Z_AXIS_EN = (1 << 2),
             Y_AXIS_EN = (1 << 1),
@@ -336,7 +361,7 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
-    int _init_device(Lsm303DlhcAccelerometer::OutputDataRates_t);
+    int _init_device(Lsm303DlhcAccelerometer::OutputDataRates_t, Lsm303DlhcAccelerometer::HighPassFilterCutoff_t);
 
     int _connect_to_device();
 
@@ -466,7 +491,6 @@ public:
     int config_device(
             int bus_number,
             int device_address,
-            //int update_period_ms,
             std::string device_name,
             host_callback_function function_pointer
             ) {
@@ -491,7 +515,7 @@ public:
         return status;
     }
 
-    int init_device(Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate) {
+    int init_device(Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate, Lsm303DlhcAccelerometer::HighPassFilterCutoff_t high_pass_filter_cutoff) {
 
         int data_rate = this->data_rate_sample_rate[output_data_rate];
 
@@ -499,7 +523,7 @@ public:
 
         this->_sensor_update_period_ms = int(rate * 1000);
 
-        this->_init_device(output_data_rate);
+        this->_init_device(output_data_rate, high_pass_filter_cutoff);
 
         return 1;
     }

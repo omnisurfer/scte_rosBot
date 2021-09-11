@@ -134,7 +134,6 @@ int main(int argc, char* argv[]) {
     l3gd20GyroDeviceHandle.config_device(
             i2c_bus_number,
             i2c_device_address,
-            1000,
             "3d_gyro",
             &handle_l3gd20_measurements
     );
@@ -151,7 +150,10 @@ int main(int argc, char* argv[]) {
     l3gd20GyroDeviceHandle.mock_run_device_emulation();
 #endif
 
-    l3gd20GyroDeviceHandle.init_device();
+    l3gd20GyroDeviceHandle.init_device(
+            L3gd20Gyro::OutputDataRates::ODR_100P0HZ,
+            L3gd20Gyro::BandwidthCutOff::MIN_CUT_OFF
+            );
     //endregion
 #endif
 
@@ -166,7 +168,6 @@ int main(int argc, char* argv[]) {
     lsm303DlhcAccelDeviceHandle.config_device(
             i2c_bus_number,
             i2c_device_address,
-            //1000,
             "3d_accel",
             &handle_lsm303dlhc_accel_measurements
             );
@@ -183,7 +184,10 @@ int main(int argc, char* argv[]) {
     lsm303DlhcAccelDeviceHandle.mock_run_device_emulation();
 #endif
 
-    lsm303DlhcAccelDeviceHandle.init_device(Lsm303DlhcAccelerometer::OutputDataRates::ODR_100HZ);
+    lsm303DlhcAccelDeviceHandle.init_device(
+            Lsm303DlhcAccelerometer::OutputDataRates::ODR_100P0HZ,
+            Lsm303DlhcAccelerometer::HighPassFilterCutoff::MIN_CUT_OFF
+            );
     //endregion
 #endif
 
@@ -196,7 +200,6 @@ int main(int argc, char* argv[]) {
     lsm303DlhcMagDeviceHandle.config_device(
             i2c_bus_number,
             i2c_device_address,
-            //1000,
             "3d_mag",
             &handle_lsm303dlhc_mag_measurements
             );

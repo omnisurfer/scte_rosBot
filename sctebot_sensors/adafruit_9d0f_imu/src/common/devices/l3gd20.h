@@ -28,7 +28,53 @@ class L3gd20Gyro {
     // 1101 0101 0xD5 (Read address)
     // 1101 0100 0xD4 (Write address)
 
+public:
+
+    typedef enum OutputDataRates_t {
+        ODR_12P5HZ = 0,
+        ODR_25P0HZ,
+        ODR_50P0HZ,
+        ODR_100P0HZ,
+        ODR_200P0HZ,
+        ODR_400P0HZ,
+        ODR_800P0HZ
+    } OutputDataRates;
+
+    typedef enum BandwidthCutOff_t {
+        MIN_CUT_OFF = 0,
+        MED_CUT_OFF,
+        HIGH_CUT_OFF,
+        MAX_CUT_OFF
+    } BandwidthCutOff;
+
+    std::map<int, int> data_rate_sample_rate{
+            {L3gd20Gyro::OutputDataRates::ODR_12P5HZ, 12.5},
+            {L3gd20Gyro::OutputDataRates::ODR_25P0HZ, 25.0},
+            {L3gd20Gyro::OutputDataRates::ODR_50P0HZ, 50.0},
+            {L3gd20Gyro::OutputDataRates::ODR_100P0HZ, 100.0},
+            {L3gd20Gyro::OutputDataRates::ODR_200P0HZ, 200.0},
+            {L3gd20Gyro::OutputDataRates::ODR_400P0HZ, 400.0},
+            {L3gd20Gyro::OutputDataRates::ODR_800P0HZ, 800.0},
+    };
+
 private:
+
+    std::map<int, int> sample_rate_to_register_bitmasks{
+            {L3gd20Gyro::OutputDataRates::ODR_12P5HZ, L3gd20Gyro::BitMasks::DataRates::ODR_12P5HZ},
+            {L3gd20Gyro::OutputDataRates::ODR_25P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_25P0HZ},
+            {L3gd20Gyro::OutputDataRates::ODR_50P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_50P0HZ},
+            {L3gd20Gyro::OutputDataRates::ODR_100P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_100P0HZ},
+            {L3gd20Gyro::OutputDataRates::ODR_200P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_200P0HZ},
+            {L3gd20Gyro::OutputDataRates::ODR_400P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_400P0HZ},
+            {L3gd20Gyro::OutputDataRates::ODR_800P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_800P0HZ}
+    };
+
+    std::map<int, int> bandwidth_cut_off_to_register_bitmasks{
+            {L3gd20Gyro::BandwidthCutOff::MIN_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::MIN_CUT_OFF},
+            {L3gd20Gyro::BandwidthCutOff::MED_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::MED_CUT_OFF},
+            {L3gd20Gyro::BandwidthCutOff::HIGH_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::HIGH_CUT_OFF},
+            {L3gd20Gyro::BandwidthCutOff::MAX_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::MAX_CUT_OFF}
+    };
 
     class Addresses {
 
@@ -81,15 +127,25 @@ private:
 
     class BitMasks {
     public:
+
+        typedef enum DataRates_t {
+            ODR_12P5HZ = (0 << 6),
+            ODR_25P0HZ = (1 << 6),
+            ODR_50P0HZ = (2 << 6),
+            ODR_100P0HZ = (0 << 6),
+            ODR_200P0HZ = (1 << 6),
+            ODR_400P0HZ = (2 << 6),
+            ODR_800P0HZ = (3 << 6)
+        } DataRates;
+
+        typedef enum BandwidthCutOff_t {
+            MIN_CUT_OFF = (0 << 4),
+            MED_CUT_OFF = (1 << 4),
+            HIGH_CUT_OFF = (2 << 4),
+            MAX_CUT_OFF = (3 << 4)
+        } BandwidthCutOff;
+
         typedef enum ControlRegister1_t {
-            ODR_95 = 0b00000000,
-            ODR_190 = 0b01000000,
-            ODR_380 = 0b10000000,
-            ODR_760 = 0b11000000,
-            BW_CO1 = 0b00000000,
-            BW_CO2 = 0b00010000,
-            BW_CO3 = 0b00100000,
-            BW_CO4 = 0b00110000,
             POWER_DOWN_DISABLE = (1 << 3),
             Z_AXIS_ENABLE = (1 << 2),
             X_AXIS_ENABLE = (1 << 1),
@@ -238,7 +294,7 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
-    int _init_device();
+    int _init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff);
 
     int _connect_to_device() {
 
@@ -445,14 +501,13 @@ public:
     int config_device(
             int bus_number,
             int device_address,
-            int update_period_ms,
             std::string device_name,
             host_callback_function
             function_pointer
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
-        _sensor_update_period_ms = update_period_ms;
+        _sensor_update_period_ms = 0;
         _device_name = std::move(device_name);
 
         _host_callback_function = function_pointer;
@@ -470,8 +525,15 @@ public:
         return status;
     }
 
-    int init_device() {
-        this->_init_device();
+    int init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff) {
+
+        int data_rate = this->data_rate_sample_rate[output_data_rate];
+
+        float rate = (1.0f / float(data_rate)) * (1.0f / 3);
+
+        this->_sensor_update_period_ms = int(rate * 1000);
+
+        this->_init_device(output_data_rate, bandwidth_cutoff);
 
         return 1;
     }

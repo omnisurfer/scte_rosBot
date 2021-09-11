@@ -5,7 +5,7 @@
 #include "l3gd20.h"
 #include "shared_util.h"
 
-int L3gd20Gyro::_init_device() {
+int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff) {
 
     logging::core::get()->set_filter
     (
@@ -125,7 +125,9 @@ int L3gd20Gyro::_init_device() {
     register_address = L3gd20Gyro::Addresses::CTRL_REG1;
 
     control_reg[0] =
-            _control_register_1to5_buffer[L3gd20Gyro::Addresses::ControlRegister::CTRL_1] |
+            //_control_register_1to5_buffer[L3gd20Gyro::Addresses::ControlRegister::CTRL_1] |
+            sample_rate_to_register_bitmasks[output_data_rate] |
+            bandwidth_cut_off_to_register_bitmasks[bandwidth_cutoff] |
             L3gd20Gyro::BitMasks::ControlRegister1::X_AXIS_ENABLE |
             L3gd20Gyro::BitMasks::ControlRegister1::Y_AXIS_ENABLE |
             L3gd20Gyro::BitMasks::ControlRegister1::Z_AXIS_ENABLE;

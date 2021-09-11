@@ -8,7 +8,7 @@
 
 // region Accelerometer
 
-int Lsm303DlhcAccelerometer::_init_device(Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate) {
+int Lsm303DlhcAccelerometer::_init_device(Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate, Lsm303DlhcAccelerometer::HighPassFilterCutoff_t high_pass_filter_cuttoff) {
 
     logging::core::get()->set_filter
     (
@@ -126,6 +126,24 @@ int Lsm303DlhcAccelerometer::_init_device(Lsm303DlhcAccelerometer::OutputDataRat
      * DEFAULT
      * HPF @ 0.02Hz
      */
+    register_address = Lsm303DlhcAccelerometer::Addresses::CTRL_REG2_A;
+
+    control_reg[0] =
+            high_pass_filter_cutoff_register_bitmasks[high_pass_filter_cuttoff];
+
+    display_register_8bits("REG2A", _control_register_1to6_buffer[1], "REG2A", control_reg[0]);
+
+    outbound_message = {
+            .bytes = control_reg,
+            .size = sizeof(control_reg)
+    };
+
+    if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+        BOOST_LOG_TRIVIAL(info) << "CTRL_REG2_A configure OK";
+    }
+    else {
+        BOOST_LOG_TRIVIAL(error) << "CTRL_REG2_A configure failed";
+    }
 
     //region CTRL_REG1
     /*
@@ -135,7 +153,7 @@ int Lsm303DlhcAccelerometer::_init_device(Lsm303DlhcAccelerometer::OutputDataRat
     register_address = Lsm303DlhcAccelerometer::Addresses::CTRL_REG1_A;
 
     control_reg[0] =
-            //Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1HZ |
+            //Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1P0HZ |
             sample_rate_to_register_bitmask[output_data_rate] |
             Lsm303DlhcAccelerometer::BitMasks::Z_AXIS_EN |
             Lsm303DlhcAccelerometer::BitMasks::Y_AXIS_EN |
