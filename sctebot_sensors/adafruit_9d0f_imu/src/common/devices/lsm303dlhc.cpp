@@ -8,7 +8,11 @@
 
 // region Accelerometer
 
-int Lsm303DlhcAccelerometer::_init_device(Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate, Lsm303DlhcAccelerometer::HighPassFilterCutoff_t high_pass_filter_cuttoff) {
+int Lsm303DlhcAccelerometer::_init_device(
+        Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate,
+        Lsm303DlhcAccelerometer::HighPassFilterCutoff_t high_pass_filter_cuttoff,
+        Lsm303DlhcAccelerometer::SensorAccelerationFullScale_t sensor_full_scale_accelerometer_range
+        ) {
 
     logging::core::get()->set_filter
     (
@@ -70,7 +74,7 @@ int Lsm303DlhcAccelerometer::_init_device(Lsm303DlhcAccelerometer::OutputDataRat
      */
     register_address = Lsm303DlhcAccelerometer::Addresses::CTRL_REG4_A;
 
-    uint8_t accel_sensitivity_config = Lsm303DlhcAccelerometer::BitMasks::ControlRegister4::FS_2G_SEL;
+    uint8_t accel_sensitivity_config = full_scale_acceleration_range_register_bitmasks[sensor_full_scale_accelerometer_range];
 
     /*
     FS bit set to 00 1
@@ -153,7 +157,7 @@ int Lsm303DlhcAccelerometer::_init_device(Lsm303DlhcAccelerometer::OutputDataRat
     register_address = Lsm303DlhcAccelerometer::Addresses::CTRL_REG1_A;
 
     control_reg[0] =
-            //Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1P0HZ |
+            //Lsm303DlhcAccelerometer::BitMasks::ControlRegister1::ODR_1P0HZ_BM |
             sample_rate_to_register_bitmask[output_data_rate] |
             Lsm303DlhcAccelerometer::BitMasks::Z_AXIS_EN |
             Lsm303DlhcAccelerometer::BitMasks::Y_AXIS_EN |
@@ -465,7 +469,10 @@ uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
 
 // region Magnetometer
 
-int Lsm303DlhcMagnetometer::_init_device(Lsm303DlhcMagnetometer::OutputDataRates_t output_data_rate) {
+int Lsm303DlhcMagnetometer::_init_device(
+        Lsm303DlhcMagnetometer::OutputDataRates_t output_data_rate,
+        Lsm303DlhcMagnetometer::SensorMagnetometerFullScale_t magnetometer_full_scale
+        ) {
 
     logging::core::get()->set_filter
     (
@@ -507,7 +514,6 @@ int Lsm303DlhcMagnetometer::_init_device(Lsm303DlhcMagnetometer::OutputDataRates
     }
 
     control_reg[0] =
-            //Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_7P5_HZ
             sample_rate_to_register_bitmask[output_data_rate] |
             Lsm303DlhcMagnetometer::BitMasks::CrARegM::TEMP_EN;
 
@@ -551,7 +557,7 @@ int Lsm303DlhcMagnetometer::_init_device(Lsm303DlhcMagnetometer::OutputDataRates
         BOOST_LOG_TRIVIAL(info) << output_string;
     }
 
-    uint8_t mag_gain_config = Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_0;
+    uint8_t mag_gain_config = full_scale_magnetometer_range_register_bitmasks[magnetometer_full_scale];
 
     /*
         GN bits set to 001 (X,Y) 1100
@@ -578,31 +584,31 @@ int Lsm303DlhcMagnetometer::_init_device(Lsm303DlhcMagnetometer::OutputDataRates
      */
 
     switch(mag_gain_config) {
-        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_0:
+        case Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_1P3G_BM:
             _mag_xy_gain_config = 1.0/1100;
             _mag_z_gain_config = 1.0/980;
             break;
-        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_1:
+        case Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_1P9G_BM:
             _mag_xy_gain_config = 1.0/855;
             _mag_z_gain_config = 1.0/760;
             break;
-        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_2:
+        case Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_2P5G_BM:
             _mag_xy_gain_config = 1.0/670;
             _mag_z_gain_config = 1.0/600;
             break;
-        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_3:
+        case Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_4P0G_BM:
             _mag_xy_gain_config = 1.0/450;
             _mag_z_gain_config = 1.0/450;
             break;
-        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_4:
+        case Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_4P7G_BM:
             _mag_xy_gain_config = 1.0/400;
             _mag_z_gain_config = 1.0/355;
             break;
-        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_5:
+        case Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_5P6G_BM:
             _mag_xy_gain_config = 1.0/330;
             _mag_z_gain_config = 1.0/295;
             break;
-        case Lsm303DlhcMagnetometer::BitMasks::CrBRegM::GAIN_CONFIG_6:
+        case Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_8P1G_BM:
             _mag_xy_gain_config = 1.0/230;
             _mag_z_gain_config = 1.0/205;
             break;

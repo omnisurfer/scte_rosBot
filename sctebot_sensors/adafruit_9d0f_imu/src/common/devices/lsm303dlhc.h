@@ -44,6 +44,13 @@ public:
         MAX_CUT_OFF
     } HighPassFilterCutoff;
 
+    typedef enum SensorAccelerationFullScale_t {
+        PN_2G = 0,
+        PN_4G,
+        PN_8G,
+        PN_16G
+    } SensorAccelerationFullScale;
+
     std::map<int, int> data_rate_sample_rate{
             {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1P0HZ,    1},
             {Lsm303DlhcAccelerometer::OutputDataRates::ODR_10P0HZ,   10},
@@ -59,22 +66,29 @@ public:
 private:
 
     std::map<int, int> sample_rate_to_register_bitmask{
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1P0HZ,    Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_1P0HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_10P0HZ,   Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_10P0HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_25P0HZ,   Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_25P0HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_50P0HZ,   Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_50P0HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_100P0HZ,  Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_100P0HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_200P0HZ,  Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_200P0HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_400P0HZ,  Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_400P0HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1620P0HZ, Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_1620P0HZ},
-            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1344P0HZ, Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_1344P0HZ}
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1P0HZ,    Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_1P0HZ_BM},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_10P0HZ,   Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_10P0HZ_BM},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_25P0HZ,   Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_25P0HZ_BM},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_50P0HZ,   Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_50P0HZ_BM},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_100P0HZ,  Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_100P0HZ_BM},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_200P0HZ,  Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_200P0HZ_BM},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_400P0HZ,  Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_400P0HZ_BM},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1620P0HZ, Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_1620P0HZ_BM},
+            {Lsm303DlhcAccelerometer::OutputDataRates::ODR_1344P0HZ, Lsm303DlhcAccelerometer::BitMasks::DataRates::ODR_1344P0HZ_BM}
     };
 
     std::map<int, int> high_pass_filter_cutoff_register_bitmasks{
-            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::MIN_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::MIN_CUT_OFF},
-            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::MED_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::MED_CUT_OFF},
-            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::HIGH_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::HIGH_CUT_OFF},
-            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::MAX_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::MAX_CUT_OFF}
+            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::MIN_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::MIN_CUT_OFF_BM},
+            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::MED_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::MED_CUT_OFF_BM},
+            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::HIGH_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::HIGH_CUT_OFF_BM},
+            {Lsm303DlhcAccelerometer::HighPassFilterCutoff::MAX_CUT_OFF, Lsm303DlhcAccelerometer::BitMasks::HighPassFilterCutoff::MAX_CUT_OFF_BM}
+    };
+
+    std::map<int, int> full_scale_acceleration_range_register_bitmasks{
+            {Lsm303DlhcAccelerometer::SensorAccelerationFullScale::PN_2G, Lsm303DlhcAccelerometer::BitMasks::SensorAccelerationFullScale::FS_2GPN_SEL_BM},
+            {Lsm303DlhcAccelerometer::SensorAccelerationFullScale::PN_4G, Lsm303DlhcAccelerometer::BitMasks::SensorAccelerationFullScale::FS_4GPN_SEL_BM},
+            {Lsm303DlhcAccelerometer::SensorAccelerationFullScale::PN_8G, Lsm303DlhcAccelerometer::BitMasks::SensorAccelerationFullScale::FS_8GPN_SEL_BM},
+            {Lsm303DlhcAccelerometer::SensorAccelerationFullScale::PN_16G, Lsm303DlhcAccelerometer::BitMasks::SensorAccelerationFullScale::FS_16GPN_SEL_BM}
     };
 
     class Addresses {
@@ -124,23 +138,30 @@ private:
     public:
 
         typedef enum DataRates_t {
-            ODR_1P0HZ = (1 << 6),
-            ODR_10P0HZ = (2 << 6),
-            ODR_25P0HZ = (3 << 6),
-            ODR_50P0HZ = (4 << 6),
-            ODR_100P0HZ = (5 << 6),
-            ODR_200P0HZ = (6 << 6),
-            ODR_400P0HZ = (7 << 6),
-            ODR_1620P0HZ = (8 << 6),
-            ODR_1344P0HZ = (9 << 6)
+            ODR_1P0HZ_BM = (1 << 6),
+            ODR_10P0HZ_BM = (2 << 6),
+            ODR_25P0HZ_BM = (3 << 6),
+            ODR_50P0HZ_BM = (4 << 6),
+            ODR_100P0HZ_BM = (5 << 6),
+            ODR_200P0HZ_BM = (6 << 6),
+            ODR_400P0HZ_BM = (7 << 6),
+            ODR_1620P0HZ_BM = (8 << 6),
+            ODR_1344P0HZ_BM = (9 << 6)
         } DataRates;
 
         typedef enum HighPassFilterCutoff_t {
-            MIN_CUT_OFF = (0 << 4),
-            MED_CUT_OFF = (1 << 4),
-            HIGH_CUT_OFF = (2 << 4),
-            MAX_CUT_OFF = (3 << 4)
+            MIN_CUT_OFF_BM = (0 << 4),
+            MED_CUT_OFF_BM = (1 << 4),
+            HIGH_CUT_OFF_BM = (2 << 4),
+            MAX_CUT_OFF_BM = (3 << 4)
         } HighPassFilterCutoff;
+
+        typedef enum SensorAccelerationFullScale_t {
+            FS_2GPN_SEL_BM = (0 << 4),
+            FS_4GPN_SEL_BM = (1 << 4),
+            FS_8GPN_SEL_BM = (2 << 4),
+            FS_16GPN_SEL_BM = (3 << 4)
+        } SensorAccelerationFullScale;
 
         typedef enum ControlRegister1_t {
             ODR_POWER_DOWN = 0b00000000,
@@ -361,7 +382,11 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
-    int _init_device(Lsm303DlhcAccelerometer::OutputDataRates_t, Lsm303DlhcAccelerometer::HighPassFilterCutoff_t);
+    int _init_device(
+            Lsm303DlhcAccelerometer::OutputDataRates_t,
+            Lsm303DlhcAccelerometer::HighPassFilterCutoff_t,
+            Lsm303DlhcAccelerometer::SensorAccelerationFullScale_t
+            );
 
     int _connect_to_device();
 
@@ -515,7 +540,11 @@ public:
         return status;
     }
 
-    int init_device(Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate, Lsm303DlhcAccelerometer::HighPassFilterCutoff_t high_pass_filter_cutoff) {
+    int init_device(
+            Lsm303DlhcAccelerometer::OutputDataRates_t output_data_rate,
+            Lsm303DlhcAccelerometer::HighPassFilterCutoff_t high_pass_filter_cutoff,
+            Lsm303DlhcAccelerometer::SensorAccelerationFullScale_t sensor_full_scale_accelerometer_range
+            ) {
 
         int data_rate = this->data_rate_sample_rate[output_data_rate];
 
@@ -523,7 +552,7 @@ public:
 
         this->_sensor_update_period_ms = int(rate * 1000);
 
-        this->_init_device(output_data_rate, high_pass_filter_cutoff);
+        this->_init_device(output_data_rate, high_pass_filter_cutoff, sensor_full_scale_accelerometer_range);
 
         return 1;
     }
@@ -562,6 +591,16 @@ public:
         ODR_220P0_HZ
     } OutputDataRates;
 
+    typedef enum SensorMagnetometerFullScale_t {
+        PN_1P3G = 0,
+        PN_1P9G,
+        PN_2P5G,
+        PN_4P0G,
+        PN_4P7G,
+        PN_5P6G,
+        PN_8P1G
+    } SensorMagnetometerFullScale;
+
     std::map<int, float> data_rate_sample_rate{
             {Lsm303DlhcMagnetometer::ODR_0P75_HZ, 0.75},
             {Lsm303DlhcMagnetometer::ODR_1P5_HZ, 1.5},
@@ -576,14 +615,24 @@ public:
 private:
 
     std::map<int, int> sample_rate_to_register_bitmask{
-            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_0P75_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_0P75_HZ},
-            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_15P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_1P5_HZ},
-            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_3P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_3P0_HZ},
-            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_7P5_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_7P5_HZ},
-            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_15P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_15P0_HZ},
-            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_30P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_30P0_HZ},
-            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_75P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_75P0_HZ},
-            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_220P0_HZ, Lsm303DlhcMagnetometer::BitMasks::CrARegM::DATA_OUTPUT_RATE_220P0_HZ}
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_0P75_HZ, Lsm303DlhcMagnetometer::BitMasks::DataRates::DATA_OUTPUT_RATE_0P75_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_1P5_HZ, Lsm303DlhcMagnetometer::BitMasks::DataRates::DATA_OUTPUT_RATE_1P5_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_3P0_HZ, Lsm303DlhcMagnetometer::BitMasks::DataRates::DATA_OUTPUT_RATE_3P0_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_7P5_HZ, Lsm303DlhcMagnetometer::BitMasks::DataRates::DATA_OUTPUT_RATE_7P5_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_15P0_HZ, Lsm303DlhcMagnetometer::BitMasks::DataRates::DATA_OUTPUT_RATE_15P0_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_30P0_HZ, Lsm303DlhcMagnetometer::BitMasks::DataRates::DATA_OUTPUT_RATE_30P0_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_75P0_HZ, Lsm303DlhcMagnetometer::BitMasks::DataRates::DATA_OUTPUT_RATE_75P0_HZ},
+            {Lsm303DlhcMagnetometer::OutputDataRates::ODR_220P0_HZ, Lsm303DlhcMagnetometer::BitMasks::DataRates::DATA_OUTPUT_RATE_220P0_HZ}
+    };
+
+    std::map<int, int> full_scale_magnetometer_range_register_bitmasks{
+            {Lsm303DlhcMagnetometer::SensorMagnetometerFullScale::PN_1P3G, Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_1P3G_BM},
+            {Lsm303DlhcMagnetometer::SensorMagnetometerFullScale::PN_1P9G, Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_1P9G_BM},
+            {Lsm303DlhcMagnetometer::SensorMagnetometerFullScale::PN_2P5G, Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_2P5G_BM},
+            {Lsm303DlhcMagnetometer::SensorMagnetometerFullScale::PN_4P0G, Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_4P0G_BM},
+            {Lsm303DlhcMagnetometer::SensorMagnetometerFullScale::PN_4P7G, Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_4P7G_BM},
+            {Lsm303DlhcMagnetometer::SensorMagnetometerFullScale::PN_5P6G, Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_5P6G_BM},
+            {Lsm303DlhcMagnetometer::SensorMagnetometerFullScale::PN_8P1G, Lsm303DlhcMagnetometer::BitMasks::SensorMagnetometerFullScale::PN_8P1G_BM}
     };
 
     class Addresses {
@@ -616,17 +665,30 @@ private:
     class BitMasks {
 
     public:
-        typedef enum CrARegM_t {
-            TEMP_EN = (1 << 7),
-            DATA_OUTPUT_RATE_0P75_HZ = 0b00000000,
-            DATA_OUTPUT_RATE_1P5_HZ = 0b00000100,
-            DATA_OUTPUT_RATE_3P0_HZ = 0b00001000,
-            DATA_OUTPUT_RATE_7P5_HZ = 0b00001100,
 
-            DATA_OUTPUT_RATE_15P0_HZ = 0b00010000,
-            DATA_OUTPUT_RATE_30P0_HZ = 0b00010100,
-            DATA_OUTPUT_RATE_75P0_HZ = 0b00011000,
-            DATA_OUTPUT_RATE_220P0_HZ = 0b00011100
+        typedef enum DataRates_t {
+            DATA_OUTPUT_RATE_0P75_HZ = (0 << 2),
+            DATA_OUTPUT_RATE_1P5_HZ = (1 << 2),
+            DATA_OUTPUT_RATE_3P0_HZ = (2 << 2),
+            DATA_OUTPUT_RATE_7P5_HZ = (3 << 2),
+            DATA_OUTPUT_RATE_15P0_HZ = (4 << 2),
+            DATA_OUTPUT_RATE_30P0_HZ = (5 << 2),
+            DATA_OUTPUT_RATE_75P0_HZ = (6 << 2),
+            DATA_OUTPUT_RATE_220P0_HZ = (7 << 2)
+        } DataRates;
+
+        typedef enum SensorMagnetometerFullScale_t {
+            PN_1P3G_BM = (1 << 5),
+            PN_1P9G_BM = (2 << 5),
+            PN_2P5G_BM = (3 << 5),
+            PN_4P0G_BM = (4 << 5),
+            PN_4P7G_BM = (5 << 5),
+            PN_5P6G_BM = (6 << 5),
+            PN_8P1G_BM = (7 << 5)
+        } SensorMagnetometerFullScale;
+
+        typedef enum CrARegM_t {
+            TEMP_EN = (1 << 7)
         } CrARegM;
 
         typedef enum CrBRegM_t {
@@ -697,7 +759,10 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
-    int _init_device(Lsm303DlhcMagnetometer::OutputDataRates_t);
+    int _init_device(
+            Lsm303DlhcMagnetometer::OutputDataRates_t,
+            Lsm303DlhcMagnetometer::SensorMagnetometerFullScale_t
+            );
 
     int _connect_to_device();
 
@@ -856,7 +921,10 @@ public:
         return status;
     }
 
-    int init_device(Lsm303DlhcMagnetometer::OutputDataRates_t output_data_rates) {
+    int init_device(
+            Lsm303DlhcMagnetometer::OutputDataRates_t output_data_rates,
+            Lsm303DlhcMagnetometer::SensorMagnetometerFullScale_t magnetometer_full_scale
+            ) {
 
         float data_rate = this->data_rate_sample_rate[output_data_rates];
 
@@ -864,7 +932,7 @@ public:
 
         this->_sensor_update_period_ms = int(rate * 1000);
 
-        this->_init_device(output_data_rates);
+        this->_init_device(output_data_rates, magnetometer_full_scale);
 
         return 1;
     }
