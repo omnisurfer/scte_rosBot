@@ -54,7 +54,7 @@ int Bmp180Pressure::_init_device() {
 }
 
 void Bmp180Pressure::_data_capture_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "_data_capture_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << "Bmp180Pressure _data_capture_worker starting";
 
     std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
     BOOST_LOG_TRIVIAL(debug) << "bmp180 waiting to run...";
@@ -90,7 +90,7 @@ void Bmp180Pressure::_data_capture_worker() {
         data_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "_data_capture_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << "Bmp180Pressure _data_capture_worker exiting";
 }
 
 void Bmp180Pressure::enable_load_mock_data() {

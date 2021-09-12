@@ -257,6 +257,7 @@ private:
 
     bool _enable_load_mock_data = false;
 
+    std::mutex gyroscope_data_mutex;
     uint8_t _control_register_1to5_buffer[5] = {0};
     uint8_t _status_xyz_reg{0};
 
@@ -446,9 +447,9 @@ private:
 
     void _mock_device_emulation();
 
-    void _request_temperature_axis();
+    void _update_temperature_axis();
 
-    void _request_angular_rate_xyz_axis();
+    void _update_angular_rate_xyz_axis();
 
     int8_t _get_temperature() const {
         return _temperature_axis_byte;
@@ -466,7 +467,7 @@ private:
         return _angular_rate_z_axis_bytes * _range_sensitivity;
     }
 
-    int _measurement_completed_ok();
+    uint8_t _update_gyroscope_status();
 
 public:
 

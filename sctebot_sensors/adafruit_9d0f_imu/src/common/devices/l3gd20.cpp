@@ -157,40 +157,63 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
 }
 
 void L3gd20Gyro::_data_capture_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "_data_capture_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << "L3gd20Gyro _data_capture_worker starting";
 
-    std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+    std::unique_lock<std::mutex> data_worker_run_thread_lock(this->data_capture_thread_run_mutex);
     BOOST_LOG_TRIVIAL(debug) << "l3gd20 waiting to run...";
-    this->data_capture_thread_run_cv.wait(data_lock);
-    data_lock.unlock();
+    this->data_capture_thread_run_cv.wait(data_worker_run_thread_lock);
+    data_worker_run_thread_lock.unlock();
 
     BOOST_LOG_TRIVIAL(debug) << "l3gd20 running...";
 
-    data_lock.lock();
+    data_worker_run_thread_lock.lock();
     while(this->run_data_capture_thread) {
-        data_lock.unlock();
-
-        this->_request_temperature_axis();
-        this->_request_angular_rate_xyz_axis();
+        data_worker_run_thread_lock.unlock();
 
         // maybe make these structs and pass that? less calls?
-        float temperature = temperature_axis_deg_c;
+        float temperature;
 
-        float x_axis = angular_rate_x_axis_deg_ps;
-        float y_axis = angular_rate_y_axis_deg_ps;
-        float z_axis = angular_rate_z_axis_deg_ps;
+        float x_axis;
+        float y_axis;
+        float z_axis;
 
-        this->_host_callback_function(
-                temperature,
-                x_axis, y_axis, z_axis
-                );
+        uint8_t gyro_status;
+
+        // update gyro status
+        gyro_status = this->_update_gyroscope_status();
+
+        if((gyro_status & L3gd20Gyro::BitMasks::StatusRegister::ZYX_DATA_AVAILABLE) == false) {
+            // do nothing
+        }
+        else {
+
+            this->_update_angular_rate_xyz_axis();
+            this->_update_temperature_axis();
+
+            // maybe make these structs and pass that? less calls?
+
+            std::lock_guard<std::mutex> gyro_temp_lock(this->gyroscope_data_mutex);
+            {
+                temperature = temperature_axis_deg_c;
+
+                x_axis = angular_rate_x_axis_deg_ps;
+                y_axis = angular_rate_y_axis_deg_ps;
+                z_axis = angular_rate_z_axis_deg_ps;
+            }
+
+            this->_host_callback_function(
+                    temperature,
+                    x_axis, y_axis, z_axis
+            );
+
+        }
 
         std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
-        data_lock.lock();
+        data_worker_run_thread_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "_data_capture_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << "L3gd20Gyro _data_capture_worker exiting";
 }
 
 void L3gd20Gyro::enable_load_mock_data() {
@@ -301,7 +324,7 @@ void L3gd20Gyro::_mock_device_emulation() {
     BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation exiting";
 }
 
-void L3gd20Gyro::_request_temperature_axis() {
+void L3gd20Gyro::_update_temperature_axis() {
 
     uint8_t register_address;
 
@@ -315,84 +338,104 @@ void L3gd20Gyro::_request_temperature_axis() {
     bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
     if(data_ok) {
-        _temperature_axis_byte = (int8_t)temperature[0];
 
-        // TODO perform scaling conversion
-        temperature_axis_deg_c = (float)_temperature_axis_byte;
+        std::lock_guard<std::mutex> gyro_temp_lock(this->gyroscope_data_mutex);
+        {
+            _temperature_axis_byte = (int8_t)temperature[0];
+
+            // TODO perform scaling conversion
+            temperature_axis_deg_c = (float)_temperature_axis_byte;
+        }
 
         display_register_8bits("temp", _temperature_axis_byte, "temp", temperature[0]);
     }
 }
 
-void L3gd20Gyro::_request_angular_rate_xyz_axis() {
+void L3gd20Gyro::_update_angular_rate_xyz_axis() {
 
     uint8_t register_address;
 
-    uint8_t status_xyz_reg[1] = {0};
-    buffer_t inbound_message = {
-            .bytes = status_xyz_reg,
-            .size = sizeof(status_xyz_reg)
-    };
-
-    register_address = L3gd20Gyro::Addresses::Registers::STATUS_REG;
-    bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
-
-    if(data_ok) {
-        _status_xyz_reg = status_xyz_reg[0];
-
-        display_register_8bits("xyz status", _status_xyz_reg, "xyz status", status_xyz_reg[0]);
-    }
-
     uint8_t out_xyz_axis[2] = {0};
-    inbound_message = {
+    buffer_t inbound_message = {
             .bytes = out_xyz_axis,
             .size = sizeof(out_xyz_axis)
     };
 
-    register_address = L3gd20Gyro::Addresses::Registers::OUT_X_L;
-    data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+    std::lock_guard<std::mutex> gyro_temp_lock(this->gyroscope_data_mutex);
+    {
+        register_address = L3gd20Gyro::Addresses::Registers::OUT_X_L;
+        bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-    if(data_ok) {
-        // LSB 0x28
-        // MSB 0x29
-        _angular_rate_x_axis_bytes = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+        if (data_ok) {
+            // LSB 0x28
+            // MSB 0x29
+            _angular_rate_x_axis_bytes = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
 
-        // TODO perform scaling conversion
-        angular_rate_x_axis_deg_ps = float(_angular_rate_x_axis_bytes) * _range_sensitivity;
+            // TODO perform scaling conversion
+            angular_rate_x_axis_deg_ps = float(_angular_rate_x_axis_bytes) * _range_sensitivity;
 
-        display_register_16bits("x axis", _angular_rate_x_axis_bytes, "x axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
-    }
+            display_register_16bits("x axis", _angular_rate_x_axis_bytes, "x axis",
+                                    (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
+        }
 
-    register_address = L3gd20Gyro::Addresses::Registers::OUT_Y_L;
-    data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        register_address = L3gd20Gyro::Addresses::Registers::OUT_Y_L;
+        data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-    if(data_ok) {
-        // LSB 0x2A
-        // MSB 0x2B
-        _angular_rate_y_axis_bytes = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+        if (data_ok) {
+            // LSB 0x2A
+            // MSB 0x2B
+            _angular_rate_y_axis_bytes = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
 
-        // TODO perform scaling conversion
-        angular_rate_y_axis_deg_ps = float(_angular_rate_y_axis_bytes) * _range_sensitivity;
+            // TODO perform scaling conversion
+            angular_rate_y_axis_deg_ps = float(_angular_rate_y_axis_bytes) * _range_sensitivity;
 
-        display_register_16bits("y axis", _angular_rate_y_axis_bytes, "y axis", (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
-    }
+            display_register_16bits("y axis", _angular_rate_y_axis_bytes, "y axis",
+                                    (out_xyz_axis[1] << 8) | out_xyz_axis[0]);
+        }
 
-    register_address = L3gd20Gyro::Addresses::Registers::OUT_Z_L;
-    data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        register_address = L3gd20Gyro::Addresses::Registers::OUT_Z_L;
+        data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
-    if(data_ok) {
-        // LSB 0x2C
-        // MSB 0x2D
-        _angular_rate_z_axis_bytes = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
+        if (data_ok) {
+            // LSB 0x2C
+            // MSB 0x2D
+            _angular_rate_z_axis_bytes = (out_xyz_axis[1] << 8) + out_xyz_axis[0];
 
-        // TODO perform scaling conversion
-        angular_rate_z_axis_deg_ps = float(_angular_rate_z_axis_bytes) * _range_sensitivity;
+            // TODO perform scaling conversion
+            angular_rate_z_axis_deg_ps = float(_angular_rate_z_axis_bytes) * _range_sensitivity;
 
-        display_register_16bits("z axis", _angular_rate_z_axis_bytes, "z axis", ((out_xyz_axis[1] << 8) + out_xyz_axis[0]));
+            display_register_16bits("z axis", _angular_rate_z_axis_bytes, "z axis",
+                                    ((out_xyz_axis[1] << 8) + out_xyz_axis[0]));
+        }
     }
 }
 
-int L3gd20Gyro::_measurement_completed_ok() {
+uint8_t L3gd20Gyro::_update_gyroscope_status() {
 
-    return 0;
+    uint8_t status_register = 0;
+
+    uint8_t register_address;
+
+    uint8_t gyro_status[1] = {0};
+    buffer_t inbound_message = {
+            .bytes = gyro_status,
+            .size = sizeof(gyro_status)
+    };
+
+    register_address = L3gd20Gyro::Addresses::Registers::STATUS_REG;
+
+    bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+
+    if(data_ok) {
+
+        std::lock_guard<std::mutex> gyroscope_data_lock(this->gyroscope_data_mutex);
+        {
+            _status_xyz_reg = gyro_status[0];
+            status_register = _status_xyz_reg;
+        }
+
+        display_register_8bits("xyz status", _status_xyz_reg, "xyz status", gyro_status[0]);
+    }
+
+    return status_register;
 }
