@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(adafruit_9d0f_imu)
+project(adafruit_10dof_imu_node)
 
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 
@@ -104,7 +104,7 @@ find_package(Boost 1.69.0 COMPONENTS log REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES adafruit_9d0f_imu
+#  LIBRARIES adafruit_10dof_imu
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
@@ -118,6 +118,7 @@ catkin_package(
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        src/
         src/common/i2c
         src/common/devices
 )
@@ -139,6 +140,10 @@ add_library(
         lsm303dlhc src/common/devices/lsm303dlhc.cpp
 )
 
+add_library(
+        adafruit_10dof_imu src/adafruit_10dof_imu.cpp
+)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -149,7 +154,7 @@ add_library(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(
 #    ${PROJECT_NAME}_node
-#    src/adafruit_9d0f_imu_node.cpp
+#    src/adafruit_10dof_imu_node.cpp
 # )
 
 add_executable(
@@ -157,8 +162,7 @@ add_executable(
 )
 
 add_executable(
-        adafruit_9dof_imu src/adafruit_9dof_imu.cpp
-
+        adafruit_10dof_imu_node src/adafruit_10dof_imu_node.cpp
 )
 
 ## Rename C++ executable without prefix
@@ -175,10 +179,13 @@ add_executable(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+
 target_link_libraries(
-        adafruit_9dof_imu
-        bmp180
+        adafruit_10dof_imu_node
+
+        adafruit_10dof_imu
         l3gd20
+        bmp180
         lsm303dlhc
         i2c_linux
         pthread
@@ -232,7 +239,7 @@ target_link_libraries(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_adafruit_9d0f_imu.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_adafruit_10dof_imu.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

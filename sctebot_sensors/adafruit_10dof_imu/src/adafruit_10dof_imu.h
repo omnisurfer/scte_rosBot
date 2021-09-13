@@ -2,8 +2,8 @@
 // Created by user on 4/9/21.
 //
 
-#ifndef ADAFRUIT_9D0F_IMU_ADAFRUIT_9DOF_IMU_H
-#define ADAFRUIT_9D0F_IMU_ADAFRUIT_9DOF_IMU_H
+#ifndef ADAFRUIT_10DOF_IMU_H
+#define ADAFRUIT_10DOF_IMU_H
 
 #define ENABLE_BMP180_DEVICE 1
 #define ENABLE_L3GD20_DEVICE 1
@@ -25,12 +25,12 @@
 #include <utility>
 #include <condition_variable>
 
-#include "common/devices/bmp180.h"
-#include "common/devices/l3gd20.h"
-#include "common/devices/lsm303dlhc.h"
+#include "bmp180.h"
+#include "l3gd20.h"
+#include "lsm303dlhc.h"
 
 
-class AdaFruit9DoFImu {
+class AdaFruit10DoFImu {
 
 private:
 
@@ -50,10 +50,10 @@ private:
 
 public:
 
-    AdaFruit9DoFImu();
+    AdaFruit10DoFImu();
 
-    ~AdaFruit9DoFImu() {
-        std::cout << "AdaFruit9DoFImu destructor called" << std::endl;
+    ~AdaFruit10DoFImu() {
+        std::cout << "AdaFruit10DoFImu destructor called" << std::endl;
 
         this->close_device();
     }
@@ -188,4 +188,4 @@ public:
     }
 };
 
-#endif //ADAFRUIT_9D0F_IMU_ADAFRUIT_9DOF_IMU_H
+#endif //ADAFRUIT_10DOF_IMU_H

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>adafruit_9d0f_imu</name>
+  <name>adafruit_10dof_imu_node</name>
   <version>0.0.0</version>
-  <description>The adafruit_9d0f_imu package</description>
+  <description>The adafruit_10dof_imu_node package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
