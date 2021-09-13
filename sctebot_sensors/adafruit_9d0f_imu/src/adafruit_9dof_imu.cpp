@@ -68,11 +68,32 @@ void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_ga, flo
             << std::endl;
 }
 
+AdaFruit9DoFImu::AdaFruit9DoFImu() {
+
+#if ENABLE_BMP180_DEVICE
+    bmp180DeviceHandle = new Bmp180Pressure();
+#endif
+
+#if ENABLE_L3GD20_DEVICE
+    l3gd20GyroDeviceHandle = new L3gd20Gyro();
+#endif
+
+#if ENABLE_LSM303DLHC_ACCEL_DEVICE
+    lsm303DlhcAccelDeviceHandle = new Lsm303DlhcAccelerometer();
+#endif
+
+#if ENABLE_LSM303DLHC_MAG_DEVICE
+    lsm303DlhcMagDeviceHandle = new Lsm303DlhcMagnetometer();
+#endif
+
+}
+
 int main(int argc, char* argv[]) {
+
     std::cout << "Hello World adafruit 10dof IMU" << std::endl;
 
     int i2c_bus_number = 0;
-    int i2c_device_address = 0x77;
+    //int i2c_device_address = 0x77;
 
     // lame way to do this but good enough for debug
     if(argv[1]) {
@@ -88,12 +109,15 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    /*
     if(argv[3]) {
         if(!memcmp("-a", argv[3], 2)) {
             i2c_device_address = std::stoi(argv[4], 0, 16);
         }
     }
+    */
 
+#if 0
 #if ENABLE_BMP180_DEVICE
     //region BMP180 device setup
     Bmp180Pressure bmp180DeviceHandle;
@@ -223,8 +247,21 @@ int main(int argc, char* argv[]) {
             );
     //endregion
 #endif
+#else
+    AdaFruit9DoFImu adaFruit9DoFImu = AdaFruit9DoFImu();
 
-    std::cout << "press any key to continue..." << std::endl;
+    adaFruit9DoFImu.init_device(
+            i2c_bus_number,
+            handle_bmp180_measurements,
+            handle_l3gd20_measurements,
+            handle_lsm303dlhc_accel_measurements,
+            handle_lsm303dlhc_mag_measurements
+            );
+
+    adaFruit9DoFImu.run();
+#endif
+
+    std::cout << "press any key to exit..." << std::endl;
 
     std::cin.get();
 
