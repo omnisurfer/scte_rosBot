@@ -104,13 +104,10 @@ std::thread ros_magnetometer_publisher_thread;
 
 void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
-    /*
-    std::cout
+    BOOST_LOG_TRIVIAL(info)
             << "[bmp180]"
             << "\t\t temp (C): " << std::fixed << std::setprecision(2) << temperature
-            << "\t\t pressure (Pa): " << std::fixed << std::setprecision(2) << pressure
-            << std::endl;
-    */
+            << "\t\t pressure (Pa): " << std::fixed << std::setprecision(2) << pressure;
 
     double absolute_altitude;
     double pressure_sea_level = 1013.25 * 100;
@@ -124,13 +121,10 @@ void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
     sea_level_pressure = pressure / pow(1 - absolute_altitude/44330, 5.255);
 
-    /*
-    std::cout
+    BOOST_LOG_TRIVIAL(info)
             << "[bmp180]"
             << "\t\t abs alt (m): " << std::fixed << std::setprecision(2) << absolute_altitude
-            << "\t\t sea (Pa): " << std::fixed << std::setprecision(2) << sea_level_pressure
-            << std::endl;
-    */
+            << "\t\t sea (Pa): " << std::fixed << std::setprecision(2) << sea_level_pressure;
 
     std::lock_guard<std::mutex> pressure_guard(pressure_data_mutex);
     pressure_data.fluid_absolute_pressure_pascals = pressure;
@@ -149,19 +143,16 @@ void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
 void handle_l3gd20_gyro_measurements(float temperature, float r_x, float r_y, float r_z) {
 
-    /*
-    std::cout
+    BOOST_LOG_TRIVIAL(info)
             << "[l3gd20 gyro]"
             << "\t temp (C): " << std::fixed << std::setprecision(2) << temperature
             << "\t x_dps: " << std::fixed << std::setprecision(2) << r_x
             << "\t y_dps: " << std::fixed << std::setprecision(2) << r_y
-            << "\t z_dps: " << std::fixed << std::setprecision(2) << r_z
-            << std::endl;
-    */
+            << "\t z_dps: " << std::fixed << std::setprecision(2) << r_z;
 
     std::unique_lock<std::mutex> imu_guard(imu_data_mutex);
     imu_data.temperature = temperature;
-    // TODO convert from dps to rad/s
+
     imu_data.angular_velocity.x = r_x;
     imu_data.angular_velocity.y = r_y;
     imu_data.angular_velocity.z = r_z;
@@ -174,17 +165,14 @@ void handle_l3gd20_gyro_measurements(float temperature, float r_x, float r_y, fl
 
 void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
 
-    /*
-    std::cout
+    BOOST_LOG_TRIVIAL(info)
             << "[lsm303 accel]"
             << "\t x_gs: " << std::fixed << std::setprecision(2) << x_gs
             << "\t y_gs: " << std::fixed << std::setprecision(2) << y_gs
-            << "\t z_gs: " << std::fixed << std::setprecision(2) << z_gs
-            << std::endl;
-    */
+            << "\t z_gs: " << std::fixed << std::setprecision(2) << z_gs;
 
     std::unique_lock<std::mutex> imu_guard(imu_data_mutex);
-    // TODO convert to m/s^2
+
     imu_data.linear_acceleration.x = x_gs;
     imu_data.linear_acceleration.y = y_gs;
     imu_data.linear_acceleration.z = z_gs;
@@ -197,15 +185,12 @@ void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
 
 void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_ga, float y_ga, float z_ga) {
 
-    /*
-    std::cout
+    BOOST_LOG_TRIVIAL(info)
             << "[lsm303 mag]"
             << "\t temp (C): " << std::fixed << std::setprecision(2) << temperature_deg_c
             << "\t x_ga: " << std::fixed << std::setprecision(2) << x_ga
             << "\t y_ga: " << std::fixed << std::setprecision(2) << y_ga
-            << "\t z_ga: " << std::fixed << std::setprecision(2) << z_ga
-            << std::endl;
-    */
+            << "\t z_ga: " << std::fixed << std::setprecision(2) << z_ga;
 
     std::unique_lock<std::mutex> magnetometer_guard(magnetometer_data_mutex);
     magnetometer_data.temperature = temperature_deg_c;
@@ -241,12 +226,10 @@ void ros_pressure_temperature_and_range_publisher_worker(const ros::Publisher& a
         std::unique_lock<std::mutex> pressure_guard(pressure_data_mutex);
         double pressure =  pressure_data.fluid_absolute_pressure_pascals;
         double sea_level_pressure = pressure_data.fluid_sea_level_pressure_pascals;
-        double pressure_variance = pressure_data.variance;
         pressure_guard.unlock();
 
         std::unique_lock<std::mutex> temperature_guard(temperature_data_mutex);
         double temperature = temperature_data.temperature;
-        double temp_variance = temperature_data.variance;
         temperature_guard.unlock();
 
         std::unique_lock<std::mutex> range_guard(altitude_range_mutex);
@@ -256,9 +239,7 @@ void ros_pressure_temperature_and_range_publisher_worker(const ros::Publisher& a
         if(false) {
             std::cout << "pressure " << pressure <<
                         " sea press " << sea_level_pressure
-                        << " pvar " << pressure_variance
                         << " temp " << temperature
-                        << " tvar " << temp_variance
                         << " alt range " << altitude_range
                         << std::endl;
         }
@@ -270,18 +251,21 @@ void ros_pressure_temperature_and_range_publisher_worker(const ros::Publisher& a
         atm_pressure_msg.header.seq = 0;
         atm_pressure_msg.header.stamp = message_time;
         atm_pressure_msg.fluid_pressure = pressure;
+        atm_pressure_msg.variance = Bmp180Pressure::pressure_variance;
 
         sensor_msgs::FluidPressure sea_lvl_pressure_msg = sensor_msgs::FluidPressure();
         sea_lvl_pressure_msg.header.frame_id = "sea_lvl_frame";
         sea_lvl_pressure_msg.header.seq = 0;
         sea_lvl_pressure_msg.header.stamp = message_time;
         sea_lvl_pressure_msg.fluid_pressure = sea_level_pressure;
+        sea_lvl_pressure_msg.variance = Bmp180Pressure::pressure_variance;
 
         sensor_msgs::Temperature atm_temperature_msg = sensor_msgs::Temperature();
         atm_temperature_msg.header.frame_id = "temperature_frame";
         atm_temperature_msg.header.seq = 0;
         atm_temperature_msg.header.stamp = message_time;
         atm_temperature_msg.temperature = temperature;
+        atm_temperature_msg.variance = Bmp180Pressure::temperature_variance;
 
         sensor_msgs::Range atm_altitude_msg = sensor_msgs::Range();
         atm_altitude_msg.header.frame_id = "atm_altitude_msg";
@@ -341,8 +325,42 @@ void ros_imu_publisher_worker(const ros::Publisher& imu_publisher) {
         imu_msg.header.frame_id = "imu_frame";
         imu_msg.header.seq = 0;
         imu_msg.header.stamp = ros::Time::now();
+
+        linear_acceleration.x *= GRAVITY_MS_S;
+        linear_acceleration.y *= GRAVITY_MS_S;
+        linear_acceleration.z *= GRAVITY_MS_S;
+
         imu_msg.linear_acceleration = linear_acceleration;
+
+        imu_msg.linear_acceleration_covariance[0] = Lsm303DlhcAccelerometer::acceleration_field_covariance[0];
+        imu_msg.linear_acceleration_covariance[1] = Lsm303DlhcAccelerometer::acceleration_field_covariance[1];
+        imu_msg.linear_acceleration_covariance[2] = Lsm303DlhcAccelerometer::acceleration_field_covariance[2];
+
+        imu_msg.linear_acceleration_covariance[3] = Lsm303DlhcAccelerometer::acceleration_field_covariance[3];
+        imu_msg.linear_acceleration_covariance[4] = Lsm303DlhcAccelerometer::acceleration_field_covariance[4];
+        imu_msg.linear_acceleration_covariance[5] = Lsm303DlhcAccelerometer::acceleration_field_covariance[5];
+
+        imu_msg.linear_acceleration_covariance[6] = Lsm303DlhcAccelerometer::acceleration_field_covariance[6];
+        imu_msg.linear_acceleration_covariance[7] = Lsm303DlhcAccelerometer::acceleration_field_covariance[7];
+        imu_msg.linear_acceleration_covariance[8] = Lsm303DlhcAccelerometer::acceleration_field_covariance[8];
+
+        angular_velocity.x *= DEG_TO_RAD;
+        angular_velocity.y *= DEG_TO_RAD;
+        angular_velocity.z *= DEG_TO_RAD;
+
         imu_msg.angular_velocity = angular_velocity;
+
+        imu_msg.angular_velocity_covariance[0] = L3gd20Gyro::angular_field_covariance[0];
+        imu_msg.angular_velocity_covariance[1] = L3gd20Gyro::angular_field_covariance[1];
+        imu_msg.angular_velocity_covariance[2] = L3gd20Gyro::angular_field_covariance[2];
+
+        imu_msg.angular_velocity_covariance[3] = L3gd20Gyro::angular_field_covariance[3];
+        imu_msg.angular_velocity_covariance[4] = L3gd20Gyro::angular_field_covariance[4];
+        imu_msg.angular_velocity_covariance[5] = L3gd20Gyro::angular_field_covariance[5];
+
+        imu_msg.angular_velocity_covariance[6] = L3gd20Gyro::angular_field_covariance[6];
+        imu_msg.angular_velocity_covariance[7] = L3gd20Gyro::angular_field_covariance[7];
+        imu_msg.angular_velocity_covariance[8] = L3gd20Gyro::angular_field_covariance[8];
 
         imu_publisher.publish(imu_msg);
 
@@ -377,11 +395,28 @@ void ros_magnetometer_publisher_worker(const ros::Publisher& magnetometer_publis
                       << std::endl;
         }
 
+        magnetic_field_tesla.x *= 10000;
+        magnetic_field_tesla.y *= 10000;
+        magnetic_field_tesla.z *= 10000;
+
         sensor_msgs::MagneticField mag_msg = sensor_msgs::MagneticField();
         mag_msg.header.frame_id = "mag_frame";
         mag_msg.header.seq = 0;
         mag_msg.header.stamp = ros::Time::now();
+        geometry_msgs::Vector3 tesla_to_gauss;
         mag_msg.magnetic_field = magnetic_field_tesla;
+
+        mag_msg.magnetic_field_covariance[0] = Lsm303DlhcMagnetometer::magnetic_field_covariance[0];
+        mag_msg.magnetic_field_covariance[1] = Lsm303DlhcMagnetometer::magnetic_field_covariance[1];
+        mag_msg.magnetic_field_covariance[2] = Lsm303DlhcMagnetometer::magnetic_field_covariance[2];
+
+        mag_msg.magnetic_field_covariance[3] = Lsm303DlhcMagnetometer::magnetic_field_covariance[3];
+        mag_msg.magnetic_field_covariance[4] = Lsm303DlhcMagnetometer::magnetic_field_covariance[4];
+        mag_msg.magnetic_field_covariance[5] = Lsm303DlhcMagnetometer::magnetic_field_covariance[5];
+
+        mag_msg.magnetic_field_covariance[6] = Lsm303DlhcMagnetometer::magnetic_field_covariance[6];
+        mag_msg.magnetic_field_covariance[7] = Lsm303DlhcMagnetometer::magnetic_field_covariance[7];
+        mag_msg.magnetic_field_covariance[8] = Lsm303DlhcMagnetometer::magnetic_field_covariance[8];
 
         magnetometer_publisher.publish(mag_msg);
 

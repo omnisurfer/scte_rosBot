@@ -507,6 +507,16 @@ private:
 
 public:
 
+    //TODO Correct variance calculation TBD
+    /* from datasheet */
+    constexpr static const double relative_accuracy_pressure_hpa = 0.12;
+    constexpr static const double rms_noise_pressure_hpa = 0.05;
+    constexpr static const double absolute_accuracy_temperature = 2.0;
+
+    /* probably the wrong values for this matrix */
+    constexpr static const double pressure_variance = relative_accuracy_pressure_hpa;
+    constexpr static const double temperature_variance = absolute_accuracy_temperature;
+
     Bmp180Pressure() = default;
 
     ~Bmp180Pressure() {

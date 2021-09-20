@@ -21,9 +21,22 @@ namespace logging = boost::log;
 
 #include "i2c_linux.h"
 
+#define GRAVITY_MS_S 9.80665
+
 class Lsm303DlhcAccelerometer {
 
 public:
+
+    //TODO Correct variance calculation TBD
+    /* from datasheet */
+    constexpr static const double acceleration_noise_density = 0.000220 * GRAVITY_MS_S;
+
+    /* probably the wrong values for this matrix */
+    constexpr static const double acceleration_field_covariance[9] = {
+            acceleration_noise_density, 0.0, 0.0,
+            0.0, acceleration_noise_density, 0.0,
+            0.0, 0.0, acceleration_noise_density
+    };
 
     typedef enum OutputDataRates_t {
         ODR_1P0HZ = 0,
@@ -579,6 +592,16 @@ public:
 class Lsm303DlhcMagnetometer {
 
 public:
+
+    /* From datasheet */
+    constexpr static const double cross_axis_sensitivity_tesla_cross_field = 0.5 * 10000.0;
+    constexpr static const double cross_axis_sensitivity_tesla_h_field = 3.0 * 10000.0;
+
+    constexpr static const double magnetic_field_covariance[9] = {
+            cross_axis_sensitivity_tesla_h_field, cross_axis_sensitivity_tesla_cross_field, cross_axis_sensitivity_tesla_cross_field,
+            cross_axis_sensitivity_tesla_cross_field, cross_axis_sensitivity_tesla_h_field, cross_axis_sensitivity_tesla_cross_field,
+            cross_axis_sensitivity_tesla_cross_field, cross_axis_sensitivity_tesla_cross_field, cross_axis_sensitivity_tesla_h_field
+    };
 
     typedef enum OutputDataRates_t {
         ODR_0P75_HZ = 0,

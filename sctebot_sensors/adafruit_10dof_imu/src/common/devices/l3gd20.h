@@ -10,12 +10,15 @@
 #include <cstring>
 #include <thread>
 #include <condition_variable>
+#include <math.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
 
 namespace logging = boost::log;
+
+#define DEG_TO_RAD (M_PI/180.0)
 
 #include "i2c_linux.h"
 
@@ -29,6 +32,17 @@ class L3gd20Gyro {
     // 1101 0100 0xD4 (Write address)
 
 public:
+
+    //TODO Correct variance calculation TBD
+    /* from datasheet */
+    constexpr static const double rate_noise_density = 0.011 * DEG_TO_RAD;
+
+    /* probably the wrong values for this matrix */
+    constexpr static const double angular_field_covariance[9] = {
+            rate_noise_density, 0.0, 0.0,
+            0.0, rate_noise_density, 0.0,
+            0.0, 0.0, rate_noise_density
+    };
 
     typedef enum OutputDataRates_t {
         ODR_12P5HZ = 0,
