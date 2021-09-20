@@ -38,6 +38,16 @@ public:
             0.0, 0.0, acceleration_noise_density
     };
 
+    /*
+     * probably the wrong values for this matrix
+     * -1.0 if no orientation estimate is created
+     * */
+    constexpr static const double orientation_field_covariance[9] = {
+            0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0
+    };
+
     typedef enum OutputDataRates_t {
         ODR_1P0HZ = 0,
         ODR_10P0HZ,

@@ -326,6 +326,28 @@ void ros_imu_publisher_worker(const ros::Publisher& imu_publisher) {
         imu_msg.header.seq = 0;
         imu_msg.header.stamp = ros::Time::now();
 
+        // TODO can I calculate quaternion with given info?
+        // orientation
+        orientation.x = 0.354;
+        orientation.y = 0.354;
+        orientation.z = 0.146;
+        orientation.w = 0.854;
+
+        imu_msg.orientation = orientation;
+
+        imu_msg.orientation_covariance[0] = Lsm303DlhcAccelerometer::orientation_field_covariance[0];
+        imu_msg.orientation_covariance[1] = Lsm303DlhcAccelerometer::orientation_field_covariance[1];
+        imu_msg.orientation_covariance[2] = Lsm303DlhcAccelerometer::orientation_field_covariance[2];
+
+        imu_msg.orientation_covariance[3] = Lsm303DlhcAccelerometer::orientation_field_covariance[3];
+        imu_msg.orientation_covariance[4] = Lsm303DlhcAccelerometer::orientation_field_covariance[4];
+        imu_msg.orientation_covariance[5] = Lsm303DlhcAccelerometer::orientation_field_covariance[5];
+
+        imu_msg.orientation_covariance[6] = Lsm303DlhcAccelerometer::orientation_field_covariance[6];
+        imu_msg.orientation_covariance[7] = Lsm303DlhcAccelerometer::orientation_field_covariance[7];
+        imu_msg.orientation_covariance[8] = Lsm303DlhcAccelerometer::orientation_field_covariance[8];
+
+        // linear accel
         linear_acceleration.x *= GRAVITY_MS_S;
         linear_acceleration.y *= GRAVITY_MS_S;
         linear_acceleration.z *= GRAVITY_MS_S;
@@ -344,6 +366,7 @@ void ros_imu_publisher_worker(const ros::Publisher& imu_publisher) {
         imu_msg.linear_acceleration_covariance[7] = Lsm303DlhcAccelerometer::acceleration_field_covariance[7];
         imu_msg.linear_acceleration_covariance[8] = Lsm303DlhcAccelerometer::acceleration_field_covariance[8];
 
+        // angular velocity
         angular_velocity.x *= DEG_TO_RAD;
         angular_velocity.y *= DEG_TO_RAD;
         angular_velocity.z *= DEG_TO_RAD;
