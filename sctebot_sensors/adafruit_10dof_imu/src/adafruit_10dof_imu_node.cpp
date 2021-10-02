@@ -23,6 +23,11 @@
 
 #include "adafruit_10dof_imu.h"
 
+#define OUTPUT_PRESS_DEBUG_MSG 0
+#define OUTPUT_GYRO_DEBUG_MSG 0
+#define OUTPUT_ACCEL_DEBUG_MSG 0
+#define OUTPUT_MAG_DEBUG_MSG 0
+
 namespace logging = boost::log;
 
 // region Data Structs
@@ -104,10 +109,13 @@ std::thread ros_magnetometer_publisher_thread;
 
 void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
+#if OUTPUT_PRESS_DEBUG_MSG
+
     BOOST_LOG_TRIVIAL(debug)
             << "[bmp180]"
             << "\t\t temp (C): " << std::fixed << std::setprecision(2) << temperature
             << "\t\t pressure (Pa): " << std::fixed << std::setprecision(2) << pressure;
+#endif
 
     double absolute_altitude;
     double pressure_sea_level = 1013.25 * 100;
@@ -121,10 +129,14 @@ void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
     sea_level_pressure = pressure / pow(1 - absolute_altitude/44330, 5.255);
 
+#if OUTPUT_PRESS_DEBUG_MSG
+
     BOOST_LOG_TRIVIAL(debug)
             << "[bmp180]"
             << "\t\t abs alt (m): " << std::fixed << std::setprecision(2) << absolute_altitude
             << "\t\t sea (Pa): " << std::fixed << std::setprecision(2) << sea_level_pressure;
+
+#endif
 
     std::lock_guard<std::mutex> pressure_guard(pressure_data_mutex);
     pressure_data.fluid_absolute_pressure_pascals = pressure;
@@ -143,12 +155,15 @@ void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
 void handle_l3gd20_gyro_measurements(float temperature, float r_x, float r_y, float r_z) {
 
+#if OUTPUT_GYRO_DEBUG_MSG
+
     BOOST_LOG_TRIVIAL(debug)
             << "[l3gd20 gyro]"
             << "\t temp (C): " << std::fixed << std::setprecision(2) << temperature
             << "\t x_dps: " << std::fixed << std::setprecision(2) << r_x
             << "\t y_dps: " << std::fixed << std::setprecision(2) << r_y
             << "\t z_dps: " << std::fixed << std::setprecision(2) << r_z;
+#endif
 
     std::unique_lock<std::mutex> imu_guard(imu_data_mutex);
     imu_data.temperature = temperature;
@@ -165,11 +180,15 @@ void handle_l3gd20_gyro_measurements(float temperature, float r_x, float r_y, fl
 
 void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
 
+#if OUTPUT_ACCEL_DEBUG_MSG
+
     BOOST_LOG_TRIVIAL(debug)
             << "[lsm303 accel]"
             << "\t x_gs: " << std::fixed << std::setprecision(2) << x_gs
             << "\t y_gs: " << std::fixed << std::setprecision(2) << y_gs
             << "\t z_gs: " << std::fixed << std::setprecision(2) << z_gs;
+
+#endif
 
     std::unique_lock<std::mutex> imu_guard(imu_data_mutex);
 
@@ -185,12 +204,16 @@ void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
 
 void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_ga, float y_ga, float z_ga) {
 
+#if OUTPUT_MAG_DEBUG_MSG
+
     BOOST_LOG_TRIVIAL(debug)
             << "[lsm303 mag]"
             << "\t temp (C): " << std::fixed << std::setprecision(2) << temperature_deg_c
             << "\t x_ga: " << std::fixed << std::setprecision(2) << x_ga
             << "\t y_ga: " << std::fixed << std::setprecision(2) << y_ga
             << "\t z_ga: " << std::fixed << std::setprecision(2) << z_ga;
+
+#endif
 
     std::unique_lock<std::mutex> magnetometer_guard(magnetometer_data_mutex);
     magnetometer_data.temperature = temperature_deg_c;
@@ -456,7 +479,7 @@ int main(int argc, char* argv[]) {
 
     logging::core::get()->set_filter
     (
-        logging::trivial::severity >= logging::trivial::info
+        logging::trivial::severity >= logging::trivial::debug
     );
 
     std::cout << "Hello World adafruit 10dof IMU Node 2253" << std::endl;
