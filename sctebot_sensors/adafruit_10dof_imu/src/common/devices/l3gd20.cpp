@@ -429,7 +429,27 @@ uint8_t L3gd20Gyro::_update_gyroscope_status() {
             status_register = _status_xyz_reg;
         }
 
-        display_register_8bits("xyz status", _status_xyz_reg, "xyz status", gyro_status[0]);
+        if(status_register & L3gd20Gyro::BitMasks::StatusRegister::ZYX_DATA_AVAILABLE) {
+
+            std::bitset<8> x(status_register);
+            BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
+
+            bool zyx_or_status = status_register &  L3gd20Gyro::BitMasks::StatusRegister::ZYX_OVERRUN;
+
+            bool z_or = status_register & L3gd20Gyro::BitMasks::StatusRegister::Z_OVERRUN;
+            bool y_or = status_register & L3gd20Gyro::BitMasks::StatusRegister::Y_OVERRUN;
+            bool x_or = status_register & L3gd20Gyro::BitMasks::StatusRegister::X_OVERRUN;
+
+            bool zyx_da_status = status_register & L3gd20Gyro::BitMasks::StatusRegister::ZYX_DATA_AVAILABLE;
+
+            bool z_da = status_register & L3gd20Gyro::BitMasks::StatusRegister::Z_DATA_AVAILABLE;
+            bool y_da = status_register & L3gd20Gyro::BitMasks::StatusRegister::Y_DATA_AVAILABLE;
+            bool x_da = status_register & L3gd20Gyro::BitMasks::StatusRegister::X_DATA_AVAILABLE;
+
+            BOOST_LOG_TRIVIAL(debug) << "zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
+            BOOST_LOG_TRIVIAL(debug) << "zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
+
+        }
     }
 
     return status_register;

@@ -5,10 +5,10 @@
 #ifndef ADAFRUIT_10DOF_IMU_H
 #define ADAFRUIT_10DOF_IMU_H
 
-#define ENABLE_BMP180_DEVICE 1
-#define ENABLE_L3GD20_DEVICE 1
+#define ENABLE_BMP180_PRESSURE_DEVICE 0
+#define ENABLE_L3GD20_GYRO_DEVICE 1
 #define ENABLE_LSM303DLHC_ACCEL_DEVICE 1
-#define ENABLE_LSM303DLHC_MAG_DEVICE 1
+#define ENABLE_LSM303DLHC_MAG_DEVICE 0
 
 #define ENABLE_MOCK_BMP180_DEVICE 1
 #define ENABLE_MOCK_L3GD20_DEVICE 1
@@ -69,7 +69,7 @@ public:
         int _i2c_bus_number = i2c_bus_number;
         int i2c_device_address;
 
-#if ENABLE_BMP180_DEVICE
+#if ENABLE_BMP180_PRESSURE_DEVICE
         /* CONFIRMED FOR BMP180 on RPI4 Node */
         i2c_device_address = BMP180_RPI_ADDRESS;
 
@@ -89,7 +89,7 @@ public:
         };
 #endif
 
-#if ENABLE_L3GD20_DEVICE
+#if ENABLE_L3GD20_GYRO_DEVICE
         i2c_device_address = L3GD20_RPI_ADDRESS;
 
         l3gd20GyroDeviceHandle->config_device(
@@ -148,14 +148,14 @@ public:
 
     void run() {
 
-#if ENABLE_BMP180_DEVICE
+#if ENABLE_BMP180_PRESSURE_DEVICE
 #if ENABLE_MOCK_BMP180_DEVICE
         bmp180DeviceHandle->mock_run_device_emulation();
 #endif
         bmp180DeviceHandle->init_device();
 #endif
 
-#if ENABLE_L3GD20_DEVICE
+#if ENABLE_L3GD20_GYRO_DEVICE
 #if ENABLE_MOCK_L3GD20_DEVICE
         l3gd20GyroDeviceHandle->mock_run_device_emulation();
 #endif

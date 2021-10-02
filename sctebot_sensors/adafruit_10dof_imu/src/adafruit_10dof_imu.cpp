@@ -6,11 +6,11 @@
 
 AdaFruit10DoFImu::AdaFruit10DoFImu() {
 
-#if ENABLE_BMP180_DEVICE
+#if ENABLE_BMP180_PRESSURE_DEVICE
     bmp180DeviceHandle = new Bmp180Pressure();
 #endif
 
-#if ENABLE_L3GD20_DEVICE
+#if ENABLE_L3GD20_GYRO_DEVICE
     l3gd20GyroDeviceHandle = new L3gd20Gyro();
 #endif
 

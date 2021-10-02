@@ -160,7 +160,7 @@ void handle_l3gd20_gyro_measurements(float temperature, float r_x, float r_y, fl
 
     // note, publish occurs on the accel update which hopefully will also include the gyro info
     // since its update occurs before the accel
-    // ros_imu_publisher_worker_publish_cv.notify_all();
+    ros_imu_publisher_worker_publish_cv.notify_all();
 }
 
 void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
