@@ -23,11 +23,6 @@
 
 #include "adafruit_10dof_imu.h"
 
-#define OUTPUT_PRESS_DEBUG_MSG 0
-#define OUTPUT_GYRO_DEBUG_MSG 0
-#define OUTPUT_ACCEL_DEBUG_MSG 0
-#define OUTPUT_MAG_DEBUG_MSG 0
-
 namespace logging = boost::log;
 
 // region Data Structs
