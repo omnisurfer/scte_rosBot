@@ -440,7 +440,7 @@ uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
             status_register = _status_register;
         }
 
-        if (status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE) {
+        if (status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE & false) {
 
             std::bitset<8> x(status_register);
             BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
