@@ -7,11 +7,6 @@
 
 int Bmp180Pressure::_init_device() {
 
-    logging::core::get()->set_filter
-    (
-        logging::trivial::severity >= logging::trivial::debug
-    );
-
     buffer_t inbound_message;
 
     // COEFFICIENT REGISTERS 1 to 11

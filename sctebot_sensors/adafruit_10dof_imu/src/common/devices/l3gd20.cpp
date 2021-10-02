@@ -7,11 +7,6 @@
 
 int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff) {
 
-    logging::core::get()->set_filter
-    (
-        logging::trivial::severity >= logging::trivial::debug
-    );
-
     buffer_t inbound_message;
     buffer_t outbound_message;
     uint8_t register_address;

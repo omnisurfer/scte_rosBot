@@ -104,7 +104,7 @@ std::thread ros_magnetometer_publisher_thread;
 
 void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
-    BOOST_LOG_TRIVIAL(info)
+    BOOST_LOG_TRIVIAL(debug)
             << "[bmp180]"
             << "\t\t temp (C): " << std::fixed << std::setprecision(2) << temperature
             << "\t\t pressure (Pa): " << std::fixed << std::setprecision(2) << pressure;
@@ -121,7 +121,7 @@ void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
     sea_level_pressure = pressure / pow(1 - absolute_altitude/44330, 5.255);
 
-    BOOST_LOG_TRIVIAL(info)
+    BOOST_LOG_TRIVIAL(debug)
             << "[bmp180]"
             << "\t\t abs alt (m): " << std::fixed << std::setprecision(2) << absolute_altitude
             << "\t\t sea (Pa): " << std::fixed << std::setprecision(2) << sea_level_pressure;
@@ -453,6 +453,11 @@ void ros_magnetometer_publisher_worker(const ros::Publisher& magnetometer_publis
 //http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/Imu.html
 
 int main(int argc, char* argv[]) {
+
+    logging::core::get()->set_filter
+    (
+        logging::trivial::severity >= logging::trivial::info
+    );
 
     std::cout << "Hello World adafruit 10dof IMU Node 2253" << std::endl;
 

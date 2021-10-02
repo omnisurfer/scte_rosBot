@@ -14,11 +14,6 @@ int Lsm303DlhcAccelerometer::_init_device(
         Lsm303DlhcAccelerometer::SensorAccelerationFullScale_t sensor_full_scale_accelerometer_range
         ) {
 
-    logging::core::get()->set_filter
-    (
-    logging::trivial::severity >= logging::trivial::debug
-    );
-
     buffer_t inbound_message;
     buffer_t outbound_message;
     uint8_t register_address;
@@ -473,11 +468,6 @@ int Lsm303DlhcMagnetometer::_init_device(
         Lsm303DlhcMagnetometer::OutputDataRates_t output_data_rate,
         Lsm303DlhcMagnetometer::SensorMagnetometerFullScale_t magnetometer_full_scale
         ) {
-
-    logging::core::get()->set_filter
-    (
-            logging::trivial::severity >= logging::trivial::debug
-            );
 
     buffer_t inbound_message;
     buffer_t outbound_message;

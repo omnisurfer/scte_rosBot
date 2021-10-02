@@ -571,7 +571,7 @@ public:
 
         int data_rate = this->data_rate_sample_rate[output_data_rate];
 
-        float rate = (1.0f / float(data_rate)) * (1.0f / 2);
+        float rate = (1.0f / float(data_rate)) * (1.0f / 3);
 
         this->_sensor_update_period_ms = int(rate * 1000);
 
