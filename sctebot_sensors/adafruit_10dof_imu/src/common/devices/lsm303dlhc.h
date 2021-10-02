@@ -161,15 +161,15 @@ private:
     public:
 
         typedef enum DataRates_t {
-            ODR_1P0HZ_BM = (1 << 6),
-            ODR_10P0HZ_BM = (2 << 6),
-            ODR_25P0HZ_BM = (3 << 6),
-            ODR_50P0HZ_BM = (4 << 6),
-            ODR_100P0HZ_BM = (5 << 6),
-            ODR_200P0HZ_BM = (6 << 6),
-            ODR_400P0HZ_BM = (7 << 6),
-            ODR_1620P0HZ_BM = (8 << 6),
-            ODR_1344P0HZ_BM = (9 << 6)
+            ODR_1P0HZ_BM = (1 << 4),
+            ODR_10P0HZ_BM = (2 << 4),
+            ODR_25P0HZ_BM = (3 << 4),
+            ODR_50P0HZ_BM = (4 << 4),
+            ODR_100P0HZ_BM = (5 << 4),
+            ODR_200P0HZ_BM = (6 << 4),
+            ODR_400P0HZ_BM = (7 << 4),
+            ODR_1620P0HZ_BM = (8 << 4),
+            ODR_1344P0HZ_BM = (9 << 4)
         } DataRates;
 
         typedef enum HighPassFilterCutoff_t {
@@ -571,7 +571,7 @@ public:
 
         int data_rate = this->data_rate_sample_rate[output_data_rate];
 
-        float rate = (1.0f / float(data_rate)) * (1.0f / 3);
+        float rate = (1.0f / float(data_rate)) * (1.0f / 2);
 
         this->_sensor_update_period_ms = int(rate * 1000);
 

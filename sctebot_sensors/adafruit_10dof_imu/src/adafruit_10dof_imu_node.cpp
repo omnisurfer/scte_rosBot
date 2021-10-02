@@ -143,7 +143,7 @@ void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
 void handle_l3gd20_gyro_measurements(float temperature, float r_x, float r_y, float r_z) {
 
-    BOOST_LOG_TRIVIAL(info)
+    BOOST_LOG_TRIVIAL(debug)
             << "[l3gd20 gyro]"
             << "\t temp (C): " << std::fixed << std::setprecision(2) << temperature
             << "\t x_dps: " << std::fixed << std::setprecision(2) << r_x
@@ -165,7 +165,7 @@ void handle_l3gd20_gyro_measurements(float temperature, float r_x, float r_y, fl
 
 void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
 
-    BOOST_LOG_TRIVIAL(info)
+    BOOST_LOG_TRIVIAL(debug)
             << "[lsm303 accel]"
             << "\t x_gs: " << std::fixed << std::setprecision(2) << x_gs
             << "\t y_gs: " << std::fixed << std::setprecision(2) << y_gs
@@ -185,7 +185,7 @@ void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
 
 void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_ga, float y_ga, float z_ga) {
 
-    BOOST_LOG_TRIVIAL(info)
+    BOOST_LOG_TRIVIAL(debug)
             << "[lsm303 mag]"
             << "\t temp (C): " << std::fixed << std::setprecision(2) << temperature_deg_c
             << "\t x_ga: " << std::fixed << std::setprecision(2) << x_ga
@@ -478,10 +478,12 @@ int main(int argc, char* argv[]) {
             atm_temperature_publisher,
             atm_altitude_publisher
             );
+
     ros_imu_publisher_thread = std::thread(
             ros_imu_publisher_worker,
             imu_publisher
             );
+
     ros_magnetometer_publisher_thread = std::thread(
             ros_magnetometer_publisher_worker,
             magnetometer_publisher

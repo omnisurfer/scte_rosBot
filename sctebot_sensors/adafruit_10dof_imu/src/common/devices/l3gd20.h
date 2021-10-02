@@ -74,20 +74,20 @@ public:
 private:
 
     std::map<int, int> sample_rate_to_register_bitmasks{
-            {L3gd20Gyro::OutputDataRates::ODR_12P5HZ, L3gd20Gyro::BitMasks::DataRates::ODR_12P5HZ},
-            {L3gd20Gyro::OutputDataRates::ODR_25P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_25P0HZ},
-            {L3gd20Gyro::OutputDataRates::ODR_50P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_50P0HZ},
-            {L3gd20Gyro::OutputDataRates::ODR_100P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_100P0HZ},
-            {L3gd20Gyro::OutputDataRates::ODR_200P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_200P0HZ},
-            {L3gd20Gyro::OutputDataRates::ODR_400P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_400P0HZ},
-            {L3gd20Gyro::OutputDataRates::ODR_800P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_800P0HZ}
+            {L3gd20Gyro::OutputDataRates::ODR_12P5HZ, L3gd20Gyro::BitMasks::DataRates::ODR_12P5HZ_BM},
+            {L3gd20Gyro::OutputDataRates::ODR_25P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_25P0HZ_BM},
+            {L3gd20Gyro::OutputDataRates::ODR_50P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_50P0HZ_BM},
+            {L3gd20Gyro::OutputDataRates::ODR_100P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_100P0HZ_BM},
+            {L3gd20Gyro::OutputDataRates::ODR_200P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_200P0HZ_BM},
+            {L3gd20Gyro::OutputDataRates::ODR_400P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_400P0HZ_BM},
+            {L3gd20Gyro::OutputDataRates::ODR_800P0HZ, L3gd20Gyro::BitMasks::DataRates::ODR_800P0HZ_BM}
     };
 
     std::map<int, int> bandwidth_cut_off_to_register_bitmasks{
-            {L3gd20Gyro::BandwidthCutOff::MIN_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::MIN_CUT_OFF},
-            {L3gd20Gyro::BandwidthCutOff::MED_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::MED_CUT_OFF},
-            {L3gd20Gyro::BandwidthCutOff::HIGH_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::HIGH_CUT_OFF},
-            {L3gd20Gyro::BandwidthCutOff::MAX_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::MAX_CUT_OFF}
+            {L3gd20Gyro::BandwidthCutOff::MIN_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::MIN_CUT_OFF_BM},
+            {L3gd20Gyro::BandwidthCutOff::MED_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::MED_CUT_OFF_BM},
+            {L3gd20Gyro::BandwidthCutOff::HIGH_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::HIGH_CUT_OFF_BM},
+            {L3gd20Gyro::BandwidthCutOff::MAX_CUT_OFF, L3gd20Gyro::BitMasks::BandwidthCutOff::MAX_CUT_OFF_BM}
     };
 
     class Addresses {
@@ -143,20 +143,20 @@ private:
     public:
 
         typedef enum DataRates_t {
-            ODR_12P5HZ = (0 << 6),
-            ODR_25P0HZ = (1 << 6),
-            ODR_50P0HZ = (2 << 6),
-            ODR_100P0HZ = (0 << 6),
-            ODR_200P0HZ = (1 << 6),
-            ODR_400P0HZ = (2 << 6),
-            ODR_800P0HZ = (3 << 6)
+            ODR_12P5HZ_BM = (0 << 4),
+            ODR_25P0HZ_BM = (1 << 4),
+            ODR_50P0HZ_BM = (2 << 4),
+            ODR_100P0HZ_BM = (0 << 4),
+            ODR_200P0HZ_BM = (1 << 4),
+            ODR_400P0HZ_BM = (2 << 4),
+            ODR_800P0HZ_BM = (3 << 4)
         } DataRates;
 
         typedef enum BandwidthCutOff_t {
-            MIN_CUT_OFF = (0 << 4),
-            MED_CUT_OFF = (1 << 4),
-            HIGH_CUT_OFF = (2 << 4),
-            MAX_CUT_OFF = (3 << 4)
+            MIN_CUT_OFF_BM = (0 << 4),
+            MED_CUT_OFF_BM = (1 << 4),
+            HIGH_CUT_OFF_BM = (2 << 4),
+            MAX_CUT_OFF_BM = (3 << 4)
         } BandwidthCutOff;
 
         typedef enum ControlRegister1_t {

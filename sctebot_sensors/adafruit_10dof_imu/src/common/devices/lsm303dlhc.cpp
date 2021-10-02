@@ -16,7 +16,7 @@ int Lsm303DlhcAccelerometer::_init_device(
 
     logging::core::get()->set_filter
     (
-            logging::trivial::severity >= logging::trivial::debug
+    logging::trivial::severity >= logging::trivial::debug
     );
 
     buffer_t inbound_message;
@@ -440,7 +440,7 @@ uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
             status_register = _status_register;
         }
 
-        if (status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE & false) {
+        if (status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE) {
 
             std::bitset<8> x(status_register);
             BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
