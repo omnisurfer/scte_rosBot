@@ -144,6 +144,20 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
     }
     //endregion
 
+    // region LOW_ODR reg
+    register_address = L3gd20Gyro::Addresses::LOW_ODR;
+
+    uint8_t low_odr_set = 0;
+
+    if(output_data_rate == ODR_12P5HZ | output_data_rate == ODR_25P0HZ | output_data_rate == ODR_50P0HZ) {
+        low_odr_set = L3gd20Gyro::BitMasks::LowODRRegister::LOW_ODR;
+    }
+
+    control_reg[0] =
+        low_odr_set;
+
+    // endregion
+
     std::lock_guard<std::mutex> lk(this->data_capture_thread_run_mutex);
     this->data_capture_thread_run_cv.notify_one();
     this->run_data_capture_thread = true;

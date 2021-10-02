@@ -210,6 +210,11 @@ private:
             HPEN = (1 << 4)
         } ControlRegister5;
 
+        typedef enum LowODRRegister_t {
+            LOW_ODR = (1 << 0),
+            SW_RES = (1 << 2)
+        } LowODRRegister;
+
         typedef enum StatusRegister_t {
             ZYX_OVERRUN = (1 << 7),
             Z_OVERRUN = (1 << 6),
