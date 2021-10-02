@@ -445,8 +445,6 @@ uint8_t L3gd20Gyro::_update_gyroscope_status() {
             bool y_da = status_register & L3gd20Gyro::BitMasks::StatusRegister::Y_DATA_AVAILABLE;
             bool x_da = status_register & L3gd20Gyro::BitMasks::StatusRegister::X_DATA_AVAILABLE;
 
-#if OUTPUT_GYRO_DEBUG_MSG == 1
-
             if(z_or | y_or | x_or) {
 
                 BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
@@ -455,8 +453,6 @@ uint8_t L3gd20Gyro::_update_gyroscope_status() {
                 BOOST_LOG_TRIVIAL(debug) << "zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
 
             }
-#endif
-
         }
     }
 

@@ -18,8 +18,6 @@
 
 namespace logging = boost::log;
 
-#define OUTPUT_GYRO_DEBUG_MSG 1
-
 #define DEG_TO_RAD (M_PI/180.0)
 
 #include "i2c_linux.h"

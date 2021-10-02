@@ -21,9 +21,6 @@ namespace logging = boost::log;
 
 #include "i2c_linux.h"
 
-#define OUTPUT_ACCEL_DEBUG_MSG 1
-#define OUTPUT_MAG_DEBUG_MSG 1
-
 #define GRAVITY_MS_S 9.80665
 
 class Lsm303DlhcAccelerometer {

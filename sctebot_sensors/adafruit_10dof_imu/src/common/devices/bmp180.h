@@ -22,8 +22,6 @@ namespace logging = boost::log;
 
 #include "i2c_linux.h"
 
-#define OUTPUT_PRESS_DEBUG_MSG 0
-
 class Bmp180Pressure {
 
 private:

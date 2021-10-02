@@ -25,6 +25,11 @@
 
 namespace logging = boost::log;
 
+#define OUTPUT_PRESS_DEBUG_MSG 0
+#define OUTPUT_GYRO_DEBUG_MSG 0
+#define OUTPUT_ACCEL_DEBUG_MSG 0
+#define OUTPUT_MAG_DEBUG_MSG 0
+
 // region Data Structs
 
 std::mutex imu_data_mutex;
