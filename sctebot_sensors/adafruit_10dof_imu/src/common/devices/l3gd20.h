@@ -143,13 +143,13 @@ private:
     public:
 
         typedef enum DataRates_t {
-            ODR_12P5HZ_BM = (0 << 4),
-            ODR_25P0HZ_BM = (1 << 4),
-            ODR_50P0HZ_BM = (2 << 4),
-            ODR_100P0HZ_BM = (0 << 4),
-            ODR_200P0HZ_BM = (1 << 4),
-            ODR_400P0HZ_BM = (2 << 4),
-            ODR_800P0HZ_BM = (3 << 4)
+            ODR_12P5HZ_BM = (0 << 6),
+            ODR_25P0HZ_BM = (1 << 6),
+            ODR_50P0HZ_BM = (2 << 6),
+            ODR_100P0HZ_BM = (0 << 6),
+            ODR_200P0HZ_BM = (1 << 6),
+            ODR_400P0HZ_BM = (2 << 6),
+            ODR_800P0HZ_BM = (3 << 6)
         } DataRates;
 
         typedef enum BandwidthCutOff_t {
@@ -544,7 +544,7 @@ public:
 
         int data_rate = this->data_rate_sample_rate[output_data_rate];
 
-        float rate = (1.0f / float(data_rate)) * (1.0f / 3);
+        float rate = (1.0f / float(data_rate)) * (1.0f / 4);
 
         this->_sensor_update_period_ms = int(rate * 1000);
 

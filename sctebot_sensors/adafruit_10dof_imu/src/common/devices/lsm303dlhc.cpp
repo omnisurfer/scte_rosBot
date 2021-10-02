@@ -453,7 +453,7 @@ uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
 
             if(z_or | y_or | x_or) {
 
-                BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
+                BOOST_LOG_TRIVIAL(debug) << "Accel status reg: " << x;
 
                 BOOST_LOG_TRIVIAL(debug) << "zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
                 BOOST_LOG_TRIVIAL(debug) << "zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
@@ -1014,7 +1014,7 @@ uint8_t Lsm303DlhcMagnetometer::_update_magnetometer_status() {
             bool lock_set = status_register & Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK;
 
             if(false) {
-                BOOST_LOG_TRIVIAL(debug) << "status reg: " << x;
+                BOOST_LOG_TRIVIAL(debug) << "Mag status reg: " << x;
 
                 BOOST_LOG_TRIVIAL(debug) << "mag_data_rdy: " << mag_data_ready << " lock_set: " << lock_set;
             }
