@@ -149,12 +149,24 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
 
     uint8_t low_odr_set = 0;
 
-    if(output_data_rate == ODR_12P5HZ | output_data_rate == ODR_25P0HZ | output_data_rate == ODR_50P0HZ) {
+    if((output_data_rate == ODR_12P5HZ) | (output_data_rate == ODR_25P0HZ) | (output_data_rate == ODR_50P0HZ)) {
         low_odr_set = L3gd20Gyro::BitMasks::LowODRRegister::LOW_ODR;
     }
 
     control_reg[0] =
         low_odr_set;
+
+    outbound_message = {
+            .bytes = control_reg,
+            .size = sizeof(control_reg)
+    };
+
+    if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+        BOOST_LOG_TRIVIAL(debug) << "LOW_ODR configure OK";
+    }
+    else {
+        BOOST_LOG_TRIVIAL(debug) << "LOW_ODR configure failed";
+    }
 
     // endregion
 
