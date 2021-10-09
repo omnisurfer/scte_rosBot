@@ -199,7 +199,7 @@ void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
 
     // note, publish occurs on the accel update which hopefully will also include the gyro info
     // since its update occurs before the accel
-    ros_imu_publisher_worker_publish_cv.notify_all();
+    // ros_imu_publisher_worker_publish_cv.notify_all();
 }
 
 void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_ga, float y_ga, float z_ga) {

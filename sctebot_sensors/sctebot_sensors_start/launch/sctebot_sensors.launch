@@ -1,0 +1,24 @@
+<launch>
+
+    <arg name="robot_namespace" default="sctebot"/>
+
+    <group ns="$(arg robot_namespace)">
+        <!-- Realsense Camera -->
+        <arg name="camera_name" default="realsense"/>
+
+        <remap from="/$(arg robot_namespace)/$(arg camera_name)/depth/color/points" to="points"/>
+
+        <include file="$(find sctebot_sensors_start)/launch/sctebot_realsense.launch">
+            <arg name="camera" value="$(arg camera_name)"/>
+            <arg name="enable_gyro" value="true"/>
+            <arg name="enable_accel" value="true"/>
+        </include>
+
+        <!-- YD Lidar -->
+        <include file="$(find sctebot_sensors_start)/launch/sctebot_ydlidar_g2.launch">
+
+        </include>
+
+    </group>
+
+</launch>
