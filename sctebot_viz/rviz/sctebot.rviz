@@ -4,7 +4,6 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /RobotModel1/Status1
         - /DriveSideCamera1/Visibility1
         - /Odometry1/Covariance1/Position1
         - /Odometry1/Covariance1/Orientation1
@@ -107,6 +106,15 @@ Visualization Manager:
           Show Trail: false
           Value: true
         computer_enclosure:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        d455_bottom_screw_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        d455_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -339,7 +347,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /sctebot/points2
+      Topic: /sctebot/d455/points2
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -407,7 +415,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 1.7939878702163696
+      Distance: 3.0188071727752686
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -415,17 +423,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.5720462799072266
-        Y: 0.2820885181427002
+        X: -0.23232382535934448
+        Y: 0.13395678997039795
         Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.47539809346199036
+      Pitch: 0.8553975224494934
       Target Frame: base_link
-      Yaw: 2.405397891998291
+      Yaw: 3.185396432876587
     Saved: ~
 Window Geometry:
   Displays:

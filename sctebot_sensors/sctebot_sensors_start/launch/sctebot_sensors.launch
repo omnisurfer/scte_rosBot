@@ -4,9 +4,10 @@
 
     <group ns="$(arg robot_namespace)">
         <!-- Realsense Camera -->
-        <arg name="camera_name" default="realsense"/>
+        <arg name="camera_name" default="d455"/>
 
-        <remap from="/$(arg robot_namespace)/$(arg camera_name)/depth/color/points" to="points"/>
+        <remap from="/$(arg robot_namespace)/$(arg camera_name)/depth/color/points" to="points2"/>
+        <remap from="/$(arg robot_namespace)/$(arg camera_name)/imu" to="imu"/>
 
         <include file="$(find sctebot_sensors_start)/launch/sctebot_realsense.launch">
             <arg name="camera" value="$(arg camera_name)"/>
@@ -18,6 +19,9 @@
         <include file="$(find sctebot_sensors_start)/launch/sctebot_ydlidar_g2.launch">
 
         </include>
+
+        <!-- look into to generate IMU -->
+        <!--http://wiki.ros.org/imu_filter_madgwick-->
 
     </group>
 
