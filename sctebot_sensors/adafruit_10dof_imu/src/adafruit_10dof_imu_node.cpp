@@ -25,10 +25,10 @@
 
 namespace logging = boost::log;
 
-#define OUTPUT_PRESS_DEBUG_MSG 0
-#define OUTPUT_GYRO_DEBUG_MSG 0
-#define OUTPUT_ACCEL_DEBUG_MSG 0
-#define OUTPUT_MAG_DEBUG_MSG 0
+#define OUTPUT_PRESS_DEBUG_MSG 1
+#define OUTPUT_GYRO_DEBUG_MSG 1
+#define OUTPUT_ACCEL_DEBUG_MSG 1
+#define OUTPUT_MAG_DEBUG_MSG 1
 
 // region Data Structs
 
@@ -482,20 +482,20 @@ int main(int argc, char* argv[]) {
         logging::trivial::severity >= logging::trivial::debug
     );
 
-    std::cout << "Hello World adafruit 10dof IMU Node 2253" << std::endl;
+    std::cout << "Hello World adafruit 10dof IMU Node" << std::endl;
 
     ros::init(argc, argv, "adafruit_10dof_node");
 
     ros::NodeHandle ros_node_handle;
 
-    ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada_imu", 1000);
-    ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>("ada_mag", 1000);
+    ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu_raw", 1000);
+    ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>("ada10dof/mag_raw", 1000);
 
-    ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada_atm_pressure", 100);
-    ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada_sea_lvl_pressure", 100);
+    ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada10dof/atm_pressure", 100);
+    ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada10dof/sea_lvl_pressure", 100);
 
-    ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>("ada_atm_temperature", 100);
-    ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>("ada_atm_altitude", 100);
+    ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>("ada10dof/atm_temperature", 100);
+    ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>("ada10dof/atm_altitude", 100);
 
     ros::Rate loop_rate(10);
 

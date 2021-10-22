@@ -451,6 +451,7 @@ uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
             bool y_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::Y_DATA_AVAILABLE;
             bool x_da = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::X_DATA_AVAILABLE;
 
+            /*
             if(z_or | y_or | x_or) {
 
                 BOOST_LOG_TRIVIAL(debug) << "Accel status reg: " << x;
@@ -458,6 +459,7 @@ uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
                 BOOST_LOG_TRIVIAL(debug) << "zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
                 BOOST_LOG_TRIVIAL(debug) << "zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
             }
+            */
         }
     }
 
