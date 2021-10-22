@@ -351,10 +351,10 @@ void ros_imu_publisher_worker(const ros::Publisher& imu_publisher) {
 
         // TODO can I calculate quaternion with given info?
         // orientation
-        orientation.x = 0.354;
-        orientation.y = 0.354;
-        orientation.z = 0.146;
-        orientation.w = 0.854;
+        orientation.x = 0.0;
+        orientation.y = 0.0;
+        orientation.z = 0.0;
+        orientation.w = 0.0;
 
         imu_msg.orientation = orientation;
 
