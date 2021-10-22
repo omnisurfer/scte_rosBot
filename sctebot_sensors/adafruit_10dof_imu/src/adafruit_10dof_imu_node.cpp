@@ -488,14 +488,14 @@ int main(int argc, char* argv[]) {
 
     ros::NodeHandle ros_node_handle;
 
-    ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu_raw", 1000);
-    ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>("ada10dof/mag_raw", 1000);
+    ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu/data_raw", 1000);
+    ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>("ada10dof/mag/data_raw", 1000);
 
-    ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada10dof/atm_pressure", 100);
-    ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada10dof/sea_lvl_pressure", 100);
+    ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada10dof/atm_pressure/data_raw", 100);
+    ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada10dof/sea_lvl_pressure/data_raw", 100);
 
-    ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>("ada10dof/atm_temperature", 100);
-    ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>("ada10dof/atm_altitude", 100);
+    ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>("ada10dof/atm_temperature/data_raw", 100);
+    ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>("ada10dof/atm_altitude/data_raw", 100);
 
     ros::Rate loop_rate(10);
 

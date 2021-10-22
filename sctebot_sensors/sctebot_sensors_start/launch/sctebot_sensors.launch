@@ -32,6 +32,21 @@
             <param name="use_magnetic_field_msg" value="false" />
         </node>
 
+        <!-- Launch the ada10dof IMU on raspberry pi node -->
+
+        <arg name="ada_imu_name" default="ada10dof_imu"/>
+
+        <!-- Pose from ada10dof sensor -->
+        <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
+            <remap from="imu/data_raw" to="$(arg ada_imu_name)/imu/data_raw"/>
+            <param name="fixed_frame" value="odom" />
+            <param name="publish_tf" value="false" />
+            <param name="world_frame" value="enu" />
+            <param name="orientation_stddev" value="0.05" />
+            <param name="use_mag" value="false" />
+            <param name="use_magnetic_field_msg" value="false" />
+        </node>
+
         <!-- YD Lidar -->
         <!--
         <include file="$(find sctebot_sensors_start)/launch/sctebot_ydlidar_g2.launch">
