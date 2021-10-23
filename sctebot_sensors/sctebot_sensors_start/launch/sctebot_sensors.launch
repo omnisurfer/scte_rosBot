@@ -22,15 +22,16 @@
 
         <!-- Pose from realsense IMU -->
         <!--http://wiki.ros.org/imu_filter_madgwick -->
-        <!--node pkg="imu_filter_madgwick" type="imu_filter_node" name="realsense_imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
+        <node pkg="imu_filter_madgwick" type="imu_filter_node" name="realsense_imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
             <remap from="imu/data_raw" to="$(arg camera_name)/imu/data_raw"/>
+            <remap from="imu/data" to="$(arg camera_name)/imu/data"/>
             <param name="fixed_frame" value="odom" />
             <param name="publish_tf" value="false" />
             <param name="world_frame" value="enu" />
             <param name="orientation_stddev" value="0.05" />
             <param name="use_mag" value="false" />
             <param name="use_magnetic_field_msg" value="false" />
-        </node-->
+        </node>
 
         <!-- YD Lidar -->
         <!--
@@ -41,11 +42,14 @@
 
     </group>
 
-    <!-- Launch the ada10dof IMU on raspberry pi node -->
+    <!-- Launch the ada10dof IMU on raspberry pi node
+    DEBUG PLACEMENT UNTIL I GET THE NODE BUILT
+    -->
     <arg name="ada_imu_name" default="ada10dof"/>
     <node pkg="imu_filter_madgwick" type="imu_filter_node" name="ada10dof_imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
-        <remap from="imu/data_raw" to="/$(arg ada_imu_name)/imu/data_raw"/>
-        <remap from="imu/mag" to="/$(arg ada_imu_name)/mag/data_raw"/>
+        <remap from="imu/data_raw" to="$(arg ada_imu_name)/imu/data_raw"/>
+        <remap from="imu/mag" to="$(arg ada_imu_name)/mag/data_raw"/>
+        <remap from="imu/data" to="$(arg ada_imu_name)/imu/data"/>
         <param name="fixed_frame" value="odom" />
         <param name="publish_tf" value="false" />
         <param name="world_frame" value="enu" />
