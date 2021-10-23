@@ -93,6 +93,7 @@ private:
     int _i2c_device_address{};
     int _sensor_update_period_ms{};
     std::string _device_name;
+    //std::string* _device_name = nullptr;
 
     context_t _i2c_device_context{};
 
@@ -177,13 +178,13 @@ private:
             uint8_t MD_ba[2];
         };
 
-    } Bmp180CalibrationCoefficients;
+    } Bmp180CalibrationCoefficients{};
 
     struct Bmp180SharedCoefficients_t {
         union {
             long B5;
         };
-    } Bmp180SharedCoefficients;
+    } Bmp180SharedCoefficients{};
 
     int _connect_to_device() {
 
@@ -557,6 +558,7 @@ public:
         _i2c_device_address = device_address;
         _sensor_update_period_ms = update_period_ms;
         _device_name = std::move(device_name);
+        //_device_name = &device_name;
 
         _host_callback_function = function_pointer;
 

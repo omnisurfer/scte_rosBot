@@ -25,10 +25,10 @@
 
 namespace logging = boost::log;
 
-#define OUTPUT_PRESS_DEBUG_MSG 1
-#define OUTPUT_GYRO_DEBUG_MSG 1
-#define OUTPUT_ACCEL_DEBUG_MSG 1
-#define OUTPUT_MAG_DEBUG_MSG 1
+#define OUTPUT_PRESS_DEBUG_MSG 0
+#define OUTPUT_GYRO_DEBUG_MSG 0
+#define OUTPUT_ACCEL_DEBUG_MSG 0
+#define OUTPUT_MAG_DEBUG_MSG 0
 
 // region Data Structs
 
@@ -482,11 +482,24 @@ int main(int argc, char* argv[]) {
         logging::trivial::severity >= logging::trivial::debug
     );
 
-    std::cout << "Hello World adafruit 10dof IMU Node" << std::endl;
+    std::cout << "adafruit 10dof IMU node starting..." << std::endl;
 
     ros::init(argc, argv, "adafruit_10dof_node");
 
     ros::NodeHandle ros_node_handle;
+
+    // region ROS params
+    std::string node_name, robot_namespace;
+
+    if (ros_node_handle.getParam("/robot_namespace", robot_namespace)) {
+        ROS_INFO("robot_namespace %s", robot_namespace.c_str());
+    }
+    else {
+        robot_namespace = "sctebot_debug";
+        ROS_WARN("robot_namespace not found, using default %s", robot_namespace.c_str());
+    }
+
+    // endregion
 
     ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu/data_raw", 1000);
     ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>("ada10dof/mag/data_raw", 1000);
