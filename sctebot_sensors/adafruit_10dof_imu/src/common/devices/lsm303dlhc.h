@@ -369,8 +369,8 @@ private:
     int _i2c_bus_number{};
     int _i2c_device_address{};
     int _sensor_update_period_ms{};
-    //std::string _device_name;
-    std::string* _device_name = nullptr;
+    std::string _device_name;
+    //std::string* _device_name = nullptr;
 
     context_t _i2c_device_context{};
 
@@ -546,8 +546,8 @@ public:
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
         _sensor_update_period_ms = 0;
-        //_device_name = std::move(device_name);
-        _device_name = &device_name;
+        _device_name = std::move(device_name);
+        //_device_name = &device_name;
 
         _host_callback_function = function_pointer;
 

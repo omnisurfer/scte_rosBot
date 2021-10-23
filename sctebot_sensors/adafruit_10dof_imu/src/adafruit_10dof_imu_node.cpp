@@ -542,7 +542,7 @@ int main(int argc, char* argv[]) {
 #endif
 
 #if 1
-    int i2c_bus_number = 0;
+    int i2c_bus_number = 9;
     //int i2c_device_address = 0x77;
 
     // lame way to do this but good enough for debug
