@@ -70,6 +70,8 @@ public:
         int i2c_device_address;
 
 #if ENABLE_BMP180_PRESSURE_DEVICE
+        bmp180DeviceHandle = new Bmp180Pressure();
+
         /* CONFIRMED FOR BMP180 on RPI4 Node */
         i2c_device_address = BMP180_RPI_ADDRESS;
 
@@ -90,6 +92,8 @@ public:
 #endif
 
 #if ENABLE_L3GD20_GYRO_DEVICE
+        l3gd20GyroDeviceHandle = new L3gd20Gyro();
+
         i2c_device_address = L3GD20_RPI_ADDRESS;
 
         l3gd20GyroDeviceHandle->config_device(
@@ -108,6 +112,8 @@ public:
 #endif
 
 #if ENABLE_LSM303DLHC_ACCEL_DEVICE
+        lsm303DlhcAccelDeviceHandle = new Lsm303DlhcAccelerometer();
+
         //LSM303DLHC may have two addresses, 0x19 for Accel, 0x1e for Mag/Temp
         i2c_device_address = LSM303DLHC_ACCEL_RPI_ADDRESS;
 
@@ -127,6 +133,8 @@ public:
 #endif
 
 #if ENABLE_LSM303DLHC_MAG_DEVICE
+        lsm303DlhcMagDeviceHandle = new Lsm303DlhcMagnetometer();
+
         i2c_device_address = LSM303DLHC_MAG_RPI_ADDRESS;
 
         lsm303DlhcMagDeviceHandle->config_device(

@@ -6,6 +6,7 @@
 
 AdaFruit10DoFImu::AdaFruit10DoFImu() {
 
+#if 0
 #if ENABLE_BMP180_PRESSURE_DEVICE
     bmp180DeviceHandle = new Bmp180Pressure();
 #endif
@@ -21,5 +22,5 @@ AdaFruit10DoFImu::AdaFruit10DoFImu() {
 #if ENABLE_LSM303DLHC_MAG_DEVICE
     lsm303DlhcMagDeviceHandle = new Lsm303DlhcMagnetometer();
 #endif
-
+#endif
 }
