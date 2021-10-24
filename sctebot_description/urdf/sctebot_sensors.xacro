@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!--gazebo reference is the link the sensor is attached to it seems-->
-  <!--
+  <!---->
   <gazebo reference="imu_link">
     <gravity>true</gravity>
       <sensor name="imu_sensor" type="imu">
@@ -24,7 +24,7 @@
         <pose>0 0 0 0 0 0</pose>
       </sensor>
   </gazebo>
-  -->
+  <!---->
   
   <gazebo>
     <plugin name="hector_gps" filename="libhector_gazebo_ros_gps.so">
@@ -204,7 +204,7 @@
   stddev of 0.01m will put 99.7% of samples within 0.03m of the true
   reading.
   -->
-  <!--
+  <!---->
   <gazebo reference="laser_frame">
     <sensor type="ray" name="head_hokuyo_sensor">
       <pose>0 0 0 0 0 0</pose>
@@ -237,6 +237,6 @@
       </plugin>
     </sensor>
   </gazebo>
-  -->
+  <!---->
 
 </robot>

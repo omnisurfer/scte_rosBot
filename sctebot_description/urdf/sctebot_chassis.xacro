@@ -230,7 +230,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             camera_rig_rpy="0 0 0"
     />
 
-    <!-- imu link -->
+    <!-- simulated imu link -->
     <link name="imu_link"/>
     <joint name="imu_link_TO_computer_enclosure" type="fixed">
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -270,7 +270,10 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:logitech_c270_camera parent_link="camera_rig_bar" camera_link="passenger_side_camera" joint_xyz="0.0 -0.05 ${0.025 * 0.5}" joint_rpy="0 0 0"/>
     <!---->
 
-    <!-- intel Realsense d455 -->
+    <!--
+    intel Realsense d455
+    d455_link
+    -->
     <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
     <xacro:sensor_d435i parent="camera_rig_bar" name="d455">
         <origin xyz="0 0 0" rpy="0 0 0"/>
