@@ -8,7 +8,7 @@
 ekf_se_odom:
   frequency: 50
   sensor_timeout: 0.1
-  two_d_mode: true
+  two_d_mode: false
 
   transform_time_offset: 0.0
   transform_timeout: 0.0
@@ -63,6 +63,13 @@ ekf_se_odom:
                 false, false, false,
                 false, false, true,
                 true, false, false]
+
+  #imu0_config: [ true, true, true,
+  #               true, true, true,
+  #               false, false, false,
+  #               false, false, false,
+  #               false, false, false ]
+
   imu0_nodelay: false
   imu0_differential: false
   imu0_relative: false
@@ -73,18 +80,25 @@ ekf_se_odom:
   imu0_remove_gravitational_acceleration: true
 
   imu1: $(arg robot_namespace)/d455/imu/data
-  imu1_config: [false, false, false,
-                false, false, true,
+  imu1_config: [true, true, true,
+                true, true, true,
                 false, false, false,
-                false, false, true,
-                true, false, false]
+                false, false, false,
+                false, false, false]
+
+  #imu1_config: [ false, false, false,
+  #               false, false, true,
+  #               false, false, false,
+  #               false, false, true,
+  #               true, false, false ]
+
   imu1_nodelay: false
   imu1_differential: false
   imu1_relative: false
   imu1_queue_size: 10
-  imu1_pose_rejection_threshold: 0.1                 # Note the difference in parameter names
-  imu1_twist_rejection_threshold: 0.1                #
-  imu1_linear_acceleration_rejection_threshold: 0.1  #
+  imu1_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
+  imu1_twist_rejection_threshold: 0.8                #
+  imu1_linear_acceleration_rejection_threshold: 0.8  #
   imu1_remove_gravitational_acceleration: true
 
   # [ADVANCED] Some IMUs automatically remove acceleration due to gravity, and others don't. If yours doesn't, please set
@@ -189,6 +203,13 @@ ekf_se_map:
                  false, false, false,
                  false, false, true,
                  true, false, false ]
+
+  #imu0_config: [ true, true, true,
+  #               true, true, true,
+  #               false, false, false,
+  #               false, false, false,
+  #               false, false, false ]
+
   imu0_nodelay: false
   imu0_differential: false
   imu0_relative: false
@@ -201,13 +222,20 @@ ekf_se_map:
                  false, false, false,
                  false, false, true,
                  true, false, false ]
+
+  #imu1_config: [ false, false, false,
+  #               false, false, true,
+  #               false, false, false,
+  #               false, false, true,
+  #               true, false, false ]
+
   imu1_nodelay: false
   imu1_differential: false
   imu1_relative: false
   imu1_queue_size: 10
-  imu1_pose_rejection_threshold: 0.1                 # Note the difference in parameter names
-  imu1_twist_rejection_threshold: 0.1                #
-  imu1_linear_acceleration_rejection_threshold: 0.1  #
+  imu1_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
+  imu1_twist_rejection_threshold: 0.8                #
+  imu1_linear_acceleration_rejection_threshold: 0.8  #
   imu1_remove_gravitational_acceleration: true
 
   use_control: false

@@ -3,7 +3,7 @@
     <arg name="pub_tf" default="false"/>
     <arg name="simulation_on" default="0"/>
     <arg name="enable_ekf_odom_map" default="1"/>
-    <arg name="enable_navsat_odom" default="1"/>
+    <arg name="enable_navsat_odom" default="0"/>
 
     <arg name="navsat_gps_device" default="hector_sim"/>
 
@@ -44,9 +44,11 @@
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
 
             <!-- map ekf -->
+            <!---->
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
                 <remap from="odometry/filtered" to="odometry/filtered_map"/>
             </node>
+            <!---->
 
         </group>
 

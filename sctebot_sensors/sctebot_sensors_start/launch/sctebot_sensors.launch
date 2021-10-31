@@ -45,6 +45,7 @@
     <!-- Launch the ada10dof IMU on raspberry pi node
     DEBUG PLACEMENT UNTIL I GET THE NODE BUILT
     -->
+    <!--
     <arg name="ada_imu_name" default="ada10dof"/>
     <node pkg="imu_filter_madgwick" type="imu_filter_node" name="ada10dof_imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
         <remap from="imu/data_raw" to="$(arg ada_imu_name)/imu/data_raw"/>
@@ -57,5 +58,5 @@
         <param name="use_mag" value="true" />
         <param name="use_magnetic_field_msg" value="true" />
     </node>
-
+    -->
 </launch>
