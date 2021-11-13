@@ -23,7 +23,7 @@
          http://docs.ros.org/en/melodic/api/robot_localization/html/integrating_gps.html
          https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/
     Notes:
-        Get an error output onto the terminal when using robot_localizaiton
+        Get an error output onto the terminal when using robot_localization
         https://github.com/ros/geometry2/issues/467
         http://wiki.ros.org/robot_localization/Troubleshooting
         https://answers.ros.org/questions/scope:all/sort:activity-desc/tags:robot_localization/page:1/
@@ -34,6 +34,9 @@
     -->
 
     <group ns="$(arg robot_namespace)">
+
+        <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link"
+              args="0.0 0.0 0.005 0.0 0.0 0.0 /base_footprint /base_link 60" />
 
         <!--rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam-->
 

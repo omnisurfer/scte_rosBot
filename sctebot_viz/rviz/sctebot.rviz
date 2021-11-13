@@ -4,10 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /DriveSideCamera1
         - /DriveSideCamera1/Visibility1
-        - /PassSideCamera1
-        - /Odometry1
         - /Odometry1/Covariance1/Position1
         - /Odometry1/Covariance1/Orientation1
       Splitter Ratio: 0.5
@@ -30,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: DriveSideCamera
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -268,6 +265,7 @@ Visualization Manager:
       Visibility:
         Axes: true
         LaserScan: true
+        Map: true
         Odometry: true
         PassSideCamera: true
         RealPointCloud2: true
@@ -292,6 +290,7 @@ Visualization Manager:
         Axes: true
         DriveSideCamera: true
         LaserScan: true
+        Map: true
         Odometry: true
         RealPointCloud2: true
         RobotModel: true
@@ -419,6 +418,16 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /sctebot/map
+      Unreliable: false
+      Use Timestamp: false
       Value: true
   Enabled: true
   Global Options:

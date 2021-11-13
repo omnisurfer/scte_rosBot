@@ -22,7 +22,7 @@ ekf_se_odom:
 
   map_frame: map              # Defaults to "map" if unspecified
   odom_frame: odom           # Defaults to "odom" if unspecified
-  base_link_frame: base_link  # Defaults to "base_link" if unspecified
+  base_link_frame: base_footprint  # Defaults to "base_link" if unspecified
   world_frame: odom           # Defaults to the value of odom_frame if unspecified
 
   # x, y , z
@@ -164,7 +164,7 @@ ekf_se_map:
 
   map_frame: map
   odom_frame: odom
-  base_link_frame: base_link
+  base_link_frame: base_footprint
   world_frame: map
 
   # x, y , z

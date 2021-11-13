@@ -4,3 +4,6 @@ https://github.com/efernandez/iri_navigation
 
 Supports ackerman?
 http://wiki.ros.org/base_local_planner
+
+Install packages
+sudo apt-get install ros-kinetic-dwa-local-planner

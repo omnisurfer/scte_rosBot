@@ -1,4 +1,21 @@
 <launch>
-    <!-- http://wiki.ros.org/rtabmap_ros -->
+    <!--
+    http://wiki.ros.org/rtabmap_ros
+    https://emanual.robotis.com/docs/en/platform/turtlebot3/slam_simulation/
+     -->
+
+    <arg name="robot_namespace" default="/sctebot"/>
+    <arg name="slam_methods" default="gmapping" doc="slam type [gmapping, cartographer, hector, karto, frontier_exploration]"/>
+    <arg name="configuration_basename" default="sctebot_lds_2d.lua"/>
+
+    <!-- SLAM: Gmapping, etc. Launch -->
+    <group ns="$(arg robot_namespace)">
+
+        <include file="$(find sctebot_slam)/launch/sctebot_$(arg slam_methods).launch">
+            <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+            <arg name="configuration_basename" value="$(arg configuration_basename)"/>
+        </include>
+
+    </group>
 
 </launch>
