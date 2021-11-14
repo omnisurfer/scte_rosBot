@@ -5,7 +5,8 @@
     <arg name="enable_ekf_odom_map" default="true"/>
     <arg name="enable_navsat_odom" default="true"/>
 
-    <arg name="navsat_gps_device" default="hector_sim"/>
+    <!--arg name="navsat_gps_device" default="hector_sim"/-->
+    <arg name="navsat_gps_device" default="garmin_18x"/>
 
     <!--
     Path planning
@@ -27,6 +28,7 @@
         https://github.com/ros/geometry2/issues/467
         http://wiki.ros.org/robot_localization/Troubleshooting
         https://answers.ros.org/questions/scope:all/sort:activity-desc/tags:robot_localization/page:1/
+        https://answers.ros.org/question/321093/robot_localization-with-gps-map-frame-wont-stay-fixed/
     -->
 
     <!-- example from source
@@ -42,12 +44,12 @@
 
         <group if="$(eval enable_ekf_odom_map == true)">
 
-            <rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam>
+            <!--rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam-->
 
-            <!-- odom ekf -->
+            <!-- ekf odom -->
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
 
-            <!-- map ekf -->
+            <!-- ekf map -->
             <!---->
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
                 <remap from="odometry/filtered" to="odometry/filtered_map"/>

@@ -48,7 +48,7 @@ ekf_se_odom:
   odom0_config: [false,  false,  false,
                  false, false, false,
                  true, true, false,
-                 false, false, false,
+                 false, false, true,
                  false, false, false]
   odom0_differential: false
   odom0_relative: false
@@ -75,7 +75,7 @@ ekf_se_odom:
                 false, false, true,
                 false, false, false,
                 false, false, true,
-                true, false, false]
+                true, true, false]
 
   #imu0_config: [ true, true, true,
   #               true, true, true,
@@ -190,7 +190,7 @@ ekf_se_map:
   odom0_config: [ false,  false,  false,
                   false, false, false,
                   true, true, false,
-                  false, false, false,
+                  false, false, true,
                   false, false, false ]
   odom0_differential: false
   odom0_relative: false
@@ -199,16 +199,16 @@ ekf_se_map:
   odom0_twist_rejection_threshold: 2 # 0.2
   odom0_nodelay: false
 
-  odom1: $(arg robot_namespace)/odometry/gps
-  odom1_config: [ true,  true,  false,
-                false, false, false,
-                false, false, false,
-                false, false, false,
-                false, false, false ]
-  odom1_queue_size: 10
-  odom1_nodelay: true
-  odom1_differential: false
-  odom1_relative: false
+  #odom1: $(arg robot_namespace)/odometry/gps
+  #odom1_config: [ true,  true,  false,
+  #              false, false, false,
+  #              false, false, false,
+  #              false, false, false,
+  #              false, false, false ]
+  #odom1_queue_size: 10
+  #odom1_nodelay: true
+  #odom1_differential: false
+  #odom1_relative: false
 
   imu0: $(arg robot_namespace)/imu
   imu0_config: [ false, false, false,
@@ -231,10 +231,10 @@ ekf_se_map:
 
   imu1: $(arg robot_namespace)/d455/imu/data
   imu1_config: [ false, false, false,
-                 false, false, true,
+                 false, false, false,
                  false, false, false,
                  false, false, true,
-                 true, false, false ]
+                 true, true, false ]
 
   #imu1_config: [ false, false, false,
   #               false, false, true,
@@ -249,7 +249,7 @@ ekf_se_map:
   imu1_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
   imu1_twist_rejection_threshold: 0.8                #
   imu1_linear_acceleration_rejection_threshold: 0.8  #
-  imu1_remove_gravitational_acceleration: true
+  imu1_remove_gravitational_acceleration: false
 
   use_control: false
 

@@ -42,6 +42,12 @@
         </include>
         <!---->
 
+        <!-- GPS -->
+        <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
+            <arg name="gpsName" default="garmin_18x"/>
+            <arg name="nodeName" default="local"/>
+        </include>
+
     </group>
 
     <!-- Launch the ada10dof IMU on raspberry pi node
