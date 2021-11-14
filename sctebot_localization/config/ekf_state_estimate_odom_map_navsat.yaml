@@ -57,6 +57,19 @@ ekf_se_odom:
   odom0_twist_rejection_threshold: 3 # 0.2
   odom0_nodelay: false
 
+  odom1: $(arg robot_namespace)/rtabmap/odom
+  odom1_config: [ false,  false,  false,
+                  false, false, false,
+                  true, true, false,
+                  false, false, false,
+                  false, false, false ]
+  odom1_differential: false
+  odom1_relative: false
+  odom1_queue_size: 10
+  odom1_pose_rejection_threshold: 15 # 2
+  odom1_twist_rejection_threshold: 3 # 0.2
+  odom1_nodelay: false
+
   imu0: $(arg robot_namespace)/imu
   imu0_config: [false, false, false,
                 false, false, true,

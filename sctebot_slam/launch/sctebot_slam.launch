@@ -11,10 +11,26 @@
     <!-- SLAM: Gmapping, etc. Launch -->
     <group ns="$(arg robot_namespace)">
 
+        <!---->
         <include file="$(find sctebot_slam)/launch/sctebot_$(arg slam_methods).launch">
             <arg name="robot_namespace" value="$(arg robot_namespace)"/>
             <arg name="configuration_basename" value="$(arg configuration_basename)"/>
         </include>
+
+        <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+            <arg name="args" value="--delete_db_on_start"/>
+            <arg name="rgb_topic" value="$(arg robot_namespace)/d455/color/image_raw"/>
+            <arg name="depth_topic" value="$(arg robot_namespace)/d455/aligned_depth_to_color/image_raw"/>
+            <arg name="camera_info_topic" value="$(arg robot_namespace)/d455/color/camera_info"/>
+            <arg name="depth_camera_info_topic" value="$(arg robot_namespace)/d455/depth/camera_info"/>
+            <arg name="frame_id" value="base_footprint"/>
+            <arg name="publish_tf_odom" value="false"/>
+            <arg name="publish_tf_map" value="false"/>
+            <arg name="rtabmapviz" value="false"/>
+            <arg name="rviz" value="false"/>
+        </include>
+
+        <!---->
 
     </group>
 

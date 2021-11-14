@@ -1,9 +1,9 @@
 <launch>
     <arg name="robot_namespace" default="/sctebot"/>
     <arg name="pub_tf" default="false"/>
-    <arg name="simulation_on" default="0"/>
-    <arg name="enable_ekf_odom_map" default="1"/>
-    <arg name="enable_navsat_odom" default="0"/>
+    <arg name="simulation_on" default="false"/>
+    <arg name="enable_ekf_odom_map" default="true"/>
+    <arg name="enable_navsat_odom" default="true"/>
 
     <arg name="navsat_gps_device" default="hector_sim"/>
 
@@ -38,11 +38,12 @@
         <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link"
               args="0.0 0.0 0.005 0.0 0.0 0.0 /base_footprint /base_link 60" />
 
-        <!--rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam-->
-
         <rosparam command="load" file="$(find sctebot_localization)/config/ekf_state_estimate_odom_map_navsat.yaml" subst_value="true"/>
 
-        <group if="$(eval arg('enable_ekf_odom_map') == 1)">
+        <group if="$(eval enable_ekf_odom_map == true)">
+
+            <rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam>
+
             <!-- odom ekf -->
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
 
@@ -55,15 +56,16 @@
 
         </group>
 
-        <!-- map/world ekf -->
-        <group if="$(eval arg('enable_navsat_odom') == 1)">
+        <!-- Nav Sat -->
+        <group if="$(eval enable_navsat_odom == true)">
             <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true">
                 <remap from="odometry/filtered" to="odometry/filtered_map" />
                 <remap from="gps/fix" to="$(arg navsat_gps_device)/gps/fix"/>
                 <remap from="imu/data" to="imu"/>
-                <!--remap from="imu/data" to="d455/imu/data"/-->
             </node>
         </group>
+        <!---->
+
     </group>
 
 </launch>

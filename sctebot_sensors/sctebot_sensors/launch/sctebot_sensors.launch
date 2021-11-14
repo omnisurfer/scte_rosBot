@@ -9,19 +9,20 @@
         <remap from="/$(arg robot_namespace)/$(arg camera_name)/depth/color/points" to="points2"/>
         <remap from="/$(arg robot_namespace)/$(arg camera_name)/imu" to="imu/data_raw"/>
 
-        <include file="$(find sctebot_sensors_start)/launch/sctebot_realsense.launch">
+        <include file="$(find sctebot_sensors)/launch/sctebot_realsense.launch">
             <arg name="camera" value="$(arg camera_name)"/>
-            <arg name="enable_pointcloud" value="false"/>
-            <arg name="enable_depth" value="false"/>
-            <arg name="enable_infra1" value="false"/>
-            <arg name="enable_infra2" value="false"/>
-            <arg name="enable_color" value="false"/>
+            <arg name="enable_pointcloud" value="true"/>
+            <arg name="enable_depth" value="true"/>
+            <arg name="enable_infra1" value="true"/>
+            <arg name="enable_infra2" value="true"/>
+            <arg name="enable_color" value="true"/>
             <arg name="enable_gyro" value="true"/>
             <arg name="enable_accel" value="true"/>
         </include>
 
         <!-- Pose from realsense IMU -->
         <!--http://wiki.ros.org/imu_filter_madgwick -->
+        <!---->
         <node pkg="imu_filter_madgwick" type="imu_filter_node" name="realsense_imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
             <remap from="imu/data_raw" to="$(arg camera_name)/imu/data_raw"/>
             <remap from="imu/data" to="$(arg camera_name)/imu/data"/>
@@ -32,13 +33,14 @@
             <param name="use_mag" value="false" />
             <param name="use_magnetic_field_msg" value="false" />
         </node>
+        <!---->
 
         <!-- YD Lidar -->
-        <!--
-        <include file="$(find sctebot_sensors_start)/launch/sctebot_ydlidar_g2.launch">
+        <!---->
+        <include file="$(find sctebot_sensors)/launch/sctebot_ydlidar_g2.launch">
 
         </include>
-        -->
+        <!---->
 
     </group>
 
