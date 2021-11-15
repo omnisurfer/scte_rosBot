@@ -17,6 +17,12 @@
             <arg name="configuration_basename" value="$(arg configuration_basename)"/>
         </include>
 
+        <!--
+        https://answers.ros.org/question/329165/using-rtabmap_ros-with-external-gps/
+        https://answers.ros.org/question/225694/interfacing-rtabmap-and-robot_localization/
+        https://answers.ros.org/question/296510/navigation-outdoors-how/
+        https://diglib.tugraz.at/download.php?id=576a78e3070c4&location=browse
+        -->
         <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
             <arg name="args" value="--delete_db_on_start"/>
             <arg name="rgb_topic" value="$(arg robot_namespace)/d455/color/image_raw"/>
