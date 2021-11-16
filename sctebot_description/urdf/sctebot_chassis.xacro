@@ -275,7 +275,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     d455_link
     -->
     <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
-    <xacro:sensor_d435i parent="camera_rig_bar" name="d455">
+    <xacro:sensor_d435i parent="camera_rig_bar" name="stereo_fwd">
         <origin xyz="0 0 0" rpy="0 0 0"/>
     </xacro:sensor_d435i>
 

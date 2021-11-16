@@ -12,7 +12,7 @@
         <topic>__default_topic__</topic>
         <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
           <robotNamespace>$(arg robot_namespace)</robotNamespace>
-          <topicName>imu</topicName>
+          <topicName>gazebo/imu</topicName>
           <bodyName>imu_link</bodyName>
           <frameName>imu_link</frameName>
           <updateRateHZ>400.0</updateRateHZ>
@@ -32,8 +32,8 @@
       <robotNamespace>$(arg robot_namespace)</robotNamespace>
       <bodyName>base_link</bodyName>
       <frameId>gps_link</frameId>
-      <topicName>hector_sim/gps/fix</topicName>
-      <velocityTopicName>hector_sim/gps/fix_velocity</velocityTopicName>
+      <topicName>primary_gps/gps/fix</topicName>
+      <velocityTopicName>primary_gps/gps/fix_velocity</velocityTopicName>
       <referenceLatitude>32.75394484000334</referenceLatitude>
       <referenceLongitude>-117.21848979362261</referenceLongitude>
       <referenceHeading>0.0</referenceHeading>
@@ -182,7 +182,7 @@
       <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>0.0</updateRate>
-        <cameraName>stereo_fwd/camera</cameraName>
+        <cameraName>stereo_fwd</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>/driver_side_camera_optical</frameName>

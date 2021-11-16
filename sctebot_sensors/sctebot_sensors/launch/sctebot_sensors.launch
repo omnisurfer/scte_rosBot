@@ -4,10 +4,15 @@
 
     <group ns="$(arg robot_namespace)">
         <!-- Realsense Camera -->
-        <arg name="camera_name" default="d455"/>
+        <arg name="camera_name" default="stereo_fwd"/>
 
         <remap from="/$(arg robot_namespace)/$(arg camera_name)/depth/color/points" to="points2"/>
         <remap from="/$(arg robot_namespace)/$(arg camera_name)/imu" to="imu/data_raw"/>
+
+        <remap from="/$(arg robot_namespace)/$(arg camera_name)/infra1/image_rect_raw" to="left/image_raw"/>
+        <remap from="/$(arg robot_namespace)/$(arg camera_name)/infra1/camera_info" to="left/camera_info"/>
+        <remap from="/$(arg robot_namespace)/$(arg camera_name)/infra2/image_rect_raw" to="right/image_raw"/>
+        <remap from="/$(arg robot_namespace)/$(arg camera_name)/infra2/camera_info" to="right/camera_info"/>
 
         <include file="$(find sctebot_sensors)/launch/sctebot_realsense.launch">
             <arg name="camera" value="$(arg camera_name)"/>
@@ -44,8 +49,8 @@
 
         <!-- GPS -->
         <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
-            <arg name="gpsName" default="garmin_18x"/>
-            <arg name="nodeName" default="local"/>
+            <arg name="gps_name" default="primary_gps"/>
+            <arg name="node_name" default="local"/>
         </include>
 
     </group>

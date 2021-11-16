@@ -5,8 +5,7 @@
     <arg name="enable_ekf_odom_map" default="true"/>
     <arg name="enable_navsat_odom" default="true"/>
 
-    <!--arg name="navsat_gps_device" default="hector_sim"/-->
-    <arg name="navsat_gps_device" default="garmin_18x"/>
+    <arg name="navsat_gps_device" default="primary_gps"/>
 
     <!--
     Path planning
@@ -44,8 +43,6 @@
 
         <group if="$(eval enable_ekf_odom_map == true)">
 
-            <!--rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam-->
-
             <!-- ekf odom -->
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
 
@@ -60,7 +57,13 @@
 
         <!-- Nav Sat -->
         <group if="$(eval enable_navsat_odom == true)">
+            <rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam>
+
             <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true">
+                <param name="magnetic_declination_radians" value="0"/>
+
+                <param name="yaw_offset" value="0"/>
+
                 <remap from="odometry/filtered" to="odometry/filtered_map" />
                 <remap from="gps/fix" to="$(arg navsat_gps_device)/gps/fix"/>
                 <remap from="imu/data" to="imu"/>
