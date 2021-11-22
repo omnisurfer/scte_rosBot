@@ -2,8 +2,9 @@
     <!--
     https://github.com/ROBOTIS-GIT/turtlebot3/tree/master/turtlebot3_navigation/launch
     -->
-    <arg name="model" default="$(env SCTEBOT_MODEL)" doc="model type [sctebot, sctebot_a]"/>
-    <arg name="cmd_vel_topic" default="/cmd_vel" />
+    <!--arg name="model" default="$(env SCTEBOT_MODEL)" doc="model type [sctebot, sctebot_a]"/-->
+    <arg name="model" default="sctebot"/>
+    <arg name="cmd_vel_topic" default="cmd_vel" />
     <arg name="odom_topic" default="odom" />
     <arg name="move_forward_only" default="false"/>
 
