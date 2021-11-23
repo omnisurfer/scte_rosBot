@@ -15,11 +15,11 @@
         </node>
 
         <!-- AMCL -->
-        <!--
+        <!---->
         <include file="$(find sctebot_navigation)/launch/amcl.launch">
             <arg name="model" value="$(arg model)"/>
         </include>
-        -->
+        <!---->
 
         <!-- move_base -->
         <include file="$(find sctebot_navigation)/launch/move_base.launch">
