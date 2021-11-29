@@ -5,4 +5,4 @@ cmake-build-debug/
 nbproject/
 venv/
 
-.tar.gz
+*.tar.gz
