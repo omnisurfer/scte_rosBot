@@ -4,3 +4,5 @@ devel/
 cmake-build-debug/
 nbproject/
 venv/
+
+.tar.gz
