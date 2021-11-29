@@ -1,6 +1,7 @@
 <launch>
     <!--
     https://github.com/ROBOTIS-GIT/turtlebot3/tree/master/turtlebot3_navigation/launch
+    http://wiki.ros.org/move_base
     -->
     <!--arg name="model" default="$(env SCTEBOT_MODEL)" doc="model type [sctebot, sctebot_a]"/-->
     <arg name="model" default="sctebot"/>

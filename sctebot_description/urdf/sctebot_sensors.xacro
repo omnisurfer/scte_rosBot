@@ -34,8 +34,8 @@
       <frameId>gps_link</frameId>
       <topicName>primary_gps/gps/fix</topicName>
       <velocityTopicName>primary_gps/gps/fix_velocity</velocityTopicName>
-      <referenceLatitude>32.75394484000334</referenceLatitude>
-      <referenceLongitude>-117.21848979362261</referenceLongitude>
+      <referenceLatitude>32.76428904214641</referenceLatitude>
+      <referenceLongitude>-117.22632586042305</referenceLongitude>
       <referenceHeading>0.0</referenceHeading>
       <referenceLatitude>0.0</referenceLatitude>
       <!--status>1</status> STATUS_FIX -->

@@ -12,11 +12,12 @@
     <!-- SLAM: Gmapping, etc. Launch -->
     <group ns="$(arg robot_namespace)">
 
-        <!---->
+        <!--
         <include file="$(find sctebot_slam)/launch/sctebot_$(arg slam_methods).launch">
             <arg name="robot_namespace" value="$(arg robot_namespace)"/>
             <arg name="configuration_basename" value="$(arg configuration_basename)"/>
         </include>
+        -->
 
         <!--
         https://answers.ros.org/question/329165/using-rtabmap_ros-with-external-gps/
