@@ -6,7 +6,7 @@
 
 AdaFruit10DoFImu::AdaFruit10DoFImu() {
 
-#if 0
+#if 1
 #if ENABLE_BMP180_PRESSURE_DEVICE
     bmp180DeviceHandle = new Bmp180Pressure();
 #endif

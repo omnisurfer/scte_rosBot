@@ -559,6 +559,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    if(i2c_bus_number > 1) {
+        std::cout << "WARNING! I2C BUS NUMBER IS: " << i2c_bus_number << "..." << std::endl;
+    }
+
     AdaFruit10DoFImu adaFruit10DoFImu = AdaFruit10DoFImu();
 
     adaFruit10DoFImu.init_device(

@@ -7,3 +7,11 @@ the command line to allow it to work with the 1pps signal.
 https://bugs.archlinux.org/task/53651
 
 - run config_pi_gps.sh to configure the adafruit ultimate gps to run at 115200 and to output a PPS signal.
+
+gpsd (/etc/default/gpsd):
+# Devices gpsd should collect to at boot time.
+# They need to be read/writeable, either by user gpsd or the group dialout.
+DEVICES="/dev/ttyAMA0 /dev/pps0"
+
+# Other options you want to pass to gpsd
+GPSD_OPTIONS="-G -b -s 115200"
