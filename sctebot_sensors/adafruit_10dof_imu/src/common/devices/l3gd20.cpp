@@ -241,8 +241,8 @@ void L3gd20Gyro::enable_load_mock_data() {
     _enable_load_mock_data = true;
 }
 
-void L3gd20Gyro::_mock_device_emulation() {
-    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation starting";
+void L3gd20Gyro::_mock_device_emulation_worker() {
+    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation_worker starting";
 
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
     BOOST_LOG_TRIVIAL(debug) << "mock l3gd20 waiting to run...";
@@ -342,7 +342,7 @@ void L3gd20Gyro::_mock_device_emulation() {
         device_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation exiting";
+    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation_worker exiting";
 }
 
 void L3gd20Gyro::_update_temperature_axis() {

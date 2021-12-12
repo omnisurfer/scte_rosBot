@@ -38,10 +38,10 @@ private:
     // so creating a pointer to the object
     // https://stackoverflow.com/questions/58386020/how-to-fix-use-of-deleted-function-when-using-mutex-and-condition-variable-as
 
-    Bmp180Pressure *bmp180DeviceHandle;
-    L3gd20Gyro *l3gd20GyroDeviceHandle;
-    Lsm303DlhcAccelerometer *lsm303DlhcAccelDeviceHandle;
-    Lsm303DlhcMagnetometer *lsm303DlhcMagDeviceHandle;
+    std::unique_ptr<Bmp180Pressure> bmp180DeviceHandle;
+    std::unique_ptr<L3gd20Gyro> l3gd20GyroDeviceHandle;
+    std::unique_ptr<Lsm303DlhcAccelerometer> lsm303DlhcAccelDeviceHandle;
+    std::unique_ptr<Lsm303DlhcMagnetometer> lsm303DlhcMagDeviceHandle;
 
     int close_device() {
 
@@ -66,11 +66,17 @@ public:
             void (*handle_lsm303dlhc_mag_measurements)(float temperature_deg_c, float x_ga, float y_ga, float z_ga)
             ) {
 
+        bool init_ok = true;
+
+        bmp180DeviceHandle.reset(new Bmp180Pressure());
+        l3gd20GyroDeviceHandle.reset(new L3gd20Gyro());
+        lsm303DlhcAccelDeviceHandle.reset(new Lsm303DlhcAccelerometer());
+        lsm303DlhcMagDeviceHandle.reset(new Lsm303DlhcMagnetometer());
+
         int _i2c_bus_number = i2c_bus_number;
         int i2c_device_address;
 
 #if ENABLE_BMP180_PRESSURE_DEVICE
-        bmp180DeviceHandle = new Bmp180Pressure();
 
         /* CONFIRMED FOR BMP180 on RPI4 Node */
         i2c_device_address = BMP180_RPI_ADDRESS;
@@ -87,12 +93,14 @@ public:
         bmp180DeviceHandle->enable_load_mock_data();
 #endif
         if(!bmp180DeviceHandle->connect_to_device()) {
-            return -1;
+
+            //bmp180DeviceHandle->shutdown_device();
+
+            init_ok = false;
         };
 #endif
 
 #if ENABLE_L3GD20_GYRO_DEVICE
-        l3gd20GyroDeviceHandle = new L3gd20Gyro();
 
         i2c_device_address = L3GD20_RPI_ADDRESS;
 
@@ -107,12 +115,12 @@ public:
         l3gd20GyroDeviceHandle->enable_load_mock_data();
 #endif
         if(!l3gd20GyroDeviceHandle->connect_to_device()) {
-            return -1;
+
+            init_ok = false;
         };
 #endif
 
 #if ENABLE_LSM303DLHC_ACCEL_DEVICE
-        lsm303DlhcAccelDeviceHandle = new Lsm303DlhcAccelerometer();
 
         //LSM303DLHC may have two addresses, 0x19 for Accel, 0x1e for Mag/Temp
         i2c_device_address = LSM303DLHC_ACCEL_RPI_ADDRESS;
@@ -128,12 +136,12 @@ public:
         lsm303DlhcAccelDeviceHandle->enable_load_mock_data();
 #endif
         if(!lsm303DlhcAccelDeviceHandle->connect_to_device()) {
-            return -1;
+
+            init_ok = false;
         }
 #endif
 
 #if ENABLE_LSM303DLHC_MAG_DEVICE
-        lsm303DlhcMagDeviceHandle = new Lsm303DlhcMagnetometer();
 
         i2c_device_address = LSM303DLHC_MAG_RPI_ADDRESS;
 
@@ -148,10 +156,11 @@ public:
         lsm303DlhcMagDeviceHandle->enable_load_mock_data();
 #endif
         if(!lsm303DlhcMagDeviceHandle->connect_to_device()) {
-            return -1;
+
+            init_ok = false;
         }
 #endif
-        return 1;
+        return init_ok;
     }
 
     void run() {

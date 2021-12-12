@@ -20,7 +20,7 @@
 
 namespace logging = boost::log;
 
-#include "i2c_linux.h"
+#include "i2c_linux/i2c_linux.h"
 
 class Bmp180Pressure {
 
@@ -115,7 +115,7 @@ private:
 
     host_callback_function _host_callback_function{};
 
-    bool mock_run_device_thread = false;
+    bool run_mock_device_thread = false;
     std::condition_variable mock_device_thread_run_cv;
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
@@ -325,7 +325,7 @@ private:
 
     void _data_capture_worker();
 
-    void _mock_device_emulation();
+    void _mock_device_emulation_worker();
 
     void _request_temperature();
 
@@ -535,7 +535,7 @@ public:
             data_capture_thread.join();
         }
 
-        this->mock_run_device_thread = false;
+        this->run_mock_device_thread = false;
 
         std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
         this->mock_device_thread_run_cv.notify_one();
@@ -581,18 +581,30 @@ public:
         return 1;
     }
 
+    int shutdown_device() {
+
+        this->run_data_capture_thread = false;
+        std::lock_guard<std::mutex> lock(this->data_capture_thread_run_mutex);
+        this->data_capture_thread_run_cv.notify_one();
+
+        this->run_mock_device_thread = false;
+
+        this->_close_device();
+
+    }
+
     void enable_load_mock_data();
 
     int mock_run_device_emulation() {
 
-        mock_device_thread = std::thread(&Bmp180Pressure::_mock_device_emulation, this);
+        mock_device_thread = std::thread(&Bmp180Pressure::_mock_device_emulation_worker, this);
 
         // wait a little bit for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));
 
         std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
         this->mock_device_thread_run_cv.notify_one();
-        this->mock_run_device_thread = true;
+        this->run_mock_device_thread = true;
         device_lock.unlock();
 
         return 1;

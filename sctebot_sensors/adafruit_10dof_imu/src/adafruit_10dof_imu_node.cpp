@@ -9,6 +9,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
+#include <stdexcept>
 
 #include <ros/ros.h>
 
@@ -563,9 +564,11 @@ int main(int argc, char* argv[]) {
         std::cout << "WARNING! I2C BUS NUMBER IS: " << i2c_bus_number << "..." << std::endl;
     }
 
-    AdaFruit10DoFImu adaFruit10DoFImu = AdaFruit10DoFImu();
+    std::unique_ptr<AdaFruit10DoFImu> adaFruit10DoFImu (new AdaFruit10DoFImu());
 
-    adaFruit10DoFImu.init_device(
+#if 1
+    // TODO change this to an exception?
+    bool init_ok = adaFruit10DoFImu->init_device(
             i2c_bus_number,
             handle_bmp180_pressure_measurements,
             handle_l3gd20_gyro_measurements,
@@ -573,7 +576,14 @@ int main(int argc, char* argv[]) {
             handle_lsm303dlhc_mag_measurements
     );
 
-    adaFruit10DoFImu.run();
+    if(init_ok) {
+        adaFruit10DoFImu->run();
+    }
+    else {
+        ROS_WARN("Failed to initialize the ada fruit IMU, exiting");
+    }
+#endif
+
 #endif
 
     std::cout << "press any key to exit..." << std::endl;

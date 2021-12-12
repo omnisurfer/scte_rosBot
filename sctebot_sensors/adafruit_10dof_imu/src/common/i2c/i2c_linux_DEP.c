@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include "i2c_linux.h"
+#include "i2c_linux_DEP.h"
 
 /*
  * @brief   Performs either writing or reading operation from I2C device

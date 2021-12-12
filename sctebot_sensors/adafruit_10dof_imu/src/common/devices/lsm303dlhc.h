@@ -19,7 +19,7 @@
 
 namespace logging = boost::log;
 
-#include "i2c_linux.h"
+#include "i2c_linux/i2c_linux.h"
 
 #define GRAVITY_MS_S 9.80665
 
@@ -489,7 +489,7 @@ private:
 
     void _data_capture_worker();
 
-    void _mock_device_emulation();
+    void _mock_device_emulation_worker();
 
     void _update_accelerometer_xyz_axis();
 
@@ -586,7 +586,7 @@ public:
 
     int mock_run_device_emulation() {
 
-        mock_device_thread = std::thread(&Lsm303DlhcAccelerometer::_mock_device_emulation, this);
+        mock_device_thread = std::thread(&Lsm303DlhcAccelerometer::_mock_device_emulation_worker, this);
 
         // wait a little bit for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));
@@ -877,7 +877,7 @@ private:
 
     void _data_capture_worker();
 
-    void _mock_device_emulation();
+    void _mock_device_emulation_worker();
 
     void _update_temperature_axis();
 
@@ -978,7 +978,7 @@ public:
 
     int mock_run_device_emulation() {
 
-        mock_device_thread = std::thread(&Lsm303DlhcMagnetometer::_mock_device_emulation, this);
+        mock_device_thread = std::thread(&Lsm303DlhcMagnetometer::_mock_device_emulation_worker, this);
 
         // wait a little bit for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));

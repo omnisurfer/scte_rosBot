@@ -260,8 +260,8 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
     BOOST_LOG_TRIVIAL(debug) << "Lsm303DlhcAccelerometer _data_capture_worker exiting";
 }
 
-void Lsm303DlhcAccelerometer::_mock_device_emulation() {
-    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation starting";
+void Lsm303DlhcAccelerometer::_mock_device_emulation_worker() {
+    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation_worker starting";
 
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
     BOOST_LOG_TRIVIAL(debug) << "mock lsm303dlhc waiting to run...";
@@ -770,8 +770,8 @@ void Lsm303DlhcMagnetometer::enable_load_mock_data() {
     _enable_load_mock_data = true;
 }
 
-void Lsm303DlhcMagnetometer::_mock_device_emulation() {
-    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation starting";
+void Lsm303DlhcMagnetometer::_mock_device_emulation_worker() {
+    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation_worker starting";
 
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
     BOOST_LOG_TRIVIAL(debug) << "mock lsm303dlhc waiting to run...";

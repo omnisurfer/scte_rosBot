@@ -20,7 +20,7 @@ namespace logging = boost::log;
 
 #define DEG_TO_RAD (M_PI/180.0)
 
-#include "i2c_linux.h"
+#include "i2c_linux/i2c_linux.h"
 
 /*
  * TODO CONVERT DRIVER TO L3GD20H! I WAS READING THE DATA SHEET FOR THE NON-H DEVICE TYPE.
@@ -465,7 +465,7 @@ private:
 
     void _data_capture_worker();
 
-    void _mock_device_emulation();
+    void _mock_device_emulation_worker();
 
     void _update_temperature_axis();
 
@@ -564,7 +564,7 @@ public:
 
     int mock_run_device_emulation() {
 
-        mock_device_thread = std::thread(&L3gd20Gyro::_mock_device_emulation, this);
+        mock_device_thread = std::thread(&L3gd20Gyro::_mock_device_emulation_worker, this);
 
         // wait a little bit for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));

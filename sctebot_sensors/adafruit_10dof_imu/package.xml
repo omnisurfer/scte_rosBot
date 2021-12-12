@@ -17,6 +17,7 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>i2c_linux</depend>
 
   <exec_depend>rqt_console</exec_depend>
   <exec_depend>rqt_reconfigure</exec_depend>
