@@ -41,7 +41,7 @@ int Bmp180Pressure::_init_device() {
             this->_get_calibration_buffer_size()
                                          );
 
-    this->run_data_capture_thread = false;
+    this->run_data_capture_thread = true;
     std::lock_guard<std::mutex> lock(this->data_capture_thread_run_mutex);
     this->data_capture_thread_run_cv.notify_one();
 
