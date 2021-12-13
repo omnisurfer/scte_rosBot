@@ -477,7 +477,7 @@ void ros_magnetometer_publisher_worker(const ros::Publisher& magnetometer_publis
 
 int main(int argc, char* argv[]) {
 
-    bool run_ros_publisher = false;
+    bool run_ros_publisher = true;
     bool run_i2c_code = true;
 
     if(run_ros_publisher) {
@@ -542,8 +542,7 @@ int main(int argc, char* argv[]) {
 
     if(run_i2c_code) {
 
-        int i2c_bus_number = 0;
-        //int i2c_device_address = 0x77;
+        int i2c_bus_number = 1;
 
         // lame way to do this but good enough for debug
         if(argv[1]) {
@@ -583,7 +582,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "press any key to exit..." << std::endl;
 
-    //std::cin.get();
+    std::cin.get();
 
     if(run_ros_publisher) {
         // pressure publisher
