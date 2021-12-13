@@ -540,9 +540,12 @@ int main(int argc, char* argv[]) {
         );
     }
 
+    // placed here so it remains in scope
+    std::unique_ptr<AdaFruit10DoFImu> adaFruit10DoFImu (new AdaFruit10DoFImu());
+
     if(run_i2c_code) {
 
-        int i2c_bus_number = 1;
+        int i2c_bus_number = 0;
 
         // lame way to do this but good enough for debug
         if(argv[1]) {
@@ -560,8 +563,6 @@ int main(int argc, char* argv[]) {
         if(i2c_bus_number > 1) {
             ROS_WARN("WARNING! I2C BUS NUMBER IS %i", i2c_bus_number);
         }
-
-        std::unique_ptr<AdaFruit10DoFImu> adaFruit10DoFImu (new AdaFruit10DoFImu());
 
         // TODO change this to an exception?
         bool init_ok = adaFruit10DoFImu->init_device(
