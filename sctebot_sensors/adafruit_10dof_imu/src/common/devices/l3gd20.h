@@ -495,6 +495,8 @@ public:
 
     ~L3gd20Gyro() {
 
+        BOOST_LOG_TRIVIAL(debug) << "l3gd20gyro destructor running";
+
         this->_close_device();
 
         this->run_data_capture_thread = false;

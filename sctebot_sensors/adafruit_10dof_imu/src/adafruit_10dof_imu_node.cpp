@@ -574,6 +574,7 @@ int main(int argc, char* argv[]) {
 
         if(init_ok) {
             adaFruit10DoFImu->run();
+            ROS_INFO("Initialized OK");
         }
         else {
             ROS_WARN("Failed to initialize the ada fruit IMU, exiting");

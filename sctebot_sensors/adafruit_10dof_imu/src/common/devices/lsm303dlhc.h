@@ -512,6 +512,7 @@ public:
     Lsm303DlhcAccelerometer() = default;
 
     ~Lsm303DlhcAccelerometer() {
+        BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc accelerometer destructor running";
 
         this->_close_device();
 
@@ -906,6 +907,8 @@ public:
     Lsm303DlhcMagnetometer() = default;
 
     ~Lsm303DlhcMagnetometer() {
+        BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc magnetometer destructor running";
+
         this->_close_device();
 
         this->run_data_capture_thread = false;
