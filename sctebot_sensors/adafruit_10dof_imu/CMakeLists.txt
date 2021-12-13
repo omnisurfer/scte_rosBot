@@ -27,14 +27,8 @@ include_directories(
         include
         ${catkin_INCLUDE_DIRS}
         src/
-        # src/common/i2c
         src/common/devices
 )
-
-## Declare a C++ library
-# add_library(
-#  i2c_linux src/common/i2c/i2c_linux.c
-#)
 
 add_library(
         bmp180 src/common/devices/bmp180.cpp
@@ -51,11 +45,6 @@ add_library(
 add_library(
         adafruit_10dof_imu src/adafruit_10dof_imu.cpp
 )
-
-#add_executable(
-#    i2c_linux_test src/common/i2c/i2c_linux.c
-#)
-
 
 add_executable(
         adafruit_10dof_imu_node src/adafruit_10dof_imu_node.cpp

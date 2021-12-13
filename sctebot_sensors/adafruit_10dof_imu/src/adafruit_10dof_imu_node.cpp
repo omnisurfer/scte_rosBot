@@ -111,7 +111,6 @@ std::thread ros_magnetometer_publisher_thread;
 void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
 #if OUTPUT_PRESS_DEBUG_MSG
-
     BOOST_LOG_TRIVIAL(debug)
             << "[bmp180]"
             << "\t\t temp (C): " << std::fixed << std::setprecision(2) << temperature
@@ -478,146 +477,145 @@ void ros_magnetometer_publisher_worker(const ros::Publisher& magnetometer_publis
 
 int main(int argc, char* argv[]) {
 
-    logging::core::get()->set_filter
-    (
-        logging::trivial::severity >= logging::trivial::debug
-    );
+    bool run_ros_publisher = false;
+    bool run_i2c_code = true;
 
-    std::cout << "adafruit 10dof IMU node starting..." << std::endl;
+    if(run_ros_publisher) {
 
-    ros::init(argc, argv, "adafruit_10dof_node");
+        logging::core::get()->set_filter
+                (
+                        logging::trivial::severity >= logging::trivial::debug
+                );
 
-    ros::NodeHandle ros_node_handle;
+        std::cout << "adafruit 10dof IMU node starting..." << std::endl;
 
-    // region ROS params
-    std::string node_name, robot_namespace;
+        ros::init(argc, argv, "adafruit_10dof_node");
 
-    if (ros_node_handle.getParam("/robot_namespace", robot_namespace)) {
-        ROS_INFO("robot_namespace %s", robot_namespace.c_str());
+        ros::NodeHandle ros_node_handle;
+
+        // region ROS params
+        std::string node_name, robot_namespace;
+
+        if (ros_node_handle.getParam("/robot_namespace", robot_namespace)) {
+            ROS_INFO("robot_namespace %s", robot_namespace.c_str());
+        } else {
+            robot_namespace = "sctebot_debug";
+            ROS_WARN("robot_namespace not found, using default %s", robot_namespace.c_str());
+        }
+
+        // endregion
+
+        ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu/data_raw", 1000);
+        ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>(
+                "ada10dof/mag/data_raw", 1000);
+
+        ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
+                "ada10dof/atm_pressure/data_raw", 100);
+        ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
+                "ada10dof/sea_lvl_pressure/data_raw", 100);
+
+        ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>(
+                "ada10dof/atm_temperature/data_raw", 100);
+        ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>(
+                "ada10dof/atm_altitude/data_raw", 100);
+
+        ros::Rate loop_rate(10);
+
+        ros_press_temp_range_publisher_thread = std::thread(
+                ros_pressure_temperature_and_range_publisher_worker,
+                atm_pressure_publisher,
+                sea_lvl_pressure_publisher,
+                atm_temperature_publisher,
+                atm_altitude_publisher
+        );
+
+        ros_imu_publisher_thread = std::thread(
+                ros_imu_publisher_worker,
+                imu_publisher
+        );
+
+        ros_magnetometer_publisher_thread = std::thread(
+                ros_magnetometer_publisher_worker,
+                magnetometer_publisher
+        );
     }
-    else {
-        robot_namespace = "sctebot_debug";
-        ROS_WARN("robot_namespace not found, using default %s", robot_namespace.c_str());
-    }
 
-    // endregion
+    if(run_i2c_code) {
 
-    ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu/data_raw", 1000);
-    ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>("ada10dof/mag/data_raw", 1000);
+        int i2c_bus_number = 0;
+        //int i2c_device_address = 0x77;
 
-    ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada10dof/atm_pressure/data_raw", 100);
-    ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>("ada10dof/sea_lvl_pressure/data_raw", 100);
+        // lame way to do this but good enough for debug
+        if(argv[1]) {
+            if (!memcmp("-d", argv[1], 2)) {
 
-    ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>("ada10dof/atm_temperature/data_raw", 100);
-    ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>("ada10dof/atm_altitude/data_raw", 100);
+                char* p_end;
+                i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
 
-    ros::Rate loop_rate(10);
-
-    ros_press_temp_range_publisher_thread = std::thread(
-            ros_pressure_temperature_and_range_publisher_worker,
-            atm_pressure_publisher,
-            sea_lvl_pressure_publisher,
-            atm_temperature_publisher,
-            atm_altitude_publisher
-            );
-
-    ros_imu_publisher_thread = std::thread(
-            ros_imu_publisher_worker,
-            imu_publisher
-            );
-
-    ros_magnetometer_publisher_thread = std::thread(
-            ros_magnetometer_publisher_worker,
-            magnetometer_publisher
-            );
-
-#if 0
-    int count = 0;
-    while(ros::ok()) {
-
-        ros::spinOnce();
-
-        loop_rate.sleep();
-        ++count;
-    }
-#endif
-
-#if 1
-    int i2c_bus_number = 9;
-    //int i2c_device_address = 0x77;
-
-    // lame way to do this but good enough for debug
-    if(argv[1]) {
-        if (!memcmp("-d", argv[1], 2)) {
-            // i2c_bus_number = atoi(argv[2]);
-
-            char* p_end;
-            i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
-
-            if (*p_end) {
-                //not sure what to do in this case
+                if (*p_end) {
+                    //not sure what to do in this case
+                }
             }
+        }
+
+        if(i2c_bus_number > 1) {
+            ROS_WARN("WARNING! I2C BUS NUMBER IS %i", i2c_bus_number);
+        }
+
+        std::unique_ptr<AdaFruit10DoFImu> adaFruit10DoFImu (new AdaFruit10DoFImu());
+
+        // TODO change this to an exception?
+        bool init_ok = adaFruit10DoFImu->init_device(
+                i2c_bus_number,
+                handle_bmp180_pressure_measurements,
+                handle_l3gd20_gyro_measurements,
+                handle_lsm303dlhc_accel_measurements,
+                handle_lsm303dlhc_mag_measurements
+        );
+
+        if(init_ok) {
+            adaFruit10DoFImu->run();
+        }
+        else {
+            ROS_WARN("Failed to initialize the ada fruit IMU, exiting");
         }
     }
 
-    if(i2c_bus_number > 1) {
-        std::cout << "WARNING! I2C BUS NUMBER IS: " << i2c_bus_number << "..." << std::endl;
-    }
-
-    std::unique_ptr<AdaFruit10DoFImu> adaFruit10DoFImu (new AdaFruit10DoFImu());
-
-#if 1
-    // TODO change this to an exception?
-    bool init_ok = adaFruit10DoFImu->init_device(
-            i2c_bus_number,
-            handle_bmp180_pressure_measurements,
-            handle_l3gd20_gyro_measurements,
-            handle_lsm303dlhc_accel_measurements,
-            handle_lsm303dlhc_mag_measurements
-    );
-
-    if(init_ok) {
-        adaFruit10DoFImu->run();
-    }
-    else {
-        ROS_WARN("Failed to initialize the ada fruit IMU, exiting");
-    }
-#endif
-
-#endif
-
     std::cout << "press any key to exit..." << std::endl;
 
-    std::cin.get();
+    //std::cin.get();
 
-    // pressure publisher
-    std::unique_lock<std::mutex> run_ros_pressure_publisher_worker_lock(run_ros_press_temp_range_publisher_worker_mutex);
-    run_ros_press_temp_range_publisher_worker = false;
-    run_ros_pressure_publisher_worker_lock.unlock();
-    ros_press_temp_range_publisher_worker_publish_cv.notify_all();
+    if(run_ros_publisher) {
+        // pressure publisher
+        std::unique_lock<std::mutex> run_ros_pressure_publisher_worker_lock(run_ros_press_temp_range_publisher_worker_mutex);
+        run_ros_press_temp_range_publisher_worker = false;
+        run_ros_pressure_publisher_worker_lock.unlock();
+        ros_press_temp_range_publisher_worker_publish_cv.notify_all();
 
-    if(ros_press_temp_range_publisher_thread.joinable()) {
-        ros_press_temp_range_publisher_thread.join();
-    }
+        if(ros_press_temp_range_publisher_thread.joinable()) {
+            ros_press_temp_range_publisher_thread.join();
+        }
 
-    // imu publisher
-    std::unique_lock<std::mutex> run_ros_imu_publisher_worker_lock(run_ros_imu_publisher_worker_mutex);
-    run_ros_imu_publisher_worker = false;
-    run_ros_imu_publisher_worker_lock.unlock();
-    ros_imu_publisher_worker_publish_cv.notify_all();
+        // imu publisher
+        std::unique_lock<std::mutex> run_ros_imu_publisher_worker_lock(run_ros_imu_publisher_worker_mutex);
+        run_ros_imu_publisher_worker = false;
+        run_ros_imu_publisher_worker_lock.unlock();
+        ros_imu_publisher_worker_publish_cv.notify_all();
 
-    if(ros_imu_publisher_thread.joinable()) {
-        ros_imu_publisher_thread.join();
-    }
+        if(ros_imu_publisher_thread.joinable()) {
+            ros_imu_publisher_thread.join();
+        }
 
-    // magnetometer publisher
-    std::unique_lock<std::mutex> run_ros_magnetometer_publisher_worker_lock(run_ros_magnetometer_publisher_worker_mutex);
-    run_ros_magnetometer_publisher_worker = false;
-    run_ros_magnetometer_publisher_worker_lock.unlock();
-    ros_magnetometer_publisher_worker_publish_cv.notify_all();
+        // magnetometer publisher
+        std::unique_lock<std::mutex> run_ros_magnetometer_publisher_worker_lock(run_ros_magnetometer_publisher_worker_mutex);
+        run_ros_magnetometer_publisher_worker = false;
+        run_ros_magnetometer_publisher_worker_lock.unlock();
+        ros_magnetometer_publisher_worker_publish_cv.notify_all();
 
-    if(ros_magnetometer_publisher_thread.joinable()) {
-        ros_magnetometer_publisher_thread.join();
+        if(ros_magnetometer_publisher_thread.joinable()) {
+            ros_magnetometer_publisher_thread.join();
+        }
+
     }
 
     return 0;

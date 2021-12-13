@@ -178,14 +178,14 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
 }
 
 void L3gd20Gyro::_data_capture_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "L3gd20Gyro _data_capture_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _data_capture_worker starting";
 
     std::unique_lock<std::mutex> data_worker_run_thread_lock(this->data_capture_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << "l3gd20 waiting to run...";
+    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _data_capture_worker waiting";
     this->data_capture_thread_run_cv.wait(data_worker_run_thread_lock);
     data_worker_run_thread_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << "l3gd20 running...";
+    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _data_capture_worker running";
 
     data_worker_run_thread_lock.lock();
     while(this->run_data_capture_thread) {
@@ -234,7 +234,7 @@ void L3gd20Gyro::_data_capture_worker() {
         data_worker_run_thread_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "L3gd20Gyro _data_capture_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _data_capture_worker exiting";
 }
 
 void L3gd20Gyro::enable_load_mock_data() {
@@ -242,14 +242,14 @@ void L3gd20Gyro::enable_load_mock_data() {
 }
 
 void L3gd20Gyro::_mock_device_emulation_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _mock_device_emulation_worker starting";
 
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << "mock l3gd20 waiting to run...";
+    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _mock_device_emulation_worker waiting";
     this->mock_device_thread_run_cv.wait(device_lock);
     device_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << "mock l3gd20 running...";
+    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _mock_device_emulation_worker running...";
 
     uint16_t loop_sleep_microseconds = 10500;
 

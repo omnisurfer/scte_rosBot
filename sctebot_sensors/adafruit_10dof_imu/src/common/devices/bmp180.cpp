@@ -41,22 +41,22 @@ int Bmp180Pressure::_init_device() {
             this->_get_calibration_buffer_size()
                                          );
 
-    this->run_data_capture_thread = true;
     std::lock_guard<std::mutex> lock(this->data_capture_thread_run_mutex);
+    this->run_data_capture_thread = true;
     this->data_capture_thread_run_cv.notify_one();
 
     return 1;
 }
 
 void Bmp180Pressure::_data_capture_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "Bmp180Pressure _data_capture_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << "bmp180 _data_capture_worker startingZ";
 
     std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 waiting to run...";
+    BOOST_LOG_TRIVIAL(debug) << "bmp180 _data_capture_worker waiting";
     this->data_capture_thread_run_cv.wait(data_lock);
     data_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 running...";
+    BOOST_LOG_TRIVIAL(debug) << "bmp180 _data_capture_worker running";
 
     data_lock.lock();
     while(this->run_data_capture_thread) {
@@ -85,7 +85,7 @@ void Bmp180Pressure::_data_capture_worker() {
         data_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "Bmp180Pressure _data_capture_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << "bmp180 _data_capture_worker exiting";
 
     //std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
@@ -95,14 +95,14 @@ void Bmp180Pressure::enable_load_mock_data() {
 }
 
 void Bmp180Pressure::_mock_device_emulation_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << "bmp180 _mock_device_emulation_worker starting";
 
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << "mock bmp180 waiting to run...";
+    BOOST_LOG_TRIVIAL(debug) << "bmp180 _mock_device_emulation_worker waiting";
     this->mock_device_thread_run_cv.wait(device_lock);
     device_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << "mock bmp180 running...";
+    BOOST_LOG_TRIVIAL(debug) << "bmp180 _mock_device_emulation_worker running";
 
     uint8_t debug_temp_counter = 0x96;
     uint8_t debug_press_counter = 0x07;
