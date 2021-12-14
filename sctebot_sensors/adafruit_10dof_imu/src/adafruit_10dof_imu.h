@@ -85,7 +85,7 @@ public:
                 _i2c_bus_number,
                 i2c_device_address,
                 3000,
-                "pressure_sensor",
+                "bmp180_pressure",
                 handle_bmp180_measurements
         );
 
@@ -106,7 +106,7 @@ public:
         l3gd20GyroDeviceHandle->config_device(
                 _i2c_bus_number,
                 i2c_device_address,
-                "3d_gyro",
+                "l3gd20_gyro",
                 handle_l3gd20_measurements
         );
 
@@ -128,7 +128,7 @@ public:
         lsm303DlhcAccelDeviceHandle->config_device(
                 _i2c_bus_number,
                 i2c_device_address,
-                "3d_accel",
+                "lsm303dlhc_accel",
                 handle_lsm303dlhc_accel_measurements
         );
 
@@ -149,7 +149,7 @@ public:
         lsm303DlhcMagDeviceHandle->config_device(
                 _i2c_bus_number,
                 i2c_device_address,
-                "3d_mag",
+                "lsm303dlhc_mag",
                 handle_lsm303dlhc_mag_measurements
         );
 

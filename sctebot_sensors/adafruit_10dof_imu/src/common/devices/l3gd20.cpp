@@ -25,7 +25,7 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
         std::string output_string;
         std::stringstream ss;
 
-        ss << "l3gd20 config: ";
+        ss << this->_device_name << ": config ";
 
         for(uint i = 0; i < sizeof(_control_register_1to5_buffer); ++i) {
             ss << std::hex << std::setfill('0') << std::setw(2) << (int)_control_register_1to5_buffer[i] << " ";
@@ -86,10 +86,10 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
     };
 
     if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << "CTRL_REG4 configure OK";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": CTRL_REG4 configure OK";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << "CTRL_REG4 configure failed";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": CTRL_REG4 configure failed";
     }
     //endregion
 
@@ -137,10 +137,10 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
     };
 
     if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << "CTRL_REG1 configure OK";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": CTRL_REG1 configure OK";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << "CTRL_REG1 configure failed";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": CTRL_REG1 configure failed";
     }
     //endregion
 
@@ -162,10 +162,10 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
     };
 
     if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << "LOW_ODR configure OK";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": LOW_ODR configure OK";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << "LOW_ODR configure failed";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": LOW_ODR configure failed";
     }
 
     // endregion
@@ -178,14 +178,14 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
 }
 
 void L3gd20Gyro::_data_capture_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _data_capture_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _data_capture_worker starting";
 
     std::unique_lock<std::mutex> data_worker_run_thread_lock(this->data_capture_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _data_capture_worker waiting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _data_capture_worker waiting";
     this->data_capture_thread_run_cv.wait(data_worker_run_thread_lock);
     data_worker_run_thread_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _data_capture_worker running";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _data_capture_worker running";
 
     data_worker_run_thread_lock.lock();
     while(this->run_data_capture_thread) {
@@ -234,7 +234,7 @@ void L3gd20Gyro::_data_capture_worker() {
         data_worker_run_thread_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _data_capture_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _data_capture_worker exiting";
 }
 
 void L3gd20Gyro::enable_load_mock_data() {
@@ -242,14 +242,14 @@ void L3gd20Gyro::enable_load_mock_data() {
 }
 
 void L3gd20Gyro::_mock_device_emulation_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _mock_device_emulation_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _mock_device_emulation_worker starting";
 
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _mock_device_emulation_worker waiting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _mock_device_emulation_worker waiting";
     this->mock_device_thread_run_cv.wait(device_lock);
     device_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << "l3gd20 _mock_device_emulation_worker running...";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _mock_device_emulation_worker running...";
 
     uint16_t loop_sleep_microseconds = 10500;
 
@@ -342,7 +342,7 @@ void L3gd20Gyro::_mock_device_emulation_worker() {
         device_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "_mock_device_emulation_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _mock_device_emulation_worker exiting";
 }
 
 void L3gd20Gyro::_update_temperature_axis() {
@@ -370,6 +370,7 @@ void L3gd20Gyro::_update_temperature_axis() {
 
         display_register_8bits("temp", _temperature_axis_byte, "temp", temperature[0]);
     }
+
 }
 
 void L3gd20Gyro::_update_angular_rate_xyz_axis() {
@@ -474,10 +475,10 @@ uint8_t L3gd20Gyro::_update_gyroscope_status() {
             /*
             if(z_or | y_or | x_or) {
 
-                BOOST_LOG_TRIVIAL(debug) << "gyro status reg: " << x;
+                BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": gyro status reg: " << x;
 
-                BOOST_LOG_TRIVIAL(debug) << "zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
-                BOOST_LOG_TRIVIAL(debug) << "zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
+                BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
+                BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
 
             }
             */

@@ -192,19 +192,18 @@ private:
          */
         _i2c_device_context = {0};
         if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
-            BOOST_LOG_TRIVIAL(error) << "failed to open device";
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open device";
             return 0;
         }
 
         if(!i2c_is_connected(&_i2c_device_context)) {
-            BOOST_LOG_TRIVIAL(error) << "failed to connect to device";
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect to device";
             return 0;
         }
 
         if(_enable_load_mock_data) {
             _mock_load_calibration_data();
         }
-
 
         // try read chip id
         uint8_t chip_id[1] = {0};
@@ -218,7 +217,7 @@ private:
         i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
         if(chip_id[0] != Bmp180Pressure::MagicNumbers::ChipId::CHIP_ID) {
-            BOOST_LOG_TRIVIAL(error) << "failed to read device chip id";
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device chip id";
             return 0;
         }
 
@@ -264,7 +263,6 @@ private:
         d41e b2fb 27c7
         3b83 e763 6542 7319 2800 0080 f6d1 a609
          */
-
 
         /*
          * real temp 0x6496 ~ 26C - 78F
@@ -315,7 +313,7 @@ private:
         int8_t register_address = 0x00;
 
         if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-            BOOST_LOG_TRIVIAL(debug) << "bmp180 sent mock calibration data to device OK";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
             return 0;
         }
 
@@ -356,7 +354,7 @@ private:
     int _calculate_temperature(uint16_t uncompensated_temperature, float &temperature) {
 
         if(!sensor_calibration_read) {
-            BOOST_LOG_TRIVIAL(debug) << "sensor calibration not read yet";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
             return 0;
         }
 
@@ -385,7 +383,7 @@ private:
     int _calculate_pressure(uint16_t uncompensated_pressure, uint8_t uncompensated_pressure_xlsb, float &pressure) const {
 
         if(!sensor_calibration_read) {
-            BOOST_LOG_TRIVIAL(debug) << "sensor calibration not read yet";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
             return 0;
         }
 
@@ -438,7 +436,7 @@ private:
     }
 
     int _init_calibration_coefficients(char *bytes, uint8_t length) {
-        BOOST_LOG_TRIVIAL(debug) << "bmp180 _init_calibration_coefficients";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _init_calibration_coefficients";
 
         if(length < 0 or length > 22) {
             return 0;
@@ -520,7 +518,7 @@ public:
     Bmp180Pressure() = default;
 
     ~Bmp180Pressure() {
-        BOOST_LOG_TRIVIAL(debug) << "bmp180 destructor running";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
         this->_close_device();
 
@@ -537,13 +535,13 @@ public:
         if(data_capture_thread.joinable()) {
             data_capture_thread.join();
 
-            BOOST_LOG_TRIVIAL(debug) << "bmp180 data_capture_thread joined";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
         }
 
         if(mock_device_thread.joinable()) {
             mock_device_thread.join();
 
-            BOOST_LOG_TRIVIAL(debug) << "bmp180 mock_device_thread joined";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
         }
     }
 

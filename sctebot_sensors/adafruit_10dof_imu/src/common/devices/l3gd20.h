@@ -324,12 +324,12 @@ private:
          */
         _i2c_device_context = {0};
         if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
-            BOOST_LOG_TRIVIAL(error) << "failed to open device";
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open";
             return 0;
         }
 
         if(!i2c_is_connected(&_i2c_device_context)) {
-            BOOST_LOG_TRIVIAL(error) << "failed to connect to device";
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect";
             return 0;
         }
 
@@ -349,7 +349,7 @@ private:
         i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
         if(chip_id[0] != L3gd20Gyro::MagicNumbers::WhoAmI::WHO_AM_I) {
-            BOOST_LOG_TRIVIAL(error) << "failed to read device WHO_AM_I register";
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device WHO_AM_I register";
             return 0;
         }
         return 1;
@@ -454,11 +454,11 @@ private:
         int8_t register_address = 0x00;
 
         if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-            BOOST_LOG_TRIVIAL(debug) << "loaded mock data for device OK";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": loaded mock data for device OK";
             return 0;
         }
         else {
-            BOOST_LOG_TRIVIAL(debug) << "loaded mock data for device FAILED";
+            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": loaded mock data for device FAILED";
             return -1;
         }
     }
@@ -495,7 +495,7 @@ public:
 
     ~L3gd20Gyro() {
 
-        BOOST_LOG_TRIVIAL(debug) << "l3gd20gyro destructor running";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
         this->_close_device();
 
@@ -532,7 +532,6 @@ public:
         _i2c_device_address = device_address;
         _sensor_update_period_ms = 0;
         _device_name = std::move(device_name);
-        //_device_name = &device_name;
 
         _host_callback_function = function_pointer;
 

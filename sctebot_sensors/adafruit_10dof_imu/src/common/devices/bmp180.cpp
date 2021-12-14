@@ -22,7 +22,7 @@ int Bmp180Pressure::_init_device() {
         std::string output_string;
         std::stringstream ss;
 
-        ss << "bmp180 calibration data: " << std::endl;
+        ss << this->_device_name << ": calibration data ";
 
         for(uint i = 0; i < sizeof(_calibration_data_buffer); ++i) {
             ss << std::hex << std::setfill('0') << std::setw(2) << (int)_calibration_data_buffer[i] << " ";
@@ -33,7 +33,7 @@ int Bmp180Pressure::_init_device() {
         BOOST_LOG_TRIVIAL(info) << output_string;
     }
     else {
-        BOOST_LOG_TRIVIAL(error) << "failed to read bmp180 coefficient registers";
+        BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read coefficient registers";
     }
 
     this->_init_calibration_coefficients(
@@ -49,14 +49,14 @@ int Bmp180Pressure::_init_device() {
 }
 
 void Bmp180Pressure::_data_capture_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 _data_capture_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker starting";
 
     std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 _data_capture_worker waiting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker waiting";
     this->data_capture_thread_run_cv.wait(data_lock);
     data_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 _data_capture_worker running";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker running";
 
     data_lock.lock();
     while(this->run_data_capture_thread) {
@@ -85,7 +85,7 @@ void Bmp180Pressure::_data_capture_worker() {
         data_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 _data_capture_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker exiting";
 
     //std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
@@ -95,14 +95,14 @@ void Bmp180Pressure::enable_load_mock_data() {
 }
 
 void Bmp180Pressure::_mock_device_emulation_worker() {
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 _mock_device_emulation_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker starting";
 
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 _mock_device_emulation_worker waiting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker waiting";
     this->mock_device_thread_run_cv.wait(device_lock);
     device_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 _mock_device_emulation_worker running";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker running";
 
     uint8_t debug_temp_counter = 0x96;
     uint8_t debug_press_counter = 0x07;
@@ -208,7 +208,7 @@ void Bmp180Pressure::_mock_device_emulation_worker() {
         device_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "bmp180 _mock_device_emulation_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker exiting";
 
     //std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
@@ -230,12 +230,12 @@ void Bmp180Pressure::_request_temperature() {
         std::this_thread::sleep_for(std::chrono::microseconds (4500));
 
         if(!this->_measurement_completed_ok()) {
-            BOOST_LOG_TRIVIAL(error) << "failed to complete measurement";
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": _request_temperature failed to complete measurement";
             return;
         }
     }
     else {
-        BOOST_LOG_TRIVIAL(error) << "failed to command temperature_deg_c read";
+        BOOST_LOG_TRIVIAL(error) << this->_device_name << ": _request_temperature failed to command temperature_deg_c read";
     }
 
     // read back temperature_deg_c
@@ -280,12 +280,12 @@ void Bmp180Pressure::_request_pressure() {
         std::this_thread::sleep_for(std::chrono::microseconds (4500));
 
         if(!this->_measurement_completed_ok()) {
-            BOOST_LOG_TRIVIAL(error) << "failed to complete measurement";
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": _request_pressure failed to complete measurement";
             return;
         }
     }
     else {
-        BOOST_LOG_TRIVIAL(error) << "failed to command pressure read";
+        BOOST_LOG_TRIVIAL(error) << this->_device_name << ": _request_pressure failed to command pressure read";
     }
 
     // read back pressure

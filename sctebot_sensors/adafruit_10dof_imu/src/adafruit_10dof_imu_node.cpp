@@ -10,6 +10,7 @@
 #include <condition_variable>
 #include <thread>
 #include <stdexcept>
+#include <signal.h>
 
 #include <ros/ros.h>
 
@@ -472,73 +473,39 @@ void ros_magnetometer_publisher_worker(const ros::Publisher& magnetometer_publis
 }
 // endregion
 
+void signal_handler(int sig) {
+
+    std::cout << "ROS signal handler " << sig << std::endl;
+
+    ros::shutdown();
+}
+
 /* IMU Sensor Msg */
 //http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/Imu.html
 
 int main(int argc, char* argv[]) {
 
+    std::string node_name = "adafruit_10dof_imu_node";
+    ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
+
+    ros::NodeHandle ros_node_handle;
+    signal(SIGINT | SIGTERM | SIGABRT | SIGKILL, signal_handler);
+
+    ros::Rate loop_rate(1);
+
+    //region ROS Params
+    std::string robot_namespace;
+
+    if (ros_node_handle.getParam("/robot_namespace", robot_namespace)) {
+        ROS_INFO("%s: robot_namespace %s", node_name.c_str(), robot_namespace.c_str());
+    } else {
+        robot_namespace = "sctebot_debug";
+        ROS_WARN("%s: robot_namespace not found, using default %s", node_name.c_str(), robot_namespace.c_str());
+    }
+    //endregion
+
     bool run_ros_publisher = true;
     bool run_i2c_code = true;
-
-    if(run_ros_publisher) {
-
-        logging::core::get()->set_filter
-                (
-                        logging::trivial::severity >= logging::trivial::debug
-                );
-
-        std::cout << "adafruit 10dof IMU node starting..." << std::endl;
-
-        ros::init(argc, argv, "adafruit_10dof_node");
-
-        ros::NodeHandle ros_node_handle;
-
-        // region ROS params
-        std::string node_name, robot_namespace;
-
-        if (ros_node_handle.getParam("/robot_namespace", robot_namespace)) {
-            ROS_INFO("robot_namespace %s", robot_namespace.c_str());
-        } else {
-            robot_namespace = "sctebot_debug";
-            ROS_WARN("robot_namespace not found, using default %s", robot_namespace.c_str());
-        }
-
-        // endregion
-
-        ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu/data_raw", 1000);
-        ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>(
-                "ada10dof/mag/data_raw", 1000);
-
-        ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
-                "ada10dof/atm_pressure/data_raw", 100);
-        ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
-                "ada10dof/sea_lvl_pressure/data_raw", 100);
-
-        ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>(
-                "ada10dof/atm_temperature/data_raw", 100);
-        ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>(
-                "ada10dof/atm_altitude/data_raw", 100);
-
-        ros::Rate loop_rate(10);
-
-        ros_press_temp_range_publisher_thread = std::thread(
-                ros_pressure_temperature_and_range_publisher_worker,
-                atm_pressure_publisher,
-                sea_lvl_pressure_publisher,
-                atm_temperature_publisher,
-                atm_altitude_publisher
-        );
-
-        ros_imu_publisher_thread = std::thread(
-                ros_imu_publisher_worker,
-                imu_publisher
-        );
-
-        ros_magnetometer_publisher_thread = std::thread(
-                ros_magnetometer_publisher_worker,
-                magnetometer_publisher
-        );
-    }
 
     // placed here so it remains in scope
     std::unique_ptr<AdaFruit10DoFImu> adaFruit10DoFImu (new AdaFruit10DoFImu());
@@ -561,7 +528,7 @@ int main(int argc, char* argv[]) {
         }
 
         if(i2c_bus_number > 1) {
-            ROS_WARN("WARNING! I2C BUS NUMBER IS %i", i2c_bus_number);
+            ROS_WARN("%s: WARNING! I2C Bus number is %i", node_name.c_str(), i2c_bus_number);
         }
 
         // TODO change this to an exception?
@@ -575,16 +542,67 @@ int main(int argc, char* argv[]) {
 
         if(init_ok) {
             adaFruit10DoFImu->run();
-            ROS_INFO("Initialized OK");
+            ROS_INFO("%s: IMU initialization success", node_name.c_str());
         }
         else {
-            ROS_WARN("Failed to initialize the ada fruit IMU, exiting");
+            ROS_WARN("%s: IMU initialization failed", node_name.c_str());
+            return 0;
         }
     }
 
-    std::cout << "press any key to exit..." << std::endl;
+    if(run_ros_publisher) {
 
-    std::cin.get();
+        logging::core::get()->set_filter
+                (
+                        logging::trivial::severity >= logging::trivial::debug
+                );
+
+        ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu/data_raw", 1000);
+        ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>(
+                "ada10dof/mag/data_raw", 1000);
+
+        ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
+                "ada10dof/atm_pressure/data_raw", 100);
+        ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
+                "ada10dof/sea_lvl_pressure/data_raw", 100);
+
+        ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>(
+                "ada10dof/atm_temperature/data_raw", 100);
+        ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>(
+                "ada10dof/atm_altitude/data_raw", 100);
+
+        ros_press_temp_range_publisher_thread = std::thread(
+                ros_pressure_temperature_and_range_publisher_worker,
+                atm_pressure_publisher,
+                sea_lvl_pressure_publisher,
+                atm_temperature_publisher,
+                atm_altitude_publisher
+        );
+
+        ros_imu_publisher_thread = std::thread(
+                ros_imu_publisher_worker,
+                imu_publisher
+        );
+
+        ros_magnetometer_publisher_thread = std::thread(
+                ros_magnetometer_publisher_worker,
+                magnetometer_publisher
+        );
+    }
+
+    ROS_INFO("%s: Entering ROS node loop", node_name.c_str());
+    while (ros::ok()) {
+
+        ros::spinOnce();
+        loop_rate.sleep();
+
+        bool shutdown = ros::isShuttingDown();
+
+        if(shutdown) {
+            std::cout << node_name + ": Shutting down ROS node" << std::endl;
+            break;
+        }
+    }
 
     if(run_ros_publisher) {
         // pressure publisher

@@ -480,7 +480,7 @@ private:
         int8_t register_address = 0x00;
 
         if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-            BOOST_LOG_TRIVIAL(debug) << "sent mock calibration data to device OK";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
             return 0;
         }
 
@@ -512,7 +512,7 @@ public:
     Lsm303DlhcAccelerometer() = default;
 
     ~Lsm303DlhcAccelerometer() {
-        BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc accelerometer destructor running";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
         this->_close_device();
 
@@ -869,7 +869,7 @@ private:
         int8_t register_address = 0x00;
 
         if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-            BOOST_LOG_TRIVIAL(debug) << "sent mock calibration data to device OK";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
             return 0;
         }
 
@@ -907,7 +907,7 @@ public:
     Lsm303DlhcMagnetometer() = default;
 
     ~Lsm303DlhcMagnetometer() {
-        BOOST_LOG_TRIVIAL(debug) << "lsm303dlhc magnetometer destructor running";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
         this->_close_device();
 
