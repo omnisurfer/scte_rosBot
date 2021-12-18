@@ -20,15 +20,15 @@ ackermann_steering_controller:
   steer_pos_multiplier: 1.0
 
   # odom covariances for the encoder output of the robot
-  pose_covariance_diagonal: [ 0.001, 0.001, 0.001, 0.001, 0.001, 0.03 ]
-  twist_covariance_diagonal: [ 0.001, 0.001, 0.001, 0.001, 0.001, 0.03 ]
+  pose_covariance_diagonal: [ 0.001, 0.001, 0.001, 0.001, 0.001, 0.13 ]
+  twist_covariance_diagonal: [ 0.001, 0.001, 0.001, 0.001, 0.001, 0.13 ]
 
   # top level frame (link) of the robot description
   base_frame_id: 'base_link'
 
   # transform from odom -> base_link
   enable_odom_tf: false
-  odom_frame_id: '/odom'
+  odom_frame_id: 'odom_ackermann'
 
   # set to false if the motor driver provides velocity data:
   estimate_velocity_from_position: true
@@ -41,15 +41,15 @@ ackermann_steering_controller:
   linear:
     x:
       has_velocity_limits: true
-      max_velocity: 10.0 # m/s
+      max_velocity: 2.0 # m/s
       has_acceleration_limits: true
-      max_acceleration: 2.0 # m/s^2
+      max_acceleration: 1.0 # m/s^2
   angular:
       z:
         has_velocity_limits: true
-        max_velocity: 3.0 # rad/s
+        max_velocity: 1.5 # rad/s
         has_acceleration_limits: true
-        max_acceleration: 3.0 # rad/s^2
+        max_acceleration: 5.5 # rad/s^2
 
   # other
   # velocity_rolling_window_size: 10

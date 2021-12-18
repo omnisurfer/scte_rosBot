@@ -1,0 +1,1 @@
+- The G2 ydlidar launch file has a static transform publisher setup that interferes with gazebo tf.

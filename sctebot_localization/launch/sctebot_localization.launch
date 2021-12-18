@@ -1,9 +1,11 @@
 <launch>
     <arg name="robot_namespace" default="/sctebot"/>
     <arg name="pub_tf" default="false"/>
-    <arg name="simulation_on" default="0"/>
-    <arg name="enable_ekf_localization" default="1"/>
-    <arg name="enable_navsat_odom" default="0"/>
+    <arg name="simulation_on" default="false"/>
+    <arg name="enable_ekf_odom_map" default="true"/>
+    <arg name="enable_navsat_odom" default="true"/>
+
+    <arg name="navsat_gps_device" default="primary_gps"/>
 
     <!--
     Path planning
@@ -21,36 +23,54 @@
          http://docs.ros.org/en/melodic/api/robot_localization/html/integrating_gps.html
          https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/
     Notes:
-        Get an error output onto the terminal when using robot_localizaiton
+        Get an error output onto the terminal when using robot_localization
         https://github.com/ros/geometry2/issues/467
         http://wiki.ros.org/robot_localization/Troubleshooting
         https://answers.ros.org/questions/scope:all/sort:activity-desc/tags:robot_localization/page:1/
+        https://answers.ros.org/question/321093/robot_localization-with-gps-map-frame-wont-stay-fixed/
+    -->
+
+    <!-- example from source
+    https://github.com/cra-ros-pkg/robot_localization/blob/noetic-devel/launch/dual_ekf_navsat_example.launch
     -->
 
     <group ns="$(arg robot_namespace)">
-        <arg name="ekf_settings_file" default="ekf_settings.yaml"/>
 
-        <group if="$(eval arg('enable_ekf_localization') == 1)">
-            <node pkg="robot_localization" type="ekf_localization_node" name="ekf_localization" clear_params="true">
-                <rosparam command="load" file="$(find sctebot_localization)/config/$(arg ekf_settings_file)" subst_value="true"/>
+        <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link"
+              args="0.0 0.0 0.005 0.0 0.0 0.0 /base_footprint /base_link 60" />
+
+        <rosparam command="load" file="$(find sctebot_localization)/config/ekf_state_estimate_odom_map_navsat.yaml" subst_value="true"/>
+
+        <group if="$(eval enable_ekf_odom_map == true)">
+
+            <!-- ekf odom -->
+            <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
+
+            <!-- ekf map -->
+            <!---->
+            <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
+                <remap from="odometry/filtered" to="odometry/filtered_map"/>
             </node>
+            <!---->
+
         </group>
 
-        <!--rosparam param="datum">[55.944904, -3.186693, 0.0, map, base_link]</rosparam-->
+        <!-- Nav Sat -->
+        <group if="$(eval enable_navsat_odom == true)">
+            <rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam>
 
-        <group if="$(eval arg('enable_navsat_odom') == 1)">
-            <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" respawn="true">
-
+            <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true">
                 <param name="magnetic_declination_radians" value="0"/>
 
                 <param name="yaw_offset" value="0"/>
 
-                <remap from="/imu/data" to="/your/imu/topic" />
-                <remap from="/gps/fix" to="/ada_ultimate_gps/fix" />
-                <remap from="/odometry/filtered" to="/your/robot_localization/output/topic" />
-
+                <remap from="odometry/filtered" to="odometry/filtered_map" />
+                <remap from="gps/fix" to="$(arg navsat_gps_device)/gps/fix"/>
+                <remap from="imu/data" to="imu"/>
             </node>
         </group>
+        <!---->
+
     </group>
 
 </launch>

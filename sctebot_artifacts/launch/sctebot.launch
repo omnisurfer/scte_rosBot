@@ -10,7 +10,7 @@
             <arg name="enable_gpsd" value="1"/>
         </include>
 
-        <include file="$(find sctebot_description)/launch/description.launch">
+        <include file="upload.launch">
 
         </include>
     </group>
@@ -22,7 +22,7 @@
             <arg name="enable_gpsd" value="1"/>
         </include>
 
-        <include file="$(find sctebot_description)/launch/description.launch">
+        <include file="upload.launch">
 
         </include>
     </group>

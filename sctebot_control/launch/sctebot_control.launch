@@ -7,7 +7,7 @@
 
     <arg name="robot_namespace" default=""/>
     <arg name="pub_tf" default="false"/>
-    <arg name="simulation_on" default="0"/>
+    <arg name="simulation_on" default="false"/>
     <arg name="tf_freq" default="100.0"/>
 
     <!-- load ackermann controller config -->
