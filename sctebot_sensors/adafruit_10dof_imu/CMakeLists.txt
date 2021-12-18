@@ -7,7 +7,6 @@ ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 add_compile_options(-std=c++11)
 add_compile_options(-Wall -Wno-undef -fPIC)
 
-
 find_package(catkin REQUIRED COMPONENTS
         dynamic_reconfigure
         message_generation
@@ -49,6 +48,7 @@ add_library(
 add_executable(
         adafruit_10dof_imu_node src/adafruit_10dof_imu_node.cpp
 )
+
 target_link_libraries(
         adafruit_10dof_imu_node
 
