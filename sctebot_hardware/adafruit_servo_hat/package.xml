@@ -26,6 +26,7 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>i2c_linux</depend>
+  <depend>utils</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

@@ -3,6 +3,7 @@
 //
 
 #include "pca9685.h"
+#include "boost_logging.h"
 
 void Pca9685LEDController::_servo_status_worker() {
 
@@ -28,16 +29,32 @@ void handle_servo_callback(int x, int y) {
 
     // Boost logging causing thread race conditions (all of them???)
     //BOOST_LOG_TRIVIAL(debug) << "handle_servo_callback " << x << " " << y;
-
-    static int z;
-
-    z += x + y;
+    //BOOST_LOG_TRIVIAL(info) << "callback info message";
 
 }
 
+/*
+void init_boost_logging() {
+
+    boost::shared_ptr<logging::core> core = logging::core::get();
+
+    boost::shared_ptr<sinks::text_ostream_backend> backend = boost::make_shared<sinks::text_ostream_backend>();
+
+    //backend->add_stream(boost::make_shared<std::ofstream>("sample.log"));
+    backend->add_stream(boost::shared_ptr< std::ostream >(&std::clog, boost::null_deleter()));
+
+    typedef sinks::synchronous_sink<sinks::text_ostream_backend> sink_t;
+    boost::shared_ptr<sink_t> sink(new sink_t(backend));
+    core->add_sink(sink);
+}
+*/
+
 int main(int argc, char* argv[]) {
 
-    std::cout << "HELLO WORLD" << std::endl;
+    //init_boost_logging();
+    //logging::add_common_attributes();
+
+    //BOOST_LOG_TRIVIAL(debug) << "main x debug message";
 
     std::unique_ptr<Pca9685LEDController> pca9685DeviceHandle;
 
@@ -70,7 +87,7 @@ int main(int argc, char* argv[]) {
         init_ok = false;
     }
 
-    std::cout << "press any key to exit 1859" << std::endl;
+    std::cout << "press any key to exit" << std::endl;
     std::cin.get();
 
 }

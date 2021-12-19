@@ -33,7 +33,6 @@ add_library(${PROJECT_NAME}
 )
 
 
-
 install(
         TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

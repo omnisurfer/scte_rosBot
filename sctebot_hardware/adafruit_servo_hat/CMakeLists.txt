@@ -42,6 +42,7 @@ add_executable(
 target_link_libraries(
         pca9685.exe
 
+        utils
         Boost::log
         ${catkin_LIBRARIES}
 )
