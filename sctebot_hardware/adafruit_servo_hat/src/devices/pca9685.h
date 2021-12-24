@@ -35,6 +35,7 @@ using namespace logging::trivial;
  */
 
 #include "i2c_linux/i2c_linux.h"
+#include "utils/boost_logging.h"
 
 class Pca9685LEDController {
 
@@ -106,6 +107,18 @@ private:
     void _servo_status_worker();
 
     int _init_device() {
+
+        init_boost_logging();
+
+        BOOST_LOG_TRIVIAL(trace) << "pca9685 _init_device trace";
+        BOOST_LOG_TRIVIAL(debug) << "pca9685 _init_device debug";
+
+        BOOST_LOG_TRIVIAL(trace) << "This is a trace severity message";
+        BOOST_LOG_TRIVIAL(debug) << "This is a debug severity message";
+        BOOST_LOG_TRIVIAL(info) << "This is an informational severity message";
+        BOOST_LOG_TRIVIAL(warning) << "This is a warning severity message";
+        BOOST_LOG_TRIVIAL(error) << "This is an error severity message";
+        BOOST_LOG_TRIVIAL(fatal) << "and this is a fatal severity message";
 
         std::lock_guard<std::mutex> run_lock(this->run_servo_status_thread_mutex);
         this->run_servo_status_thread = true;

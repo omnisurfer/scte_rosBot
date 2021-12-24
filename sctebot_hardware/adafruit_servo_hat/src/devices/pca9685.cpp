@@ -3,7 +3,7 @@
 //
 
 #include "pca9685.h"
-#include "boost_logging.h"
+#include "utils/boost_logging.h"
 
 void Pca9685LEDController::_servo_status_worker() {
 
@@ -51,10 +51,10 @@ void init_boost_logging() {
 
 int main(int argc, char* argv[]) {
 
-    //init_boost_logging();
+    init_boost_logging();
     //logging::add_common_attributes();
 
-    //BOOST_LOG_TRIVIAL(debug) << "main x debug message";
+    BOOST_LOG_TRIVIAL(debug) << "pca9685 debug message";
 
     std::unique_ptr<Pca9685LEDController> pca9685DeviceHandle;
 

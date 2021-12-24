@@ -129,7 +129,6 @@ void i2c_dev_close(context_t *context, int device_number) {
     context->device = 0;
 }
 
-
 int main(int argc, char* argv[]) {
     printf("i2c_linux\n");
 
