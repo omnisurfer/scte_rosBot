@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include "lsm303dlhc.h"
-#include "shared_util.h"
+#include "utils/register_utils.h"
 
 // region Accelerometer
 
@@ -13,6 +13,11 @@ int Lsm303DlhcAccelerometer::_init_device(
         Lsm303DlhcAccelerometer::HighPassFilterCutoff_t high_pass_filter_cuttoff,
         Lsm303DlhcAccelerometer::SensorAccelerationFullScale_t sensor_full_scale_accelerometer_range
         ) {
+
+    //ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
+    //sctebot_boost_logger.init_boost_logging();
+
+    BOOST_LOG_TRIVIAL(info) << "lsm303dlhc accelerometer _init_device";
 
     buffer_t inbound_message;
     buffer_t outbound_message;
@@ -474,6 +479,11 @@ int Lsm303DlhcMagnetometer::_init_device(
         Lsm303DlhcMagnetometer::OutputDataRates_t output_data_rate,
         Lsm303DlhcMagnetometer::SensorMagnetometerFullScale_t magnetometer_full_scale
         ) {
+
+    //ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
+    //sctebot_boost_logger.init_boost_logging();
+
+    BOOST_LOG_TRIVIAL(info) << "lsm303dlhc magnetometer _init_device";
 
     buffer_t inbound_message;
     buffer_t outbound_message;

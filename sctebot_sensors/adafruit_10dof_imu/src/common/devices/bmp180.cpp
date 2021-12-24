@@ -3,9 +3,10 @@
 //
 
 #include "bmp180.h"
-#include "shared_util.h"
 
 int Bmp180Pressure::_init_device() {
+
+    BOOST_LOG_TRIVIAL(info) << "bmp180 _init_device";
 
     buffer_t inbound_message;
 

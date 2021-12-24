@@ -10,22 +10,14 @@
 #include <cstring>
 #include <thread>
 #include <condition_variable>
-#include <math.h>
+#include <cmath>
 
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-
-namespace logging = boost::log;
+#include "utils/register_utils.h"
+#include "utils/boost_logging.h"
+#include "i2c_linux/i2c_linux.h"
 
 #define DEG_TO_RAD (M_PI/180.0)
 
-#include "i2c_linux/i2c_linux.h"
-
-/*
- * TODO CONVERT DRIVER TO L3GD20H! I WAS READING THE DATA SHEET FOR THE NON-H DEVICE TYPE.
- * THIS EXPLAINS THE D7 WHO_AM_I INSTEAD OF D4
- */
 class L3gd20Gyro {
 
     // 1101 0101 0xD5 (Read address)

@@ -20,19 +20,10 @@ void ScteBotBoostLogger::init_boost_logging() {
             logging::trivial::severity >= logging::trivial::debug
             );
 
-    /*
-    sink->set_formatter(
-            expr::stream
-            << std::hex << std::setw(8) << std::setfill('0') << expr::attr< unsigned int >("LineID")
-            << ": <" << logging::trivial::severity
-            << "> " << expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S") << expr::smessage
-            );
-    */
-
     sink->set_formatter(
             expr::stream
                     << "[" << expr::format_date_time< boost::posix_time::ptime >("TimeStamp", "%Y-%m-%d %H:%M:%S") << "]"
-                    << "[" << boost::log::trivial::severity << "] "
+                    << "[" << boost::log::trivial::severity << "]"
                     << "[" << logging::expressions::attr<logging::attributes::current_thread_id::value_type>("ThreadID") << "]"
                     << "[" << logging::expressions::attr<logging::attributes::current_process_id::value_type>("ProcessID") << "]"
                     << expr::smessage
@@ -41,6 +32,8 @@ void ScteBotBoostLogger::init_boost_logging() {
     core->add_sink(sink);
 
     boost::log::add_common_attributes();
+
+    core->set_logging_enabled(false);
 
     BOOST_LOG_TRIVIAL(debug) << "test 123";
 }

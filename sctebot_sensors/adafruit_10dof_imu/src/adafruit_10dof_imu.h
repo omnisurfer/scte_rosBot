@@ -6,11 +6,11 @@
 #define ADAFRUIT_10DOF_IMU_H
 
 #define ENABLE_BMP180_PRESSURE_DEVICE 1
-#define ENABLE_L3GD20_GYRO_DEVICE 1
-#define ENABLE_LSM303DLHC_ACCEL_DEVICE 1
-#define ENABLE_LSM303DLHC_MAG_DEVICE 1
+#define ENABLE_L3GD20_GYRO_DEVICE 0
+#define ENABLE_LSM303DLHC_ACCEL_DEVICE 0
+#define ENABLE_LSM303DLHC_MAG_DEVICE 0
 
-#define ENABLE_MOCK_BMP180_DEVICE 0
+#define ENABLE_MOCK_BMP180_DEVICE 1
 #define ENABLE_MOCK_L3GD20_DEVICE 0
 #define ENABLE_MOCK_LSM303DLHC_ACCEL_DEVICE 0
 #define ENABLE_MOCK_LSM303DLHC_MAG_DEVICE 0
@@ -65,6 +65,11 @@ public:
             void (*handle_lsm303dlhc_accel_measurements)(float x_gs, float y_gs, float z_gs),
             void (*handle_lsm303dlhc_mag_measurements)(float temperature_deg_c, float x_ga, float y_ga, float z_ga)
             ) {
+
+        ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
+        sctebot_boost_logger.init_boost_logging();
+
+        BOOST_LOG_TRIVIAL(info) << "adafruit_10dof_imu init_device";
 
         bool init_ok = true;
 

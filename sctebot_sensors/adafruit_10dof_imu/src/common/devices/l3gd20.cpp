@@ -3,9 +3,15 @@
 //
 
 #include "l3gd20.h"
-#include "shared_util.h"
 
 int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff) {
+
+    std::cout << "DEBUG DEBUG L3GD INIT RUN" << std::endl;
+
+    //ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
+    //sctebot_boost_logger.init_boost_logging();
+
+    BOOST_LOG_TRIVIAL(info) << "l3gd20 _init_device";
 
     buffer_t inbound_message;
     buffer_t outbound_message;

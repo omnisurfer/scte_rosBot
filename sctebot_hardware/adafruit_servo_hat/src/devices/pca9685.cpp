@@ -33,25 +33,11 @@ void handle_servo_callback(int x, int y) {
 
 }
 
-/*
-void init_boost_logging() {
-
-    boost::shared_ptr<logging::core> core = logging::core::get();
-
-    boost::shared_ptr<sinks::text_ostream_backend> backend = boost::make_shared<sinks::text_ostream_backend>();
-
-    //backend->add_stream(boost::make_shared<std::ofstream>("sample.log"));
-    backend->add_stream(boost::shared_ptr< std::ostream >(&std::clog, boost::null_deleter()));
-
-    typedef sinks::synchronous_sink<sinks::text_ostream_backend> sink_t;
-    boost::shared_ptr<sink_t> sink(new sink_t(backend));
-    core->add_sink(sink);
-}
-*/
-
 int main(int argc, char* argv[]) {
 
-    init_boost_logging();
+    ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
+
+    sctebot_boost_logger.init_boost_logging();
     //logging::add_common_attributes();
 
     BOOST_LOG_TRIVIAL(debug) << "pca9685 debug message";

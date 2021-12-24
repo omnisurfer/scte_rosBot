@@ -532,14 +532,16 @@ int main(int argc, char* argv[]) {
         }
 
         // TODO change this to an exception?
-        bool init_ok = adaFruit10DoFImu->init_device(
+        bool init_ok = true;
+        /**/
+        init_ok = adaFruit10DoFImu->init_device(
                 i2c_bus_number,
                 handle_bmp180_pressure_measurements,
                 handle_l3gd20_gyro_measurements,
                 handle_lsm303dlhc_accel_measurements,
                 handle_lsm303dlhc_mag_measurements
         );
-
+        /**/
         if(init_ok) {
             adaFruit10DoFImu->run();
             ROS_INFO("%s: IMU initialization success", node_name.c_str());

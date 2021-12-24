@@ -14,12 +14,8 @@
 #include <thread>
 #include <condition_variable>
 
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-
-namespace logging = boost::log;
-
+#include "utils/register_utils.h"
+#include "utils/boost_logging.h"
 #include "i2c_linux/i2c_linux.h"
 
 class Bmp180Pressure {

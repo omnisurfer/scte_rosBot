@@ -10,30 +10,6 @@
 #include <thread>
 #include <condition_variable>
 
-/*
-#include <fstream>
-#include <iomanip>
-#include <boost/smart_ptr/shared_ptr.hpp>
-#include <boost/core/null_deleter.hpp>
-#include <boost/smart_ptr/make_shared_object.hpp>
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sinks/sync_frontend.hpp>
-#include <boost/log/sinks/text_ostream_backend.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-
-namespace logging = boost::log;
-namespace src = boost::log::sources;
-namespace expr = boost::log::expressions;
-namespace sinks = boost::log::sinks;
-namespace keywords = boost::log::keywords;
-
-using namespace logging::trivial;
- */
-
 #include "i2c_linux/i2c_linux.h"
 #include "utils/boost_logging.h"
 
@@ -108,7 +84,9 @@ private:
 
     int _init_device() {
 
-        init_boost_logging();
+        ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
+
+        sctebot_boost_logger.init_boost_logging();
 
         BOOST_LOG_TRIVIAL(trace) << "pca9685 _init_device trace";
         BOOST_LOG_TRIVIAL(debug) << "pca9685 _init_device debug";
