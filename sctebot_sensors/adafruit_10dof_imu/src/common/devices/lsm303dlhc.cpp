@@ -178,9 +178,10 @@ int Lsm303DlhcAccelerometer::_init_device(
     }
     //endregion
 
-    std::lock_guard<std::mutex> lk(this->data_capture_thread_run_mutex);
-    this->data_capture_thread_run_cv.notify_one();
+    std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
     this->run_data_capture_thread = true;
+    this->data_capture_thread_run_cv.notify_one();
+    data_lock.unlock();
 
     return 0;
 }
@@ -480,9 +481,6 @@ int Lsm303DlhcMagnetometer::_init_device(
         Lsm303DlhcMagnetometer::SensorMagnetometerFullScale_t magnetometer_full_scale
         ) {
 
-    //ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
-    //sctebot_boost_logger.init_boost_logging();
-
     BOOST_LOG_TRIVIAL(info) << "lsm303dlhc magnetometer _init_device";
 
     buffer_t inbound_message;
@@ -686,9 +684,10 @@ int Lsm303DlhcMagnetometer::_init_device(
     }
     //endregion
 
-    std::lock_guard<std::mutex> lk(this->data_capture_thread_run_mutex);
-    this->data_capture_thread_run_cv.notify_one();
+    std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
     this->run_data_capture_thread = true;
+    this->data_capture_thread_run_cv.notify_one();
+    data_lock.unlock();
 
     return 0;
 }

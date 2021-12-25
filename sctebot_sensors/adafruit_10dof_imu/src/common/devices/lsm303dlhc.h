@@ -510,27 +510,29 @@ public:
     ~Lsm303DlhcAccelerometer() {
         BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
-        this->_close_device();
-
-        this->run_data_capture_thread = false;
-
         std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-        this->data_capture_thread_run_cv.notify_one();
+        this->run_data_capture_thread = false;
         data_lock.unlock();
+        this->data_capture_thread_run_cv.notify_one();
+
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        this->mock_run_device_thread = false;
+        device_lock.unlock();
+        this->mock_device_thread_run_cv.notify_one();
 
         if(data_capture_thread.joinable()) {
             data_capture_thread.join();
+
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
         }
-
-        this->mock_run_device_thread = false;
-
-        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-        this->mock_device_thread_run_cv.notify_one();
-        device_lock.unlock();
 
         if(mock_device_thread.joinable()) {
             mock_device_thread.join();
+
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
         }
+
+        this->_close_device();
 
     }
 
@@ -931,13 +933,12 @@ public:
     int config_device(
             int bus_number,
             int device_address,
-            //int update_period_ms,
             std::string device_name,
             host_callback_function function_pointer
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
-        _sensor_update_period_ms = 0;
+        _sensor_update_period_ms = 100;
         _device_name = std::move(device_name);
         //_device_name = &device_name;
 

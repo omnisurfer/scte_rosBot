@@ -15,7 +15,7 @@
 #include <condition_variable>
 
 #include "utils/register_utils.h"
-#include "utils/boost_logging.h"
+//#include "utils/boost_logging.h"
 #include "i2c_linux/i2c_linux.h"
 
 class Bmp180Pressure {
@@ -100,6 +100,7 @@ private:
     uint8_t  _short_uncompensated_pressure_xlsb{};
 
     bool run_data_capture_thread = false;
+    bool is_running_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
     std::mutex data_capture_thread_run_mutex;
     std::thread data_capture_thread;
@@ -111,6 +112,7 @@ private:
     host_callback_function _host_callback_function{};
 
     bool run_mock_device_thread = false;
+    bool is_running_mock_device_thread = false;
     std::condition_variable mock_device_thread_run_cv;
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
@@ -188,12 +190,12 @@ private:
          */
         _i2c_device_context = {0};
         if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open device";
+            //X BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open device";
             return 0;
         }
 
         if(!i2c_is_connected(&_i2c_device_context)) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect to device";
+            //X BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect to device";
             return 0;
         }
 
@@ -213,7 +215,7 @@ private:
         i2c_recv(&_i2c_device_context, &inbound_message, register_address);
 
         if(chip_id[0] != Bmp180Pressure::MagicNumbers::ChipId::CHIP_ID) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device chip id";
+            //X BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device chip id";
             return 0;
         }
 
@@ -309,7 +311,7 @@ private:
         int8_t register_address = 0x00;
 
         if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
+            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
             return 0;
         }
 
@@ -350,7 +352,7 @@ private:
     int _calculate_temperature(uint16_t uncompensated_temperature, float &temperature) {
 
         if(!sensor_calibration_read) {
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
+            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
             return 0;
         }
 
@@ -379,7 +381,7 @@ private:
     int _calculate_pressure(uint16_t uncompensated_pressure, uint8_t uncompensated_pressure_xlsb, float &pressure) const {
 
         if(!sensor_calibration_read) {
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
+            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
             return 0;
         }
 
@@ -432,7 +434,7 @@ private:
     }
 
     int _init_calibration_coefficients(char *bytes, uint8_t length) {
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _init_calibration_coefficients";
+        //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _init_calibration_coefficients";
 
         if(length < 0 or length > 22) {
             return 0;
@@ -514,31 +516,39 @@ public:
     Bmp180Pressure() = default;
 
     ~Bmp180Pressure() {
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
-
-        this->_close_device();
+        //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
         std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-        this->run_data_capture_thread = false;
-        this->data_capture_thread_run_cv.notify_one();
-        data_lock.unlock();
+        {
+            if(is_running_data_capture_thread) {
+                this->run_data_capture_thread = false;
+                this->data_capture_thread_run_cv.notify_one();
+            }
+            data_lock.unlock();
+        }
 
         std::unique_lock<std::mutex> mock_device_lock(this->mock_device_thread_run_mutex);
-        this->run_mock_device_thread = false;
-        this->mock_device_thread_run_cv.notify_one();
-        mock_device_lock.unlock();
+        {
+            if(is_running_mock_device_thread) {
+                this->run_mock_device_thread = false;
+                this->mock_device_thread_run_cv.notify_one();
+            }
+            mock_device_lock.unlock();
+        }
 
         if(data_capture_thread.joinable()) {
             data_capture_thread.join();
 
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
         }
 
         if(mock_device_thread.joinable()) {
             mock_device_thread.join();
 
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
+            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
         }
+
+        this->_close_device();
     }
 
     int config_device(
@@ -585,8 +595,8 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds (10));
 
         std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-        this->mock_device_thread_run_cv.notify_one();
         this->run_mock_device_thread = true;
+        this->mock_device_thread_run_cv.notify_one();
         device_lock.unlock();
 
         return 1;

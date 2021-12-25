@@ -61,3 +61,15 @@ target_link_libraries(
         Boost::log
         ${catkin_LIBRARIES}
 )
+
+add_executable(
+        bmp180.exe
+
+        src/common/devices/bmp180.cpp
+)
+
+target_link_libraries(
+        bmp180.exe
+
+        ${catkin_LIBRARIES}
+)

@@ -33,9 +33,7 @@ void ScteBotBoostLogger::init_boost_logging() {
 
     boost::log::add_common_attributes();
 
-    core->set_logging_enabled(false);
-
-    BOOST_LOG_TRIVIAL(debug) << "test 123";
+    core->set_logging_enabled(true);
 }
 
 int main(int argc, char* argv[]) {

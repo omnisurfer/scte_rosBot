@@ -21,7 +21,7 @@
  *
  * @param   [in]        context device context
  * @param   [in/out]    message: message contains buffer with information on
- *                      how to store or retreive information.
+ *                      how to store or retrieve information.
  *                      If message->write is true, data will be stored, otherwise read
  *
  * @returns             1 on success, otherwise 0

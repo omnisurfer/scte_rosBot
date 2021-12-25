@@ -6,8 +6,6 @@
 
 int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff) {
 
-    std::cout << "DEBUG DEBUG L3GD INIT RUN" << std::endl;
-
     //ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
     //sctebot_boost_logger.init_boost_logging();
 
@@ -176,9 +174,10 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
 
     // endregion
 
-    std::lock_guard<std::mutex> lk(this->data_capture_thread_run_mutex);
-    this->data_capture_thread_run_cv.notify_one();
+    std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
     this->run_data_capture_thread = true;
+    this->data_capture_thread_run_cv.notify_one();
+    data_lock.unlock();
 
     return 0;
 }
@@ -196,6 +195,8 @@ void L3gd20Gyro::_data_capture_worker() {
     data_worker_run_thread_lock.lock();
     while(this->run_data_capture_thread) {
         data_worker_run_thread_lock.unlock();
+
+        //BOOST_LOG_TRIVIAL(info) << "RUNNING THREAD";
 
         // maybe make these structs and pass that? less calls?
         float temperature;
@@ -232,7 +233,6 @@ void L3gd20Gyro::_data_capture_worker() {
                     temperature,
                     x_axis, y_axis, z_axis
             );
-
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
