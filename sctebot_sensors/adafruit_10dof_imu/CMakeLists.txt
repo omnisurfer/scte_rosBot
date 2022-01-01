@@ -71,5 +71,6 @@ add_executable(
 target_link_libraries(
         bmp180.exe
 
+        Boost::log
         ${catkin_LIBRARIES}
 )

@@ -86,16 +86,16 @@ int i2c_dev_open(context_t *context, int device_number, int slave_address) {
     sprintf(filename, "/dev/i2c-%d", device_number);
 
     if((context->device = open(filename, O_RDWR)) < 0) {
-        printf("Failed to open /dev/i2c-%d: %s\n", device_number, strerror(errno));
+        //printf("Failed to open /dev/i2c-%d: %s\n", device_number, strerror(errno));
         return 0;
     }
 
     if(ioctl(context->device, I2C_SLAVE, slave_address) < 0) {
-        printf("Failed to acquire bus access at %d", slave_address);
+        //printf("Failed to acquire bus access at %d", slave_address);
         return 0;
     }
 
-    printf("/dev/i2c-%d opened\r\n", device_number);
+    //printf("/dev/i2c-%d opened\r\n", device_number);
 
     return 1;
 }
@@ -123,7 +123,7 @@ int i2c_is_connected(context_t *context) {
 }
 
 void i2c_dev_close(context_t *context, int device_number) {
-    printf("/dev/i2c-%d closed\r\n", device_number);
+    //printf("/dev/i2c-%d closed\r\n", device_number);
 
     close(context->device);
     context->device = 0;
@@ -150,7 +150,6 @@ int main(int argc, char* argv[]) {
     if(!is_connected) {
         printf("is_connected failed\n");
     }
-
 
     buffer_t inputMessage = {
             .bytes = inputBuffer,

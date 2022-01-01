@@ -4,12 +4,6 @@
 
 #include "bmp180.h"
 
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/i2c.h>
-#include <linux/i2c-dev.h>
-
 int Bmp180Pressure::_init_device() {
 
     //X BOOST_LOG_TRIVIAL(info) << "bmp180 _init_device";
@@ -24,7 +18,7 @@ int Bmp180Pressure::_init_device() {
             .size = sizeof(_calibration_data_buffer)
     };
 
-    if (i2c_recv(&_i2c_device_context, &inbound_message, register_address)) {
+    if (receive_i2c(&inbound_message, register_address)) {
 
         std::string output_string;
         std::stringstream ss;
@@ -57,26 +51,20 @@ int Bmp180Pressure::_init_device() {
 }
 
 void Bmp180Pressure::_data_capture_worker() {
-    //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker starting";
 
-    //std::cout << "_data_capture_worker pre wait" << std::endl;
-
-    std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+    std::unique_lock<std::mutex> data_thread_lock(this->data_capture_thread_run_mutex);
     //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker waiting";
-    this->data_capture_thread_run_cv.wait(data_lock);
-    data_lock.unlock();
-
-    //std::cout << "_data_capture_worker post wait" << std::endl;
+    is_running_data_capture_thread = true;
+    this->data_capture_thread_run_cv.wait(data_thread_lock);
+    data_thread_lock.unlock();
 
     //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker running";
 
-    data_lock.lock();
-    is_running_data_capture_thread = true;
+    data_thread_lock.lock();
     while(this->run_data_capture_thread) {
-        data_lock.unlock();
-
-        //std::cout << "thread running" << std::endl;
-        /*
+        data_thread_lock.unlock();
+#if 1
         this->_request_temperature();
 
         this->_request_pressure();
@@ -90,16 +78,17 @@ void Bmp180Pressure::_data_capture_worker() {
 
         float calculated_pressure = 0.0f;
         this->_calculate_pressure(long_uncompensated_pressure, short_uncompensated_pressure_xlsb, calculated_pressure);
-        */
-        /*
+#endif
+
+#if 0
         this->_host_callback_function(
                 calculated_temperature, calculated_pressure
                 );
-        */
+#endif
 
         std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
-        data_lock.lock();
+        data_thread_lock.lock();
     }
 
     //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker exiting";
@@ -110,22 +99,23 @@ void Bmp180Pressure::enable_load_mock_data() {
 }
 
 void Bmp180Pressure::_mock_device_emulation_worker() {
+
     //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker starting";
 
-    std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+    std::unique_lock<std::mutex> mock_device_lock(this->mock_device_thread_run_mutex);
     //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker waiting";
-    this->mock_device_thread_run_cv.wait(device_lock);
-    device_lock.unlock();
+    is_running_mock_device_thread = true;
+    this->mock_device_thread_run_cv.wait(mock_device_lock);
+    mock_device_lock.unlock();
 
     //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker running";
 
     uint8_t debug_temp_counter = 0x96;
     uint8_t debug_press_counter = 0x07;
 
-    device_lock.lock();
-    is_running_mock_device_thread = true;
+    mock_device_lock.lock();
     while(this->run_mock_device_thread) {
-        device_lock.unlock();
+        mock_device_lock.unlock();
 
         uint8_t register_address;
 
@@ -139,10 +129,11 @@ void Bmp180Pressure::_mock_device_emulation_worker() {
 
         register_address = Bmp180Pressure::Addresses::DataRegisters::CONTROL_MEASUREMENT;
 
-        i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+#if 1
+        receive_i2c(&inbound_message, register_address);
+#endif
 
-#if 0
-
+#if 1
         //figure out which measurement is being made
         if(measurement_command[0] == Bmp180Pressure::Commands::MeasurementControlValues::TEMPERATURE) {
             //std::cout << "Got temp cmd: " << std::hex << int(measurement_command[0]) << std::endl;
@@ -163,8 +154,9 @@ void Bmp180Pressure::_mock_device_emulation_worker() {
             //debug_temp_counter = (debug_temp_counter + 1)%0x02;
 
             register_address = Bmp180Pressure::Addresses::DataRegisters::OUTPUT_MSB;
-            i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+            send_i2c(&outbound_measurement, register_address);
         }
+
         else if (measurement_command[0] == Bmp180Pressure::Commands::MeasurementControlValues::PRESSURE_OSS0) {
             //std::cout << "Got press cmd: " << std::hex << int(measurement_command[0]) << std::endl;
 
@@ -185,18 +177,22 @@ void Bmp180Pressure::_mock_device_emulation_worker() {
             debug_press_counter = (debug_press_counter + 1)%0x03;
 
             register_address = Bmp180Pressure::Addresses::DataRegisters::OUTPUT_MSB;
-            i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+            send_i2c(&outbound_measurement, register_address);
 
         }
+
         else {
             //skip this iteration of the loop since no valid measurement command received
             //std::cout << "Got unknown cmd 0x" << std::hex << int(measurement_command[0]) << std::endl;
             // sleep a little just to prevent busy looping
+
             std::this_thread::sleep_for(std::chrono::microseconds(500));
-            device_lock.lock();
+            mock_device_lock.lock();
             continue;
         }
+#endif
 
+#if 1
         //set the measurement in progress bit
         register_address = Bmp180Pressure::Addresses::DataRegisters::CONTROL_MEASUREMENT;
         measurement_command[0] &= Bmp180Pressure::BitMasks::ControlRegister::SCO_BIT;
@@ -207,7 +203,7 @@ void Bmp180Pressure::_mock_device_emulation_worker() {
                 .size = sizeof(measurement_command)
         };
 
-        i2c_send(&_i2c_device_context, &outbound_message, register_address);
+        send_i2c(&outbound_message, register_address);
 
         //wait 4.5ms
         std::this_thread::sleep_for(std::chrono::microseconds(4500));
@@ -221,12 +217,11 @@ void Bmp180Pressure::_mock_device_emulation_worker() {
                 .size = sizeof(measurement_command)
         };
 
-        i2c_send(&_i2c_device_context, &outbound_message, register_address);
+        send_i2c(&outbound_message, register_address);
 #endif
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-        device_lock.lock();
+        mock_device_lock.lock();
     }
 
     //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker exiting";
@@ -245,7 +240,7 @@ void Bmp180Pressure::_request_temperature() {
     uint8_t register_address;
 
     register_address = Bmp180Pressure::Addresses::DataRegisters::CONTROL_MEASUREMENT;
-    if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+    if (send_i2c(&outbound_message, register_address)) {
 
         // wait 4.5ms
         std::this_thread::sleep_for(std::chrono::microseconds (4500));
@@ -267,7 +262,7 @@ void Bmp180Pressure::_request_temperature() {
     };
 
     register_address = Bmp180Pressure::Addresses::DataRegisters::OUTPUT_MSB;
-    bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+    bool data_ok = receive_i2c(&inbound_message, register_address);
 
     if(data_ok) {
         // MSB 0xF6
@@ -276,7 +271,6 @@ void Bmp180Pressure::_request_temperature() {
     }
 
     //std::cout << "temp: " << std::hex << _long_uncompensated_temperature << std::endl;
-
 }
 
 void Bmp180Pressure::_request_pressure() {
@@ -295,7 +289,7 @@ void Bmp180Pressure::_request_pressure() {
     };
 
     register_address = Bmp180Pressure::Addresses::DataRegisters::CONTROL_MEASUREMENT;
-    if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+    if (send_i2c(&outbound_message, register_address)) {
 
         // wait 4.5ms
         std::this_thread::sleep_for(std::chrono::microseconds (4500));
@@ -317,7 +311,7 @@ void Bmp180Pressure::_request_pressure() {
     };
 
     register_address = Bmp180Pressure::Addresses::DataRegisters::OUTPUT_MSB;
-    i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+    receive_i2c(&inbound_message, register_address);
 
     // MSB 0xF6
     // LSB 0xF7
@@ -326,7 +320,6 @@ void Bmp180Pressure::_request_pressure() {
     _short_uncompensated_pressure_xlsb = uncompensated_pressure[2];
 
     //std::cout << "press: " << std::hex << _long_uncompensated_pressure << " xlsb " << std::hex << _short_uncompensated_pressure_xlsb << std::endl;
-
 }
 
 int Bmp180Pressure::_measurement_completed_ok() {
@@ -342,7 +335,7 @@ int Bmp180Pressure::_measurement_completed_ok() {
     int wait_count = 0;
     int wait_limit = 10;
     do {
-        i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        receive_i2c(&inbound_message, register_address);
 
         bool sco_set = control_measurement_register[0] & Bmp180Pressure::BitMasks::ControlRegister::SCO_BIT;
 
@@ -363,13 +356,51 @@ int Bmp180Pressure::_measurement_completed_ok() {
     return 0;
 }
 
+int Bmp180Pressure::receive_i2c(buffer_t *data, uint8_t register_address) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_recv(&_i2c_device_context, data, register_address);
+
+    return status;
+}
+
+int Bmp180Pressure::send_i2c(buffer_t *data, uint8_t register_address) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_send(&_i2c_device_context, data, register_address);
+
+    return status;
+}
+
+int Bmp180Pressure::open_i2c(int device_number, int slave_address) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_dev_open(&_i2c_device_context, device_number, slave_address);
+
+    return status;
+}
+
+int Bmp180Pressure::is_i2c_connected() {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_is_connected(&_i2c_device_context);
+
+    return status;
+}
+
+void Bmp180Pressure::close_i2c_dev(int bus_number) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    i2c_dev_close(&_i2c_device_context, bus_number);
+}
+
 void handle_bmp180_measurements(float temperature, float pressure) {
     std::cout << "handle_bmp180_measurements (temp/press): " << temperature << "/" << pressure << std::endl;
 }
 
 int main(int argc, char* argv[]) {
 
-    std::cout << "bmp180 debug" << std::endl;
+    std::cout << "bmp180 debug B" << std::endl;
 
     std::unique_ptr<Bmp180Pressure> bmp180DeviceHandle(new Bmp180Pressure());
 
@@ -389,6 +420,7 @@ int main(int argc, char* argv[]) {
 
     bmp180DeviceHandle->mock_run_device_emulation();
 
+#if 1
     if(!bmp180DeviceHandle->connect_to_device()) {
         std::cout << "bmp180 failed to connect" << std::endl;
         return 0;
@@ -399,4 +431,13 @@ int main(int argc, char* argv[]) {
         std::cout << "enter any key to exit" << std::endl;
         std::cin.get();
     }
+#else
+    bmp180DeviceHandle->init_device();
+
+    std::cout << "enter any key to exit" << std::endl;
+    std::cin.get();
+
+#endif
+
+    std::cout << "END OF PROGRAM" << std::endl;
 }

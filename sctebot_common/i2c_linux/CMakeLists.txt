@@ -20,6 +20,12 @@ add_library(${PROJECT_NAME}
     src/i2c_linux.c
 )
 
+add_executable(
+        ${PROJECT_NAME}.exe
+
+        src/i2c_linux.c
+)
+
 install(
         TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
