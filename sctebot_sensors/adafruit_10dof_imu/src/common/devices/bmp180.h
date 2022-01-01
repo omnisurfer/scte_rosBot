@@ -188,13 +188,13 @@ private:
 
         // set up the i2c context and connect
         _i2c_device_context = {0};
-        if(!open_i2c(_i2c_bus_number, _i2c_device_address)) {
-            //X BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open device";
+        if(!open_i2c_dev(_i2c_bus_number, _i2c_device_address)) {
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open device";
             return 0;
         }
 
-        if(!is_i2c_connected()) {
-            //X BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect to device";
+        if(!is_i2c_dev_connected()) {
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect to device";
             return 0;
         }
 
@@ -214,7 +214,7 @@ private:
         receive_i2c(&inbound_message, register_address);
 
         if(chip_id[0] != Bmp180Pressure::MagicNumbers::ChipId::CHIP_ID) {
-            //X BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device chip id";
+            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device chip id";
             return 0;
         }
 
@@ -229,6 +229,12 @@ private:
 
         return 0;
     }
+
+    int receive_i2c(buffer_t *data, uint8_t register_address);
+    int send_i2c(buffer_t *data, uint8_t register_address);
+    int open_i2c_dev(int device_number, int slave_address);
+    int is_i2c_dev_connected();
+    void close_i2c_dev(int bus_number);
 
     int _mock_load_calibration_data() {
 
@@ -310,7 +316,7 @@ private:
         int8_t register_address = 0x00;
 
         if (send_i2c(&outbound_message, register_address)) {
-            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
             return 0;
         }
 
@@ -326,12 +332,6 @@ private:
     void _request_pressure();
 
     int _measurement_completed_ok();
-
-    int receive_i2c(buffer_t *data, uint8_t register_address);
-    int send_i2c(buffer_t *data, uint8_t register_address);
-    int open_i2c(int device_number, int slave_address);
-    int is_i2c_connected();
-    void close_i2c_dev(int bus_number);
 
     uint16_t _get_uncompensated_temperature_count() const {
         return _long_uncompensated_temperature;
@@ -357,7 +357,7 @@ private:
     int _calculate_temperature(uint16_t uncompensated_temperature, float &temperature) {
 
         if(!sensor_calibration_read) {
-            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
             return 0;
         }
 
@@ -386,7 +386,7 @@ private:
     int _calculate_pressure(uint16_t uncompensated_pressure, uint8_t uncompensated_pressure_xlsb, float &pressure) const {
 
         if(!sensor_calibration_read) {
-            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
+            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sensor calibration not read yet";
             return 0;
         }
 
@@ -439,7 +439,7 @@ private:
     }
 
     int _init_calibration_coefficients(char *bytes, uint8_t length) {
-        //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _init_calibration_coefficients";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _init_calibration_coefficients";
 
         if(length < 0 or length > 22) {
             return 0;
@@ -522,42 +522,9 @@ public:
 
     ~Bmp180Pressure() {
 
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
+
         this->_shutdown_device();
-#if 0
-        //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
-
-        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-        {
-            if(is_running_data_capture_thread) {
-                this->run_data_capture_thread = false;
-                this->data_capture_thread_run_cv.notify_one();
-            }
-            data_lock.unlock();
-        }
-
-        std::unique_lock<std::mutex> mock_device_lock(this->mock_device_thread_run_mutex);
-        {
-            if(is_running_mock_device_thread) {
-                this->run_mock_device_thread = false;
-                this->mock_device_thread_run_cv.notify_one();
-            }
-            mock_device_lock.unlock();
-        }
-
-        if(data_capture_thread.joinable()) {
-            data_capture_thread.join();
-
-            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
-        }
-
-        if(mock_device_thread.joinable()) {
-            mock_device_thread.join();
-
-            //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
-        }
-
-        this->_close_device();
-#endif
     }
 
     int config_device(
@@ -565,8 +532,7 @@ public:
             int device_address,
             int update_period_ms,
             std::string device_name,
-            host_callback_function
-            function_pointer
+            host_callback_function function_pointer
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
@@ -596,8 +562,6 @@ public:
 
     void _shutdown_device() {
 
-        //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
-
         bool data_capture_thread_was_running = false;
         std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
         {
@@ -615,7 +579,8 @@ public:
             }
         }
 
-        //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+
         bool mock_device_thread_was_running = false;
         std::unique_lock<std::mutex> mock_device_lock(this->mock_device_thread_run_mutex);
         {
@@ -633,7 +598,7 @@ public:
             }
         }
 
-        //X BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
 
         this->_close_device();
     }

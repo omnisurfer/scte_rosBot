@@ -74,3 +74,29 @@ target_link_libraries(
         Boost::log
         ${catkin_LIBRARIES}
 )
+
+add_executable(
+        l3gd20.exe
+
+        src/common/devices/l3gd20.cpp
+)
+
+target_link_libraries(
+        l3gd20.exe
+
+        Boost::log
+        ${catkin_LIBRARIES}
+)
+
+add_executable(
+        lsm303dlhc.exe
+
+        src/common/devices/lsm303dlhc.cpp
+)
+
+target_link_libraries(
+        lsm303dlhc.exe
+
+        Boost::log
+        ${catkin_LIBRARIES}
+)

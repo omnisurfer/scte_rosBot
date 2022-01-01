@@ -24,7 +24,7 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
             .size = sizeof(_control_register_1to5_buffer)
     };
 
-    if(i2c_recv(&_i2c_device_context, &inbound_message, register_address)) {
+    if(receive_i2c(&inbound_message, register_address)) {
 
         std::string output_string;
         std::stringstream ss;
@@ -89,7 +89,7 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
             .size = sizeof(control_reg)
     };
 
-    if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+    if(send_i2c(&outbound_message, register_address)) {
         BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": CTRL_REG4 configure OK";
     }
     else {
@@ -140,7 +140,7 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
             .size = sizeof(control_reg)
     };
 
-    if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+    if(send_i2c(&outbound_message, register_address)) {
         BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": CTRL_REG1 configure OK";
     }
     else {
@@ -165,7 +165,7 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
             .size = sizeof(control_reg)
     };
 
-    if(i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+    if(send_i2c(&outbound_message, register_address)) {
         BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": LOW_ODR configure OK";
     }
     else {
@@ -183,14 +183,17 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
 }
 
 void L3gd20Gyro::_data_capture_worker() {
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _data_capture_worker starting";
+    std::string device_name = "debug"; //this->_device_name;
 
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": _data_capture_worker starting";
+
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": _data_capture_worker waiting";
     std::unique_lock<std::mutex> data_worker_run_thread_lock(this->data_capture_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _data_capture_worker waiting";
+    is_running_data_capture_thread = true;
     this->data_capture_thread_run_cv.wait(data_worker_run_thread_lock);
     data_worker_run_thread_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _data_capture_worker running";
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": _data_capture_worker running";
 
     data_worker_run_thread_lock.lock();
     while(this->run_data_capture_thread) {
@@ -240,7 +243,7 @@ void L3gd20Gyro::_data_capture_worker() {
         data_worker_run_thread_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _data_capture_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": _data_capture_worker exiting";
 }
 
 void L3gd20Gyro::enable_load_mock_data() {
@@ -248,14 +251,17 @@ void L3gd20Gyro::enable_load_mock_data() {
 }
 
 void L3gd20Gyro::_mock_device_emulation_worker() {
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _mock_device_emulation_worker starting";
+    std::string device_name = "debug"; //this->_device_name;
 
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": _mock_device_emulation_worker starting";
+
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": _mock_device_emulation_worker waiting";
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _mock_device_emulation_worker waiting";
+    is_running_mock_device_thread = true;
     this->mock_device_thread_run_cv.wait(device_lock);
     device_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _mock_device_emulation_worker running...";
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": _mock_device_emulation_worker running...";
 
     uint16_t loop_sleep_microseconds = 10500;
 
@@ -288,7 +294,7 @@ void L3gd20Gyro::_mock_device_emulation_worker() {
 
         mock_temperature[0] = debug_temp_axis;
 
-        i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+        send_i2c(&outbound_measurement, register_address);
         //endregion
 
         //region X AXIS
@@ -305,7 +311,7 @@ void L3gd20Gyro::_mock_device_emulation_worker() {
         mock_x_axis[0] = debug_x_rate_axis & 0xFF;
         mock_x_axis[1] = (debug_x_rate_axis >> 8) & 0xFF;
 
-        i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+        send_i2c(&outbound_measurement, register_address);
         //endregion
 
         //region Y AXIS
@@ -322,7 +328,7 @@ void L3gd20Gyro::_mock_device_emulation_worker() {
         mock_y_axis[0] = debug_y_rate_axis & 0xFF;
         mock_y_axis[1] = (debug_y_rate_axis >> 8) & 0xFF;
 
-        i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+        send_i2c(&outbound_measurement, register_address);
         //endregion
 
         //region Z AXIS
@@ -339,7 +345,7 @@ void L3gd20Gyro::_mock_device_emulation_worker() {
         mock_z_axis[0] = debug_z_rate_axis & 0xFF;
         mock_z_axis[1] = (debug_z_rate_axis >> 8) & 0xFF;
 
-        i2c_send(&_i2c_device_context, &outbound_measurement, register_address);
+        send_i2c(&outbound_measurement, register_address);
         //endregion
 
         std::this_thread::sleep_for(std::chrono::microseconds(loop_sleep_microseconds));
@@ -348,7 +354,7 @@ void L3gd20Gyro::_mock_device_emulation_worker() {
         device_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": _mock_device_emulation_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": _mock_device_emulation_worker exiting";
 }
 
 void L3gd20Gyro::_update_temperature_axis() {
@@ -362,7 +368,7 @@ void L3gd20Gyro::_update_temperature_axis() {
     };
 
     register_address = L3gd20Gyro::Addresses::Registers::OUT_TEMP;
-    bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+    bool data_ok = receive_i2c(&inbound_message, register_address);
 
     if(data_ok) {
 
@@ -392,7 +398,7 @@ void L3gd20Gyro::_update_angular_rate_xyz_axis() {
     std::lock_guard<std::mutex> gyro_temp_lock(this->gyroscope_data_mutex);
     {
         register_address = L3gd20Gyro::Addresses::Registers::OUT_X_L;
-        bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        bool data_ok = receive_i2c(&inbound_message, register_address);
 
         if (data_ok) {
             // LSB 0x28
@@ -407,7 +413,7 @@ void L3gd20Gyro::_update_angular_rate_xyz_axis() {
         }
 
         register_address = L3gd20Gyro::Addresses::Registers::OUT_Y_L;
-        data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        data_ok = receive_i2c(&inbound_message, register_address);
 
         if (data_ok) {
             // LSB 0x2A
@@ -422,7 +428,7 @@ void L3gd20Gyro::_update_angular_rate_xyz_axis() {
         }
 
         register_address = L3gd20Gyro::Addresses::Registers::OUT_Z_L;
-        data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        data_ok = receive_i2c(&inbound_message, register_address);
 
         if (data_ok) {
             // LSB 0x2C
@@ -452,7 +458,7 @@ uint8_t L3gd20Gyro::_update_gyroscope_status() {
 
     register_address = L3gd20Gyro::Addresses::Registers::STATUS_REG;
 
-    bool data_ok = i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+    bool data_ok = receive_i2c(&inbound_message, register_address);
 
     if(data_ok) {
 
@@ -465,7 +471,7 @@ uint8_t L3gd20Gyro::_update_gyroscope_status() {
         if(status_register & L3gd20Gyro::BitMasks::StatusRegister::ZYX_DATA_AVAILABLE) {
 
             std::bitset<8> x(status_register);
-
+#if 0
             bool zyx_or_status = status_register &  L3gd20Gyro::BitMasks::StatusRegister::ZYX_OVERRUN;
 
             bool z_or = status_register & L3gd20Gyro::BitMasks::StatusRegister::Z_OVERRUN;
@@ -477,14 +483,15 @@ uint8_t L3gd20Gyro::_update_gyroscope_status() {
             bool z_da = status_register & L3gd20Gyro::BitMasks::StatusRegister::Z_DATA_AVAILABLE;
             bool y_da = status_register & L3gd20Gyro::BitMasks::StatusRegister::Y_DATA_AVAILABLE;
             bool x_da = status_register & L3gd20Gyro::BitMasks::StatusRegister::X_DATA_AVAILABLE;
+#endif
 
             /*
             if(z_or | y_or | x_or) {
 
-                BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": gyro status reg: " << x;
+                BOOST_LOG_TRIVIAL(debug) << device_name <<": gyro status reg: " << x;
 
-                BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
-                BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
+                BOOST_LOG_TRIVIAL(debug) << device_name <<": zyx_or: " << zyx_or_status << " z_or: " << z_or << " y_or: " << y_or << " x_or: " << x_or;
+                BOOST_LOG_TRIVIAL(debug) << device_name <<": zyx_da: " << zyx_da_status << " z_da: " << z_da << " y_da: " << y_da << " x_da: " << x_da;
 
             }
             */
@@ -492,4 +499,91 @@ uint8_t L3gd20Gyro::_update_gyroscope_status() {
     }
 
     return status_register;
+}
+
+int L3gd20Gyro::receive_i2c(buffer_t *data, uint8_t register_address) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_recv(&_i2c_device_context, data, register_address);
+
+    return status;
+}
+
+int L3gd20Gyro::send_i2c(buffer_t *data, uint8_t register_address) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_send(&_i2c_device_context, data, register_address);
+
+    return status;
+}
+
+int L3gd20Gyro::open_i2c_dev(int device_number, int slave_address) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_dev_open(&_i2c_device_context, device_number, slave_address);
+
+    return status;
+}
+
+int L3gd20Gyro::is_i2c_dev_connected() {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_is_connected(&_i2c_device_context);
+
+    return status;
+}
+
+void L3gd20Gyro::close_i2c_dev(int bus_number) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    i2c_dev_close(&_i2c_device_context, bus_number);
+}
+
+void handle_l3gd20_measurements(float temperature, float x_axis, float y_axis, float z_axis) {
+    //std::cout << "handle_l3gd20_measurements (temp/x/y/z): " << temperature << "/" << x_axis << "/" << y_axis << "/" << z_axis << std::endl;
+}
+
+int main(int argc, char* argv[]) {
+
+    ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
+    sctebot_boost_logger.init_boost_logging();
+
+    std::cout << "l3gd20 debug" << std::endl;
+
+    std::unique_ptr<L3gd20Gyro> l3gd20DeviceHandle(new L3gd20Gyro());
+
+    int i2c_bus_number = 0;
+    int i2c_device_address = 0x6b;
+
+    l3gd20DeviceHandle->config_device(
+            i2c_bus_number,
+            i2c_device_address,
+            "l3gd20_gyro_debug",
+            handle_l3gd20_measurements
+    );
+
+    l3gd20DeviceHandle->enable_load_mock_data();
+
+    l3gd20DeviceHandle->mock_run_device_emulation();
+
+#if 1
+    if(!l3gd20DeviceHandle->connect_to_device()) {
+        std::cout << "l3gd20 failed to connect" << std::endl;
+        return 0;
+    }
+    else {
+        l3gd20DeviceHandle->init_device(L3gd20Gyro::ODR_12P5HZ, L3gd20Gyro::MIN_CUT_OFF);
+
+        std::cout << "enter any key to exit" << std::endl;
+        std::cin.get();
+    }
+#else
+    l3gd20DeviceHandle->init_device();
+
+    std::cout << "enter any key to exit" << std::endl;
+    std::cin.get();
+
+#endif
+
+    std::cout << "END OF PROGRAM" << std::endl;
 }

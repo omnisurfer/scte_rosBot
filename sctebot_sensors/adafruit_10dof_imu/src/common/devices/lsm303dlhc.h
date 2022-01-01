@@ -362,6 +362,7 @@ private:
         } SrRegM;
     };
 
+    std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
     int _sensor_update_period_ms{};
@@ -387,6 +388,7 @@ private:
     float _linear_acceleration_sensitivity{0};
 
     bool run_data_capture_thread = false;
+    bool is_running_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
     std::mutex data_capture_thread_run_mutex;
     std::thread data_capture_thread;
@@ -398,6 +400,7 @@ private:
     host_callback_function _host_callback_function{};
 
     bool mock_run_device_thread = false;
+    bool is_running_mock_device_thread = false;
     std::condition_variable mock_device_thread_run_cv;
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
@@ -411,6 +414,12 @@ private:
     int _connect_to_device();
 
     int _close_device();
+
+    int receive_i2c(buffer_t *data, uint8_t register_address);
+    int send_i2c(buffer_t *data, uint8_t register_address);
+    int open_i2c_dev(int device_number, int slave_address);
+    int is_i2c_dev_connected();
+    void close_i2c_dev(int bus_number);
 
     int _mock_load_accel_data() {
 
@@ -475,7 +484,7 @@ private:
 
         int8_t register_address = 0x00;
 
-        if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+        if (send_i2c(&outbound_message, register_address)) {
             BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
             return 0;
         }
@@ -510,29 +519,7 @@ public:
     ~Lsm303DlhcAccelerometer() {
         BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
-        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-        this->run_data_capture_thread = false;
-        data_lock.unlock();
-        this->data_capture_thread_run_cv.notify_one();
-
-        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-        this->mock_run_device_thread = false;
-        device_lock.unlock();
-        this->mock_device_thread_run_cv.notify_one();
-
-        if(data_capture_thread.joinable()) {
-            data_capture_thread.join();
-
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
-        }
-
-        if(mock_device_thread.joinable()) {
-            mock_device_thread.join();
-
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
-        }
-
-        this->_close_device();
+        this->_shutdown_device();
 
     }
 
@@ -579,6 +566,51 @@ public:
         this->_init_device(output_data_rate, high_pass_filter_cutoff, sensor_full_scale_accelerometer_range);
 
         return 1;
+    }
+
+    void _shutdown_device() {
+
+        bool data_capture_thread_was_running = false;
+        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+        {
+            if(is_running_data_capture_thread) {
+                data_capture_thread_was_running = is_running_data_capture_thread;
+                this->run_data_capture_thread = false;
+                this->data_capture_thread_run_cv.notify_one();
+            }
+            data_lock.unlock();
+        }
+
+        if(data_capture_thread_was_running) {
+            if(data_capture_thread.joinable()) {
+                data_capture_thread.join();
+
+                BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+            }
+        }
+
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+
+        bool mock_device_thread_was_running = false;
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        {
+            if(is_running_mock_device_thread) {
+                mock_device_thread_was_running = is_running_mock_device_thread;
+                this->mock_run_device_thread = false;
+                this->mock_device_thread_run_cv.notify_one();
+            }
+            device_lock.unlock();
+        }
+
+        if(mock_device_thread_was_running) {
+            if (mock_device_thread.joinable()) {
+                mock_device_thread.join();
+            }
+        }
+
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
+
+        this->_close_device();
     }
 
     void enable_load_mock_data();
@@ -747,6 +779,7 @@ private:
         } SrRegM;
     };
 
+    std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
     int _sensor_update_period_ms{};
@@ -778,6 +811,7 @@ private:
     float _mag_z_gain_config{0};
 
     bool run_data_capture_thread = false;
+    bool is_running_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
     std::mutex data_capture_thread_run_mutex;
     std::thread data_capture_thread;
@@ -790,6 +824,7 @@ private:
     host_callback_function _host_callback_function{};
 
     bool mock_run_device_thread = false;
+    bool is_running_mock_device_thread = false;
     std::condition_variable mock_device_thread_run_cv;
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
@@ -802,6 +837,12 @@ private:
     int _connect_to_device();
 
     int _close_device();
+
+    int receive_i2c(buffer_t *data, uint8_t register_address);
+    int send_i2c(buffer_t *data, uint8_t register_address);
+    int open_i2c_dev(int device_number, int slave_address);
+    int is_i2c_dev_connected();
+    void close_i2c_dev(int bus_number);
 
     int _mock_load_mag_data() {
 
@@ -866,7 +907,7 @@ private:
 
         int8_t register_address = 0x00;
 
-        if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+        if (send_i2c(&outbound_message, register_address)) {
             BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
             return 0;
         }
@@ -907,27 +948,7 @@ public:
     ~Lsm303DlhcMagnetometer() {
         BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
-        this->_close_device();
-
-        this->run_data_capture_thread = false;
-
-        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-        this->data_capture_thread_run_cv.notify_one();
-        data_lock.unlock();
-
-        if(data_capture_thread.joinable()) {
-            data_capture_thread.join();
-        }
-
-        this->mock_run_device_thread = false;
-
-        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-        this->mock_device_thread_run_cv.notify_one();
-        device_lock.unlock();
-
-        if(mock_device_thread.joinable()) {
-            mock_device_thread.join();
-        }
+        this->_shutdown_device();
     }
 
     int config_device(
@@ -974,6 +995,49 @@ public:
         return 1;
     }
 
+    void _shutdown_device() {
+
+        bool data_capture_thread_was_running = false;
+        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+        {
+            if(is_running_data_capture_thread) {
+                data_capture_thread_was_running = is_running_data_capture_thread;
+                this->run_data_capture_thread = false;
+                this->data_capture_thread_run_cv.notify_one();
+            }
+            data_lock.unlock();
+        }
+
+        if(data_capture_thread_was_running) {
+            if (data_capture_thread.joinable()) {
+                data_capture_thread.join();
+            }
+        }
+
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+
+        bool mock_device_thread_was_running = false;
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex); {
+
+            if(is_running_mock_device_thread) {
+                mock_device_thread_was_running = is_running_mock_device_thread;
+                this->mock_run_device_thread = false;
+                this->mock_device_thread_run_cv.notify_one();
+            }
+            device_lock.unlock();
+        }
+
+        if(mock_device_thread_was_running) {
+            if (mock_device_thread.joinable()) {
+                mock_device_thread.join();
+            }
+        }
+
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
+
+        this->_close_device();
+
+    }
     void enable_load_mock_data();
 
     int mock_run_device_emulation() {
