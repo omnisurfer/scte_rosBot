@@ -12,9 +12,11 @@
 #include <condition_variable>
 #include <cmath>
 
-#include "utils/register_utils.h"
-#include "utils/boost_logging.h"
 #include "i2c_linux/i2c_linux.h"
+#include "utils/boost_logging.h"
+#include "utils/register_utils.h"
+
+
 
 #define DEG_TO_RAD (M_PI/180.0)
 
@@ -312,18 +314,19 @@ private:
     int _init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff);
 
     int _connect_to_device() {
+        std::string device_name = this->_device_name;
 
         /*
          * setup the i2c context and connect
          */
         _i2c_device_context = {0};
         if(!open_i2c_dev(_i2c_bus_number, _i2c_device_address)) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open";
+            BOOST_LOG_TRIVIAL(error) << device_name << ": failed to open";
             return 0;
         }
 
         if(!is_i2c_dev_connected()) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect";
+            BOOST_LOG_TRIVIAL(error) << device_name << ": failed to connect";
             return 0;
         }
 
@@ -343,7 +346,7 @@ private:
         receive_i2c(&inbound_message, register_address);
 
         if(chip_id[0] != L3gd20Gyro::MagicNumbers::WhoAmI::WHO_AM_I) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device WHO_AM_I register";
+            BOOST_LOG_TRIVIAL(error) << device_name << ": failed to read device WHO_AM_I register";
             return 0;
         }
         return 1;
@@ -363,6 +366,7 @@ private:
     void close_i2c_dev(int bus_number);
 
     int _mock_load_data() {
+        std::string device_name = this->_device_name;
         /*
          * @77 bmp180 (?)
          * @6b l3gd20 (?)
@@ -454,11 +458,11 @@ private:
         int8_t register_address = 0x00;
 
         if (send_i2c(&outbound_message, register_address)) {
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": loaded mock data for device OK";
+            BOOST_LOG_TRIVIAL(debug) << device_name << ": loaded mock data for device OK";
             return 0;
         }
         else {
-            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": loaded mock data for device FAILED";
+            BOOST_LOG_TRIVIAL(debug) <<  device_name << ": loaded mock data for device FAILED";
             return -1;
         }
     }
@@ -494,8 +498,9 @@ public:
     L3gd20Gyro() = default;
 
     ~L3gd20Gyro() {
+        std::string device_name = this->_device_name;
 
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
+        BOOST_LOG_TRIVIAL(debug) << device_name << ": destructor running";
 
         this->_shutdown_device();
 
@@ -541,6 +546,7 @@ public:
     }
 
     void _shutdown_device() {
+        std::string device_name = this->_device_name;
 
         bool data_capture_thread_was_running = false;
         std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
@@ -557,7 +563,7 @@ public:
             if(data_capture_thread.joinable()) {
                 data_capture_thread.join();
 
-                BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+                BOOST_LOG_TRIVIAL(debug) << device_name << ": data_capture_thread joined";
             }
         }
 
@@ -576,7 +582,7 @@ public:
             if (mock_device_thread.joinable()) {
                 mock_device_thread.join();
 
-                BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
+                BOOST_LOG_TRIVIAL(debug) << device_name << ": mock_device_thread joined";
             }
         }
 

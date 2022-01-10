@@ -45,3 +45,16 @@ target_link_libraries(
         Boost::log
         ${catkin_LIBRARIES}
 )
+
+add_executable(
+        pca9685.exe
+
+        src/devices/pca9685.cpp
+)
+
+target_link_libraries(
+        pca9685.exe
+
+        Boost::log
+        ${catkin_LIBRARIES}
+)

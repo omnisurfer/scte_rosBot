@@ -13,9 +13,9 @@
 #include <math.h>
 #include <cmath>
 
-#include "utils/register_utils.h"
-#include "utils/boost_logging.h"
 #include "i2c_linux/i2c_linux.h"
+#include "utils/boost_logging.h"
+#include "utils/register_utils.h"
 
 #define GRAVITY_MS_S 9.80665
 
@@ -422,6 +422,7 @@ private:
     void close_i2c_dev(int bus_number);
 
     int _mock_load_accel_data() {
+        std::string device_name = this->_device_name;
 
         /* @0x19 - Idle?
              0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f    0123456789abcdef
@@ -485,7 +486,7 @@ private:
         int8_t register_address = 0x00;
 
         if (send_i2c(&outbound_message, register_address)) {
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
+            BOOST_LOG_TRIVIAL(debug) << device_name << ": sent mock calibration data to device OK";
             return 0;
         }
 
@@ -517,7 +518,9 @@ public:
     Lsm303DlhcAccelerometer() = default;
 
     ~Lsm303DlhcAccelerometer() {
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
+        std::string device_name = this->_device_name;
+
+        BOOST_LOG_TRIVIAL(debug) << device_name << ": destructor running";
 
         this->_shutdown_device();
 
@@ -569,6 +572,7 @@ public:
     }
 
     void _shutdown_device() {
+        std::string device_name = this->_device_name;
 
         bool data_capture_thread_was_running = false;
         std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
@@ -585,11 +589,11 @@ public:
             if(data_capture_thread.joinable()) {
                 data_capture_thread.join();
 
-                BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+                BOOST_LOG_TRIVIAL(debug) << device_name << ": data_capture_thread joined";
             }
         }
 
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+        BOOST_LOG_TRIVIAL(debug) << device_name << ": data_capture_thread joined";
 
         bool mock_device_thread_was_running = false;
         std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
@@ -608,7 +612,7 @@ public:
             }
         }
 
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
+        BOOST_LOG_TRIVIAL(debug) << device_name << ": mock_device_thread joined";
 
         this->_close_device();
     }

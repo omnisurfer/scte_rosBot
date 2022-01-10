@@ -3,9 +3,36 @@
 //
 
 #include "pca9685.h"
-#include "utils/boost_logging.h"
 
-void Pca9685LEDController::_servo_status_worker() {
+int Pca9685LEDController::_init_device() {
+
+    buffer_t inbound_message;
+
+    int init_ok = 0;
+    uint8_t register_address = 0x00; //(Bmp180Pressure::Addresses::CalibrationCoefficients::AC1 >> 8) & 0xff;
+
+    uint8_t temp_data_buffer[3];
+
+    inbound_message = {
+            .bytes = temp_data_buffer,
+            .size = sizeof(temp_data_buffer)
+    };
+
+    if(receive_i2c(&inbound_message, register_address)) {
+
+    }
+    else {
+        init_ok = 1;
+    }
+
+    std::lock_guard<std::mutex> run_lock(this->run_servo_status_thread_mutex);
+    this->run_servo_status_thread = true;
+    this->run_servo_status_thread_cv.notify_all();
+
+    return init_ok;
+}
+
+void Pca9685LEDController::_servo_management_worker() {
 
     std::unique_lock<std::mutex> run_lock(this->run_servo_status_thread_mutex);
     this->run_servo_status_thread_cv.wait(run_lock);
@@ -23,6 +50,44 @@ void Pca9685LEDController::_servo_status_worker() {
     }
 }
 
+int Pca9685LEDController::receive_i2c(buffer_t *data, uint8_t register_address) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_recv(&_i2c_device_context, data, register_address);
+
+    return status;
+}
+
+int Pca9685LEDController::send_i2c(buffer_t *data, uint8_t register_address) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_send(&_i2c_device_context, data, register_address);
+
+    return status;
+}
+
+int Pca9685LEDController::open_i2c_dev(int device_number, int slave_address) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_dev_open(&_i2c_device_context, device_number, slave_address);
+
+    return status;
+}
+
+int Pca9685LEDController::is_i2c_dev_connected() {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    int status = i2c_is_connected(&_i2c_device_context);
+
+    return status;
+}
+
+void Pca9685LEDController::close_i2c_dev(int bus_number) {
+
+    std::lock_guard<std::mutex> i2c_device_lock(_i2c_device_mutex);
+    i2c_dev_close(&_i2c_device_context, bus_number);
+}
+
 void handle_servo_callback(int x, int y) {
 
     //std::cout << "servo callback called!" << std::endl;
@@ -36,9 +101,7 @@ void handle_servo_callback(int x, int y) {
 int main(int argc, char* argv[]) {
 
     ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
-
     sctebot_boost_logger.init_boost_logging();
-    //logging::add_common_attributes();
 
     BOOST_LOG_TRIVIAL(debug) << "pca9685 debug message";
 
@@ -48,32 +111,29 @@ int main(int argc, char* argv[]) {
 
     int i2c_bus_number = 0;
     int i2c_device_address = 0x40;
+    int update_period_ms = 1000;
 
     bool init_ok = true;
 
     pca9685DeviceHandle->config_device(
             i2c_bus_number,
             i2c_device_address,
-            3000,
+            update_period_ms,
             "pca9685_servo",
             handle_servo_callback
             );
 
     if(pca9685DeviceHandle->connect_to_device()) {
-
-        if(pca9685DeviceHandle->init_device()) {
-
-        }
-        else {
-            init_ok = false;
-        }
-
+        std::cout << "pca9685 failed to connect" << std::endl;
+        return 0;
     }
     else {
-        init_ok = false;
-    }
 
-    std::cout << "press any key to exit" << std::endl;
-    std::cin.get();
+        pca9685DeviceHandle->init_device();
+
+        std::cout << "press any key to exit" << std::endl;
+        std::cin.get();
+
+    }
 
 }

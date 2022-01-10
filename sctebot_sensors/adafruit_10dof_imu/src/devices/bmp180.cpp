@@ -51,15 +51,17 @@ int Bmp180Pressure::_init_device() {
 }
 
 void Bmp180Pressure::_data_capture_worker() {
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker starting";
+    std::string device_name = this->_device_name;
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker waiting";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker starting";
+
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker waiting";
     std::unique_lock<std::mutex> data_thread_lock(this->data_capture_thread_run_mutex);
     is_running_data_capture_thread = true;
     this->data_capture_thread_run_cv.wait(data_thread_lock);
     data_thread_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker running";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker running";
 
     data_thread_lock.lock();
     while(this->run_data_capture_thread) {
@@ -91,7 +93,7 @@ void Bmp180Pressure::_data_capture_worker() {
         data_thread_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _data_capture_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker exiting";
 }
 
 void Bmp180Pressure::enable_load_mock_data() {
@@ -99,16 +101,17 @@ void Bmp180Pressure::enable_load_mock_data() {
 }
 
 void Bmp180Pressure::_mock_device_emulation_worker() {
+    std::string device_name = "debug"; //this->_device_name;
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _mock_device_emulation_worker starting";
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker waiting";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _mock_device_emulation_worker waiting";
     std::unique_lock<std::mutex> mock_device_lock(this->mock_device_thread_run_mutex);
     is_running_mock_device_thread = true;
     this->mock_device_thread_run_cv.wait(mock_device_lock);
     mock_device_lock.unlock();
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker running";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _mock_device_emulation_worker running";
 
     uint8_t debug_temp_counter = 0x96;
     uint8_t debug_press_counter = 0x07;
@@ -224,7 +227,7 @@ void Bmp180Pressure::_mock_device_emulation_worker() {
         mock_device_lock.lock();
     }
 
-    BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": _mock_device_emulation_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _mock_device_emulation_worker exiting";
 
     //std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
@@ -395,7 +398,7 @@ void Bmp180Pressure::close_i2c_dev(int bus_number) {
 }
 
 void handle_bmp180_measurements(float temperature, float pressure) {
-    std::cout << "handle_bmp180_measurements (temp/press): " << temperature << "/" << pressure << std::endl;
+    //std::cout << "handle_bmp180_measurements (temp/press): " << temperature << "/" << pressure << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -442,5 +445,4 @@ int main(int argc, char* argv[]) {
 
 #endif
 
-    std::cout << "END OF PROGRAM" << std::endl;
 }

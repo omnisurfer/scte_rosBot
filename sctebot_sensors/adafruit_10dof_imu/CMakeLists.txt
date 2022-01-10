@@ -27,19 +27,19 @@ include_directories(
         include
         ${catkin_INCLUDE_DIRS}
         src/
-        src/common/devices
+        src/devices
 )
 
 add_library(
-        bmp180 src/common/devices/bmp180.cpp
+        bmp180 src/devices/bmp180.cpp
 )
 
 add_library(
-        l3gd20 src/common/devices/l3gd20.cpp
+        l3gd20 src/devices/l3gd20.cpp
 )
 
 add_library(
-        lsm303dlhc src/common/devices/lsm303dlhc.cpp
+        lsm303dlhc src/devices/lsm303dlhc.cpp
 )
 
 add_library(
@@ -65,7 +65,7 @@ target_link_libraries(
 add_executable(
         bmp180.exe
 
-        src/common/devices/bmp180.cpp
+        src/devices/bmp180.cpp
 )
 
 target_link_libraries(
@@ -78,7 +78,7 @@ target_link_libraries(
 add_executable(
         l3gd20.exe
 
-        src/common/devices/l3gd20.cpp
+        src/devices/l3gd20.cpp
 )
 
 target_link_libraries(
@@ -91,7 +91,7 @@ target_link_libraries(
 add_executable(
         lsm303dlhc.exe
 
-        src/common/devices/lsm303dlhc.cpp
+        src/devices/lsm303dlhc.cpp
 )
 
 target_link_libraries(

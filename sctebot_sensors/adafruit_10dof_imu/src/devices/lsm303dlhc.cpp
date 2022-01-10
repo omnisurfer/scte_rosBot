@@ -4,7 +4,6 @@
 #include <sstream>
 
 #include "lsm303dlhc.h"
-#include "utils/register_utils.h"
 
 // region Accelerometer
 
@@ -13,6 +12,8 @@ int Lsm303DlhcAccelerometer::_init_device(
         Lsm303DlhcAccelerometer::HighPassFilterCutoff_t high_pass_filter_cuttoff,
         Lsm303DlhcAccelerometer::SensorAccelerationFullScale_t sensor_full_scale_accelerometer_range
         ) {
+
+    std::string device_name = this->_device_name;
 
     //ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
     //sctebot_boost_logger.init_boost_logging();
@@ -37,7 +38,7 @@ int Lsm303DlhcAccelerometer::_init_device(
         std::string output_string;
         std::stringstream ss;
 
-        ss << this->_device_name << ": config ";
+        ss << device_name << ": config ";
 
         for(uint i = 0; i < sizeof(_control_register_1to6_buffer); ++i) {
             ss << std::setfill('0') << std::setw(2) << (int)_control_register_1to6_buffer[i] << " ";
@@ -48,7 +49,7 @@ int Lsm303DlhcAccelerometer::_init_device(
         BOOST_LOG_TRIVIAL(info) << output_string;
     }
     else {
-        BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read control registers";
+        BOOST_LOG_TRIVIAL(error) << device_name << ": failed to read control registers";
     }
 
     /* REGISTER SETUP ORDER MAY MATTER - Or the way I am executing the config is screwing up the device */
@@ -113,10 +114,10 @@ int Lsm303DlhcAccelerometer::_init_device(
     };
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(info) << this->_device_name << ": CTRL_REG4_A configure OK";
+        BOOST_LOG_TRIVIAL(info) << device_name << ": CTRL_REG4_A configure OK";
     }
     else {
-        BOOST_LOG_TRIVIAL(error) << this->_device_name << ": CTRL_REG4_A configure failed";
+        BOOST_LOG_TRIVIAL(error) << device_name << ": CTRL_REG4_A configure failed";
     }
     //endregion
 
@@ -143,10 +144,10 @@ int Lsm303DlhcAccelerometer::_init_device(
     };
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(info) << this->_device_name << ": CTRL_REG2_A configure OK";
+        BOOST_LOG_TRIVIAL(info) << device_name << ": CTRL_REG2_A configure OK";
     }
     else {
-        BOOST_LOG_TRIVIAL(error) << this->_device_name << ": CTRL_REG2_A configure failed";
+        BOOST_LOG_TRIVIAL(error) << device_name << ": CTRL_REG2_A configure failed";
     }
 
     //region CTRL_REG1
@@ -171,10 +172,10 @@ int Lsm303DlhcAccelerometer::_init_device(
     };
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(info) << this->_device_name << ": CTRL_REG1_A configure OK";
+        BOOST_LOG_TRIVIAL(info) << device_name << ": CTRL_REG1_A configure OK";
     }
     else {
-        BOOST_LOG_TRIVIAL(error) << this->_device_name << ": CTRL_REG1_A configure failed";
+        BOOST_LOG_TRIVIAL(error) << device_name << ": CTRL_REG1_A configure failed";
     }
     //endregion
 
@@ -187,15 +188,16 @@ int Lsm303DlhcAccelerometer::_init_device(
 }
 
 int Lsm303DlhcAccelerometer::_connect_to_device() {
+    std::string device_name = this->_device_name;
 
     _i2c_device_context = {0};
     if(!open_i2c_dev(_i2c_bus_number, _i2c_device_address)) {
-        BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open device";
+        BOOST_LOG_TRIVIAL(error) << device_name << ": failed to open device";
         return 0;
     }
 
     if(!is_i2c_dev_connected()) {
-        BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect to device";
+        BOOST_LOG_TRIVIAL(error) << device_name << ": failed to connect to device";
         return 0;
     }
 
@@ -213,17 +215,17 @@ int Lsm303DlhcAccelerometer::_close_device() {
 }
 
 void Lsm303DlhcAccelerometer::_data_capture_worker() {
-    std::string device_name = "debug accel"; //this->_device_name;
+    std::string device_name = this->_device_name;
 
-    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker startingYYYYYYYYYYYYYYYYYYYY";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker starting";
 
-    //BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker waiting";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker waiting";
     std::unique_lock<std::mutex> data_worker_run_thread_lock(this->data_capture_thread_run_mutex);
     is_running_data_capture_thread = true;
     this->data_capture_thread_run_cv.wait(data_worker_run_thread_lock);
     data_worker_run_thread_lock.unlock();
 
-    //BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker running";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker running";
 
     data_worker_run_thread_lock.lock();
     while(this->run_data_capture_thread) {
@@ -266,13 +268,13 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
         data_worker_run_thread_lock.lock();
     }
 
-    //BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker exiting";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker exiting";
 }
 
 void Lsm303DlhcAccelerometer::_mock_device_emulation_worker() {
-    std::string device_name = "debug accel"; //this->_device_name;
+    std::string device_name = this->_device_name;
 
-    //BOOST_LOG_TRIVIAL(debug) << device_name << ": _mock_device_emulation_worker starting";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _mock_device_emulation_worker starting";
 
     BOOST_LOG_TRIVIAL(debug) << device_name << ": _mock_device_emulation_worker waiting";
     std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
@@ -766,9 +768,9 @@ int Lsm303DlhcMagnetometer::_close_device() {
 }
 
 void Lsm303DlhcMagnetometer::_data_capture_worker() {
-    std::string device_name = "debug mag"; //this->_device_name;
+    std::string device_name = this->_device_name;
 
-    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker startingXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker starting";
 
     BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker waiting";
     std::unique_lock<std::mutex> data_run_thread_lock(this->data_capture_thread_run_mutex);
@@ -1196,10 +1198,8 @@ int main(int argc, char* argv[]) {
                 Lsm303DlhcMagnetometer::ODR_3P0_HZ,
                 Lsm303DlhcMagnetometer::PN_1P3G
         );
+
+        std::cout << "enter any key to exit" << std::endl;
+        std::cin.get();
     }
-
-    std::cout << "enter any key to exit" << std::endl;
-    std::cin.get();
-
-    std::cout << "END OF PROGRAM" << std::endl;
 }

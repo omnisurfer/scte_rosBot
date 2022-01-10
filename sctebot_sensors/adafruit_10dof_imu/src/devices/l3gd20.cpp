@@ -6,8 +6,7 @@
 
 int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff) {
 
-    //ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
-    //sctebot_boost_logger.init_boost_logging();
+    std::string device_name = this->_device_name;
 
     BOOST_LOG_TRIVIAL(info) << "l3gd20 _init_device";
 
@@ -29,7 +28,7 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
         std::string output_string;
         std::stringstream ss;
 
-        ss << this->_device_name << ": config ";
+        ss << device_name << ": config ";
 
         for(uint i = 0; i < sizeof(_control_register_1to5_buffer); ++i) {
             ss << std::hex << std::setfill('0') << std::setw(2) << (int)_control_register_1to5_buffer[i] << " ";
@@ -90,10 +89,10 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
     };
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": CTRL_REG4 configure OK";
+        BOOST_LOG_TRIVIAL(debug) << device_name << ": CTRL_REG4 configure OK";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": CTRL_REG4 configure failed";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": CTRL_REG4 configure failed";
     }
     //endregion
 
@@ -141,10 +140,10 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
     };
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": CTRL_REG1 configure OK";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": CTRL_REG1 configure OK";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": CTRL_REG1 configure failed";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": CTRL_REG1 configure failed";
     }
     //endregion
 
@@ -166,10 +165,10 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
     };
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": LOW_ODR configure OK";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": LOW_ODR configure OK";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name <<": LOW_ODR configure failed";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": LOW_ODR configure failed";
     }
 
     // endregion
@@ -183,7 +182,7 @@ int L3gd20Gyro::_init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3g
 }
 
 void L3gd20Gyro::_data_capture_worker() {
-    std::string device_name = "debug"; //this->_device_name;
+    std::string device_name = this->_device_name;
 
     BOOST_LOG_TRIVIAL(debug) << device_name <<": _data_capture_worker starting";
 
@@ -251,7 +250,7 @@ void L3gd20Gyro::enable_load_mock_data() {
 }
 
 void L3gd20Gyro::_mock_device_emulation_worker() {
-    std::string device_name = "debug"; //this->_device_name;
+    std::string device_name = this->_device_name;
 
     BOOST_LOG_TRIVIAL(debug) << device_name <<": _mock_device_emulation_worker starting";
 
@@ -572,7 +571,10 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     else {
-        l3gd20DeviceHandle->init_device(L3gd20Gyro::ODR_12P5HZ, L3gd20Gyro::MIN_CUT_OFF);
+        l3gd20DeviceHandle->init_device(
+                L3gd20Gyro::ODR_12P5HZ,
+                L3gd20Gyro::MIN_CUT_OFF
+        );
 
         std::cout << "enter any key to exit" << std::endl;
         std::cin.get();
@@ -585,5 +587,4 @@ int main(int argc, char* argv[]) {
 
 #endif
 
-    std::cout << "END OF PROGRAM" << std::endl;
 }

@@ -25,6 +25,7 @@ private:
 
     };
 
+    std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
     int _sensor_update_period_ms{};
@@ -80,30 +81,22 @@ private:
         return 1;
     }
 
-    void _servo_status_worker();
+    int _init_device();
 
-    int _init_device() {
+    int _close_device() {
 
-        ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
+        close_i2c_dev(_i2c_bus_number);
 
-        sctebot_boost_logger.init_boost_logging();
-
-        BOOST_LOG_TRIVIAL(trace) << "pca9685 _init_device trace";
-        BOOST_LOG_TRIVIAL(debug) << "pca9685 _init_device debug";
-
-        BOOST_LOG_TRIVIAL(trace) << "This is a trace severity message";
-        BOOST_LOG_TRIVIAL(debug) << "This is a debug severity message";
-        BOOST_LOG_TRIVIAL(info) << "This is an informational severity message";
-        BOOST_LOG_TRIVIAL(warning) << "This is a warning severity message";
-        BOOST_LOG_TRIVIAL(error) << "This is an error severity message";
-        BOOST_LOG_TRIVIAL(fatal) << "and this is a fatal severity message";
-
-        std::lock_guard<std::mutex> run_lock(this->run_servo_status_thread_mutex);
-        this->run_servo_status_thread = true;
-        this->run_servo_status_thread_cv.notify_all();
-
-        return 1;
+        return 0;
     }
+
+    int receive_i2c(buffer_t *data, uint8_t register_address);
+    int send_i2c(buffer_t *data, uint8_t register_address);
+    int open_i2c_dev(int device_number, int slave_address);
+    int is_i2c_dev_connected();
+    void close_i2c_dev(int bus_number);
+
+    void _servo_management_worker();
 
 public:
 
@@ -137,7 +130,7 @@ public:
 
         _host_callback_function = function_pointer;
 
-        servo_status_thread = std::thread(&Pca9685LEDController::_servo_status_worker, this);
+        servo_status_thread = std::thread(&Pca9685LEDController::_servo_management_worker, this);
 
         return 0;
     }

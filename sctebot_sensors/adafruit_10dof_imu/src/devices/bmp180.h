@@ -14,9 +14,9 @@
 #include <thread>
 #include <condition_variable>
 
-#include "utils/register_utils.h"
-#include "utils/boost_logging.h"
 #include "i2c_linux/i2c_linux.h"
+#include "utils/boost_logging.h"
+#include "utils/register_utils.h"
 
 class Bmp180Pressure {
 
