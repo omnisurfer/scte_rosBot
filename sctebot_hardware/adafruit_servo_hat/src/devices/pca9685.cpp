@@ -2,28 +2,107 @@
 // Created by user on 12/17/21.
 //
 
+#include <chrono>
+#include <thread>
+#include <bitset>
+
 #include "pca9685.h"
 
 int Pca9685LEDController::_init_device() {
 
+    std::string device_name = this->_device_name;
+
     buffer_t inbound_message;
+    buffer_t outbound_message;
+    uint8_t register_address;
+    uint8_t control_reg[1] = {0};
 
-    int init_ok = 0;
-    uint8_t register_address = 0x00; //(Bmp180Pressure::Addresses::CalibrationCoefficients::AC1 >> 8) & 0xff;
+    int init_ok = 1;
 
-    uint8_t temp_data_buffer[3];
+    // region Mode1 configuration
+
+    register_address = Pca9685LEDController::Addresses::Registers::MODE1;
+
+    uint8_t mode1_register_data[1];
 
     inbound_message = {
-            .bytes = temp_data_buffer,
-            .size = sizeof(temp_data_buffer)
+            .bytes = mode1_register_data,
+            .size = sizeof(mode1_register_data)
     };
 
     if(receive_i2c(&inbound_message, register_address)) {
-
+        // nothing to do here
     }
     else {
-        init_ok = 1;
+        init_ok = 0;
     }
+
+    control_reg[0] =
+        (Pca9685LEDController::BitMasks::Mode1::RESTART & ENABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::EXTCLK & DISABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::AI & DISABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::SLEEP & DISABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::SUB1 & DISABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::SUB2 & DISABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::SUB3 & DISABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::ALLCALL & ENABLE);
+
+    outbound_message = {
+            .bytes = control_reg,
+            .size = sizeof(control_reg)
+    };
+
+    std::bitset<8> x(control_reg[0]);
+
+    if(send_i2c(&outbound_message, register_address)) {
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << x << ")";
+    }
+    else {
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << x << ")";
+    }
+
+    // endregion Mode1 configuration
+
+    // region Mode2 configuration
+    register_address = Pca9685LEDController::Addresses::Registers::MODE2;
+
+    uint8_t mode2_register_data[1];
+
+    inbound_message = {
+            .bytes = mode2_register_data,
+            .size = sizeof(mode2_register_data)
+    };
+
+    if(receive_i2c(&inbound_message, register_address)) {
+        // nothing to do here
+    }
+    else {
+        init_ok = 0;
+    }
+
+    control_reg[0] =
+            (Pca9685LEDController::BitMasks::Mode2::INVRT & DISABLE) |
+            (Pca9685LEDController::BitMasks::Mode2::OCH & DISABLE) |
+            (Pca9685LEDController::BitMasks::Mode2::OUTDRV & ENABLE) |
+            (Pca9685LEDController::BitMasks::Mode2::OUTNE_LEDN_HIGH_Z & DISABLE) |
+            (Pca9685LEDController::BitMasks::Mode2::OUTNE_LEDN_SET_1 & DISABLE);
+
+    outbound_message = {
+            .bytes = control_reg,
+            .size = sizeof(control_reg)
+    };
+
+    x.reset();
+    x.set(control_reg[0]);
+
+    if(send_i2c(&outbound_message, register_address)) {
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << x << ")";
+    }
+    else {
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << x << ")";
+    }
+
+    // endregion
 
     std::lock_guard<std::mutex> run_lock(this->run_servo_status_thread_mutex);
     this->run_servo_status_thread = true;
@@ -123,7 +202,7 @@ int main(int argc, char* argv[]) {
             handle_servo_callback
             );
 
-    if(pca9685DeviceHandle->connect_to_device()) {
+    if(!pca9685DeviceHandle->connect_to_device()) {
         std::cout << "pca9685 failed to connect" << std::endl;
         return 0;
     }
@@ -131,9 +210,32 @@ int main(int argc, char* argv[]) {
 
         pca9685DeviceHandle->init_device();
 
-        std::cout << "press any key to exit" << std::endl;
-        std::cin.get();
+        std::cout << "press e key to exit" << std::endl;
 
+        char input[2];
+        uint16_t pwm_on = 0;
+
+        while(true) {
+
+            std::cin.get(input, 2);
+
+            std::cout << "input " << input << std::endl;
+
+            if (input[0] == 'e') {
+                return 0;
+            } else {
+                pwm_on = (pwm_on + 250) % 4096;
+
+                std::cout << "pwm_on " << pwm_on << std::endl;
+
+                pca9685DeviceHandle->set_pwm(Pca9685LEDController::LED0, pwm_on, 0);
+
+                std::cin.clear();
+                std::cin.ignore();
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        }
     }
 
 }

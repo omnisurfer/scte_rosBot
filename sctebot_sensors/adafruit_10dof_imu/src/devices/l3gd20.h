@@ -16,8 +16,6 @@
 #include "utils/boost_logging.h"
 #include "utils/register_utils.h"
 
-
-
 #define DEG_TO_RAD (M_PI/180.0)
 
 class L3gd20Gyro {

@@ -13,16 +13,159 @@
 #include "i2c_linux/i2c_linux.h"
 #include "utils/boost_logging.h"
 
+#define ENABLE 0xFF
+#define DISABLE 0x00
+
 class Pca9685LEDController {
+
+public:
+
+    typedef enum LEDn_t {
+        LED0 = 0,
+        LED1 = 1,
+        LED2 = 2,
+        LED3 = 3,
+        LED4 = 4,
+        LED5 = 5,
+        LED6 = 6,
+        LED7 = 7,
+
+        LED8 = 8,
+        LED9 = 9,
+        LED10 = 10,
+        LED11 = 11,
+        LED12 = 12,
+        LED13 = 13,
+        LED14 = 14,
+        LED15 = 15
+    } LEDn;
 
 private:
 
     class Addresses {
 
+    public:
+        typedef enum Registers_t {
+            MODE1 = 0x00,
+            MODE2 = 0x01,
+            SUBADR1 = 0x02,
+            SUBADR2 = 0x03,
+            SUBADR3 = 0x04,
+            ALLCALLADR = 0x05,
+
+            LED0_ON_L = 0x06,
+            LED0_ON_H = 0x07,
+            LED0_OFF_L = 0x08,
+            LED0_OFF_H = 0x09,
+
+            LED1_ON_L = 0x0A,
+            LED1_ON_H = 0x0B,
+            LED1_OFF_L = 0x0C,
+            LED1_OFF_H = 0x0D,
+
+            LED2_ON_L = 0x0E,
+            LED2_ON_H = 0x0F,
+            LED2_OFF_L = 0x10,
+            LED2_OFF_H = 0x11,
+
+            LED3_ON_L = 0x12,
+            LED3_ON_H = 0x13,
+            LED3_OFF_L = 0x14,
+            LED3_OFF_H = 0x15,
+
+            LED4_ON_L = 0x16,
+            LED4_ON_H = 0x17,
+            LED4_OFF_L = 0x18,
+            LED4_OFF_H = 0x19,
+
+            LED5_ON_L = 0x1A,
+            LED5_ON_H = 0x1B,
+            LED5_OFF_L = 0x1C,
+            LED5_OFF_H = 0x1D,
+
+            LED6_ON_L = 0x1E,
+            LED6_ON_H = 0x1F,
+            LED6_OFF_L = 0x20,
+            LED6_OFF_H = 0x21,
+
+            LED7_ON_L = 0x22,
+            LED7_ON_H = 0x23,
+            LED7_OFF_L = 0x24,
+            LED7_OFF_H = 0x25,
+
+            LED8_ON_L = 0x26,
+            LED8_ON_H = 0x27,
+            LED8_OFF_L = 0x28,
+            LED8_OFF_H = 0x29,
+
+            LED9_ON_L = 0x2A,
+            LED9_ON_H = 0x2B,
+            LED9_OFF_L = 0x2C,
+            LED9_OFF_H = 0x2D,
+
+            LED10_ON_L = 0x2E,
+            LED10_ON_H = 0x2F,
+            LED10_OFF_L = 0x30,
+            LED10_OFF_H = 0x31,
+
+            LED11_ON_L = 0x32,
+            LED11_ON_H = 0x33,
+            LED11_OFF_L = 0x34,
+            LED11_OFF_H = 0x35,
+
+            LED12_ON_L = 0x36,
+            LED12_ON_H = 0x37,
+            LED12_OFF_L = 0x38,
+            LED12_OFF_H = 0x39,
+
+            LED13_ON_L = 0x3A,
+            LED13_ON_H = 0x3B,
+            LED13_OFF_L = 0x3C,
+            LED13_OFF_H = 0x3D,
+
+            LED14_ON_L = 0x3E,
+            LED14_ON_H = 0x3F,
+            LED14_OFF_L = 0x40,
+            LED14_OFF_H = 0x41,
+
+            LED15_ON_L = 0x42,
+            LED15_ON_H = 0x43,
+            LED15_OFF_L = 0x44,
+            LED15_OFF_H = 0x45,
+
+            ALL_LED_ON_L = 0xFA,
+            ALL_LED_ON_H = 0xFB,
+            ALL_LED_OFF_L = 0xFC,
+            ALL_LED_OFF_H = 0xFD,
+
+            PRE_SCALE = 0xFE,
+            TEST_MODE = 0xFF
+
+        } Registers;
     };
 
-    class Commands {
+    class BitMasks {
 
+    public:
+
+        typedef enum Mode1_t {
+            RESTART = (1 << 7),
+            EXTCLK = (1 << 6),
+            AI = (1 << 5),
+            SLEEP = (1 << 4),
+            SUB1 = (1 << 3),
+            SUB2 = (1 << 2),
+            SUB3 = (1 << 1),
+            ALLCALL = (1 << 0)
+        } Mode1;
+
+        typedef enum Mode2_t {
+            INVRT = (1 << 4),
+            OCH = (1 << 3),
+            OUTDRV = (1 << 2),
+            OUTNE_LEDN_HIGH_Z = (1 << 1),
+            OUTNE_LEDN_SET_1 = (1 << 0),
+        } Mode2;
     };
 
     std::mutex _i2c_device_mutex;
@@ -90,13 +233,74 @@ private:
         return 0;
     }
 
+    void _servo_management_worker();
+
+    void _restart_device() {
+        // Read mode 1 reg
+        // Check bit 7 (RESTART) and clear bit 4 (SLEEP)
+        // wait 500us
+        // Write 1 to bit 7 of MODE1
+    }
+
+    void _set_pwm(LEDn led_n, uint16_t pwm_on, uint16_t pwm_off) {
+
+        if(pwm_on > 4095) {
+            pwm_on = 4095;
+        }
+
+        if(pwm_off > 4095) {
+            pwm_off = 4095;
+        }
+
+        // per datasheet make sure we don't have the same value in both registers
+        if(pwm_off == pwm_on) {
+            pwm_off = pwm_off + 1;
+        }
+
+        std::cout << "setting led #" << led_n << " pwm_on " << pwm_on << " pwm_off " << pwm_off << std::endl;
+
+        int setting_ok = 1;
+
+        buffer_t inbound_message;
+        buffer_t outbound_message;
+        uint8_t register_address;
+        uint8_t ledn_on_low[1] = {0};
+        uint8_t ledn_on_high[1] = {0};
+        uint8_t ledn_off_low[1] = {0};
+        uint8_t ledn_off_high[1] = {0};
+
+        ledn_on_low[0] = (pwm_on & 0x00FF);
+        ledn_on_high[0] = (pwm_on & 0xFF00) >> 8;
+
+        ledn_off_low[0] = (pwm_off & 0x00F);
+        ledn_off_high[0] = (pwm_off & 0xFF00) >> 8;
+
+        register_address = Pca9685LEDController::Addresses::LED0_ON_L;
+
+        uint8_t led_register_data[4];
+        led_register_data[0] = ledn_on_low[0];
+        led_register_data[1] = ledn_on_high[0];
+        led_register_data[2] = ledn_off_low[0];
+        led_register_data[3] = ledn_off_high[0];
+
+        outbound_message = {
+                .bytes = led_register_data,
+                .size = sizeof(led_register_data)
+        };
+
+        if(send_i2c(&outbound_message, register_address)) {
+            // do nothing
+        }
+        else {
+            // do nothing
+        }
+    }
+
     int receive_i2c(buffer_t *data, uint8_t register_address);
     int send_i2c(buffer_t *data, uint8_t register_address);
     int open_i2c_dev(int device_number, int slave_address);
     int is_i2c_dev_connected();
     void close_i2c_dev(int bus_number);
-
-    void _servo_management_worker();
 
 public:
 
@@ -147,6 +351,11 @@ public:
 
         return  this->_init_device();
 
+    }
+
+    void set_pwm(LEDn led_n, uint16_t pwm_on, uint16_t pwm_off) {
+
+        this->_set_pwm(led_n, pwm_on, pwm_off);
     }
 
 };
