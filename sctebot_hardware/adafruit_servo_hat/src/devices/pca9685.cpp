@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
 
     pca9685DeviceHandle.reset(new Pca9685LEDController());
 
-    int i2c_bus_number = 0;
+    int i2c_bus_number = 1;
     int i2c_device_address = 0x40;
     int update_period_ms = 1000;
 
