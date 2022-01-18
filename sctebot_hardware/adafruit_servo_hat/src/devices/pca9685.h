@@ -245,7 +245,7 @@ private:
 
         std::string device_name = this->_device_name;
 
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": _restart_device()" << std::endl;
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": _restart_device() enter" << std::endl;
 
         buffer_t inbound_message;
         buffer_t outbound_message;
@@ -318,6 +318,8 @@ private:
 
             restart_ok = 0;
         }
+
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": _restart_device() exit" << std::endl;
     }
 
     void _set_pwm(LEDn led_n, uint16_t pwm_on, uint16_t pwm_off) {

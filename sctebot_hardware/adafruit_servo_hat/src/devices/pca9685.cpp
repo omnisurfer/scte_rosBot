@@ -19,6 +19,7 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Mode1 configuration and SLEEP for config
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode1 config" << std::endl;
 
     register_address = Pca9685LEDController::Addresses::Registers::MODE1;
 
@@ -37,6 +38,7 @@ int Pca9685LEDController::_init_device() {
     }
 
     control_reg[0] =
+        mode1_register_data[0] |
         (Pca9685LEDController::BitMasks::Mode1::RESTART & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::EXTCLK & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::AI & DISABLE) |
@@ -61,6 +63,8 @@ int Pca9685LEDController::_init_device() {
     // endregion Mode1 configuration
 
     // region Mode2 configuration
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode2 config" << std::endl;
+
     register_address = Pca9685LEDController::Addresses::Registers::MODE2;
 
     uint8_t mode2_register_data[1];
@@ -106,6 +110,8 @@ int Pca9685LEDController::_init_device() {
      * update_rate = 50Hz
      */
 
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": pre-scale device" << std::endl;
+
     int osc_clock = 25e6;
     int update_rate = 24;
     uint8_t prescale_value = round(osc_clock / (4096 * update_rate)) - 1;
@@ -130,6 +136,8 @@ int Pca9685LEDController::_init_device() {
 
     // region Wake Device
 #if 1
+    BOOST_LOG_TRIVIAL(debug) << device_name <<": wake device" << std::endl;
+
     mode1_register_data[0] = mode1_register_data[0] & ~(
             Pca9685LEDController::BitMasks::Mode1::SLEEP
             );
