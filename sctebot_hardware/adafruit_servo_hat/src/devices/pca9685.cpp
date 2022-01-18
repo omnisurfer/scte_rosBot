@@ -14,10 +14,6 @@ int Pca9685LEDController::_init_device() {
 
     int init_ok = 1;
 
-    // region Restart device
-    this->_restart_device();
-    // endregion
-
     // region Mode1 configuration and SLEEP for config
     BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode1 config" << std::endl;
 
@@ -135,7 +131,7 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Wake Device
-#if 1
+#if 0
     BOOST_LOG_TRIVIAL(debug) << device_name <<": wake device" << std::endl;
 
     mode1_register_data[0] = mode1_register_data[0] & ~(
@@ -158,6 +154,10 @@ int Pca9685LEDController::_init_device() {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
 #endif
+    // endregion
+
+    // region Restart device
+    this->_restart_device();
     // endregion
 
     std::lock_guard<std::mutex> run_lock(this->run_servo_status_thread_mutex);
