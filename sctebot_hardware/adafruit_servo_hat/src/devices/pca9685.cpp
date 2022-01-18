@@ -22,6 +22,10 @@ int Pca9685LEDController::_init_device() {
 
     int init_ok = 1;
 
+    // region Restart device
+    this->_restart_device();
+    // endregion
+
     // region Mode1 configuration
 
     register_address = Pca9685LEDController::Addresses::Registers::MODE1;
@@ -41,10 +45,10 @@ int Pca9685LEDController::_init_device() {
     }
 
     control_reg[0] =
-        (Pca9685LEDController::BitMasks::Mode1::RESTART & ENABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::RESTART & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::EXTCLK & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::AI & DISABLE) |
-        (Pca9685LEDController::BitMasks::Mode1::SLEEP & ENABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::SLEEP & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB1 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB2 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB3 & DISABLE) |
@@ -133,6 +137,7 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Wake Device
+#if 0
     mode1_register_data[0] = mode1_register_data[0] & ~(
             Pca9685LEDController::BitMasks::Mode1::SLEEP
             );
@@ -152,6 +157,7 @@ int Pca9685LEDController::_init_device() {
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
+#endif
     // endregion
 
     std::lock_guard<std::mutex> run_lock(this->run_servo_status_thread_mutex);

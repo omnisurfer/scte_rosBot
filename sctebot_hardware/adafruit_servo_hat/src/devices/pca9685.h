@@ -236,10 +236,80 @@ private:
     void _servo_management_worker();
 
     void _restart_device() {
+
+        std::string device_name = this->_device_name;
+
+        buffer_t inbound_message;
+        buffer_t outbound_message;
+        uint8_t register_address;
+        uint8_t control_reg[1] = {0};
+
+        int restart_ok = 1;
+
+        register_address = Pca9685LEDController::Addresses::Registers::MODE1;
+
         // Read mode 1 reg
+        uint8_t mode1_register_data[1];
+
+        inbound_message = {
+                .bytes = mode1_register_data,
+                .size = sizeof(mode1_register_data)
+        };
+
+        if(receive_i2c(&inbound_message, register_address)) {
+            // nothing to do here
+        }
+        else {
+            restart_ok = 0;
+        }
+
+        bool clear_sleep = false;
+
         // Check bit 7 (RESTART) and clear bit 4 (SLEEP)
+        if(mode1_register_data[0] & Pca9685LEDController::BitMasks::Mode1::RESTART) {
+            clear_sleep = true;
+        }
+        else {
+            restart_ok = 0;
+        }
+
+        if(clear_sleep) {
+            control_reg[0] = mode1_register_data[0] & ~(Pca9685LEDController::BitMasks::Mode1::SLEEP);
+
+            outbound_message = {
+                    .bytes = control_reg,
+                    .size = sizeof(control_reg)
+            };
+
+            if(send_i2c(&outbound_message, register_address)) {
+                BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
+            }
+            else {
+                BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
+
+                restart_ok = 0;
+            }
+        }
+
         // wait 500us
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
         // Write 1 to bit 7 of MODE1
+        control_reg[0] = mode1_register_data[0] & ~(Pca9685LEDController::BitMasks::Mode1::RESTART);
+
+        outbound_message = {
+                .bytes = control_reg,
+                .size = sizeof(control_reg)
+        };
+
+        if(send_i2c(&outbound_message, register_address)) {
+            BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
+        }
+        else {
+            BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
+
+            restart_ok = 0;
+        }
     }
 
     void _set_pwm(LEDn led_n, uint16_t pwm_on, uint16_t pwm_off) {
