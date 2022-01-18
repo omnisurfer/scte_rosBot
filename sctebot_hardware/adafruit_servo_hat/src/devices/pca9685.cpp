@@ -52,13 +52,11 @@ int Pca9685LEDController::_init_device() {
             .size = sizeof(control_reg)
     };
 
-    std::bitset<8> x(control_reg[0]);
-
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << x << ")";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << x << ")";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
     }
 
     // endregion Mode1 configuration
@@ -92,14 +90,41 @@ int Pca9685LEDController::_init_device() {
             .size = sizeof(control_reg)
     };
 
-    x.reset();
-    x.set(control_reg[0]);
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << x << ")";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << x << ")";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
+    }
+
+    // endregion
+
+    // region Pre-scale configuration
+    /*
+     * prescale value = round(osc_clock / 4096 * update_rate) - 1
+     * osc_clock = 25MHz
+     * update_rate = 50Hz
+     */
+
+    int osc_clock = 25e6;
+    int update_rate = 50;
+    uint8_t prescale_value = round(osc_clock / (4096 * update_rate)) - 1;
+
+    register_address = Pca9685LEDController::Addresses::Registers::PRE_SCALE;
+
+    control_reg[0] = prescale_value;
+
+    outbound_message = {
+            .bytes = control_reg,
+            .size = sizeof(control_reg)
+    };
+
+    if(send_i2c(&outbound_message, register_address)) {
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": PRESCALE register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
+    }
+    else {
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": PRESCALE register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
     }
 
     // endregion
@@ -171,6 +196,8 @@ void handle_servo_callback(int x, int y) {
 
     //std::cout << "servo callback called!" << std::endl;
 
+    //50Hz, -100(+1 ms, -19ms), 0(1.5ms, 18.5ms), +100(+2ms, -18ms)
+
     // Boost logging causing thread race conditions (all of them???)
     //BOOST_LOG_TRIVIAL(debug) << "handle_servo_callback " << x << " " << y;
     //BOOST_LOG_TRIVIAL(info) << "callback info message";
@@ -188,7 +215,7 @@ int main(int argc, char* argv[]) {
 
     pca9685DeviceHandle.reset(new Pca9685LEDController());
 
-    int i2c_bus_number = 1;
+    int i2c_bus_number = 0;
     int i2c_device_address = 0x40;
     int update_period_ms = 1000;
 
