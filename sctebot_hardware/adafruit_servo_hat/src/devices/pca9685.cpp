@@ -1,14 +1,6 @@
 //
 // Created by user on 12/17/21.
 //
-
-#include <chrono>
-#include <thread>
-#include <bitset>
-
-#include <iostream>
-#include <cstddef>
-
 #include "pca9685.h"
 
 int Pca9685LEDController::_init_device() {

@@ -10,6 +10,12 @@
 #include <thread>
 #include <condition_variable>
 
+#include <chrono>
+#include <thread>
+#include <bitset>
+
+#include <iostream>
+
 #include "i2c_linux/i2c_linux.h"
 #include "utils/boost_logging.h"
 
@@ -238,6 +244,8 @@ private:
     void _restart_device() {
 
         std::string device_name = this->_device_name;
+
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": _restart_device()" << std::endl;
 
         buffer_t inbound_message;
         buffer_t outbound_message;
