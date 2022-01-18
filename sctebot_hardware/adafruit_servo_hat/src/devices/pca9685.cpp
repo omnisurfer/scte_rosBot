@@ -41,7 +41,7 @@ int Pca9685LEDController::_init_device() {
         (Pca9685LEDController::BitMasks::Mode1::RESTART & ENABLE) |
         (Pca9685LEDController::BitMasks::Mode1::EXTCLK & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::AI & DISABLE) |
-        (Pca9685LEDController::BitMasks::Mode1::SLEEP & DISABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::SLEEP & ENABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB1 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB2 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB3 & DISABLE) |
@@ -125,6 +125,25 @@ int Pca9685LEDController::_init_device() {
     }
     else {
         BOOST_LOG_TRIVIAL(debug) << device_name <<": PRESCALE register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
+    }
+
+    // endregion
+
+    // region Wake Device
+    mode1_register_data[0] = mode1_register_data[0] & ~(Pca9685LEDController::BitMasks::Mode1::SLEEP);
+
+    control_reg[0] = mode1_register_data[0];
+
+    outbound_message = {
+            .bytes = control_reg,
+            .size = sizeof(control_reg)
+    };
+
+    if(send_i2c(&outbound_message, register_address)) {
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
+    }
+    else {
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
     }
 
     // endregion
