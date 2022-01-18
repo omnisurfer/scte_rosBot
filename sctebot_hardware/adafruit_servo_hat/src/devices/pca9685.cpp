@@ -6,6 +6,9 @@
 #include <thread>
 #include <bitset>
 
+#include <iostream>
+#include <cstddef>
+
 #include "pca9685.h"
 
 int Pca9685LEDController::_init_device() {
@@ -108,7 +111,7 @@ int Pca9685LEDController::_init_device() {
      */
 
     int osc_clock = 25e6;
-    int update_rate = 50;
+    int update_rate = 24;
     uint8_t prescale_value = round(osc_clock / (4096 * update_rate)) - 1;
 
     register_address = Pca9685LEDController::Addresses::Registers::PRE_SCALE;
@@ -131,7 +134,7 @@ int Pca9685LEDController::_init_device() {
 
     // region Wake Device
     mode1_register_data[0] = mode1_register_data[0] & ~(
-            Pca9685LEDController::BitMasks::Mode1::SLEEP | Pca9685LEDController::BitMasks::Mode1::RESTART
+            Pca9685LEDController::BitMasks::Mode1::SLEEP
             );
 
     control_reg[0] = mode1_register_data[0];
@@ -148,6 +151,7 @@ int Pca9685LEDController::_init_device() {
         BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
     }
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
     // endregion
 
     std::lock_guard<std::mutex> run_lock(this->run_servo_status_thread_mutex);
