@@ -18,7 +18,7 @@ int Pca9685LEDController::_init_device() {
     this->_restart_device();
     // endregion
 
-    // region Mode1 configuration
+    // region Mode1 configuration and SLEEP for config
 
     register_address = Pca9685LEDController::Addresses::Registers::MODE1;
 
@@ -40,7 +40,7 @@ int Pca9685LEDController::_init_device() {
         (Pca9685LEDController::BitMasks::Mode1::RESTART & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::EXTCLK & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::AI & DISABLE) |
-        (Pca9685LEDController::BitMasks::Mode1::SLEEP & DISABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::SLEEP & ENABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB1 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB2 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB3 & DISABLE) |
@@ -129,7 +129,7 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Wake Device
-#if 0
+#if 1
     mode1_register_data[0] = mode1_register_data[0] & ~(
             Pca9685LEDController::BitMasks::Mode1::SLEEP
             );
