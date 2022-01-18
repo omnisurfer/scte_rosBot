@@ -246,6 +246,19 @@ int main(int argc, char* argv[]) {
 
     bool init_ok = true;
 
+    // lame way to do this but good enough for debug
+    if(argv[1]) {
+        if (!memcmp("-d", argv[1], 2)) {
+
+            char* p_end;
+            i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
+
+            if (*p_end) {
+                //not sure what to do in this case
+            }
+        }
+    }
+
     pca9685DeviceHandle->config_device(
             i2c_bus_number,
             i2c_device_address,
