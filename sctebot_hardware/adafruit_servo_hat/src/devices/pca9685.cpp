@@ -92,10 +92,10 @@ int Pca9685LEDController::_init_device() {
 
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE2 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE2 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
     }
 
     // endregion
@@ -130,7 +130,9 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Wake Device
-    mode1_register_data[0] = mode1_register_data[0] & ~(Pca9685LEDController::BitMasks::Mode1::SLEEP);
+    mode1_register_data[0] = mode1_register_data[0] & ~(
+            Pca9685LEDController::BitMasks::Mode1::SLEEP | Pca9685LEDController::BitMasks::Mode1::RESTART
+            );
 
     control_reg[0] = mode1_register_data[0];
 
