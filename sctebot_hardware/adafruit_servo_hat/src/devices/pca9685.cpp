@@ -15,7 +15,7 @@ int Pca9685LEDController::_init_device() {
     int init_ok = 1;
 
     // region Mode1 configuration
-#if 0
+#if 1
     BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode1 config" << std::endl;
 
     register_address = Pca9685LEDController::Addresses::Registers::MODE1;
@@ -60,7 +60,7 @@ int Pca9685LEDController::_init_device() {
     // endregion Mode1 configuration
 
     // region Mode2 configuration
-#if 0
+#if 1
     BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode2 config" << std::endl;
 
     register_address = Pca9685LEDController::Addresses::Registers::MODE2;
@@ -102,7 +102,7 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Pre-scale configuration
-#if 0
+#if 1
     /*
      * prescale value = round(osc_clock / 4096 * update_rate) - 1
      * osc_clock = 25MHz
@@ -160,7 +160,7 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Restart device
-#if 0
+#if 1
     this->_restart_device();
 #endif
     // endregion

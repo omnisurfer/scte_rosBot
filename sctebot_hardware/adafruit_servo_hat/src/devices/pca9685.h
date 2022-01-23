@@ -283,6 +283,7 @@ private:
 
         if(clear_sleep) {
             control_reg[0] = mode1_register_data[0] & ~(Pca9685LEDController::BitMasks::Mode1::SLEEP);
+            control_reg[0] = 0x01;
 
             outbound_message = {
                     .bytes = control_reg,
