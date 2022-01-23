@@ -14,7 +14,7 @@ int Pca9685LEDController::_init_device() {
 
     int init_ok = 1;
 
-    // region Mode1 configuration and SLEEP for config
+    // region Mode1 configuration
     BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode1 config" << std::endl;
 
     register_address = Pca9685LEDController::Addresses::Registers::MODE1;
@@ -38,7 +38,7 @@ int Pca9685LEDController::_init_device() {
         (Pca9685LEDController::BitMasks::Mode1::RESTART & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::EXTCLK & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::AI & DISABLE) |
-        (Pca9685LEDController::BitMasks::Mode1::SLEEP & ENABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::SLEEP & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB1 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB2 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB3 & DISABLE) |
