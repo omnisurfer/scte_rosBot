@@ -275,6 +275,7 @@ private:
 
         // Check bit 7 (RESTART) and clear bit 4 (SLEEP)
         if(mode1_register_data[0] & Pca9685LEDController::BitMasks::Mode1::RESTART) {
+            BOOST_LOG_TRIVIAL(debug) << device_name << ": Restart asserted, waking device from sleep";
             clear_sleep = true;
         }
         else {
@@ -283,7 +284,6 @@ private:
 
         if(clear_sleep) {
             control_reg[0] = mode1_register_data[0] & ~(Pca9685LEDController::BitMasks::Mode1::SLEEP);
-            control_reg[0] = 0x00;
 
             outbound_message = {
                     .bytes = control_reg,

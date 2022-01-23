@@ -50,10 +50,10 @@ int Pca9685LEDController::_init_device() {
     };
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(mode1_register_data[0]) << ")";
     }
     else {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
+        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(mode1_register_data[0]) << ")";
     }
 #endif
     // endregion Mode1 configuration
@@ -111,7 +111,7 @@ int Pca9685LEDController::_init_device() {
     BOOST_LOG_TRIVIAL(debug) << device_name <<": pre-scale device" << std::endl;
 
     int osc_clock = 25e6;
-    int update_rate = 24;
+    int update_rate = 40;
     uint8_t prescale_value = round(osc_clock / (4096 * update_rate)) - 1;
 
     register_address = Pca9685LEDController::Addresses::Registers::PRE_SCALE;
