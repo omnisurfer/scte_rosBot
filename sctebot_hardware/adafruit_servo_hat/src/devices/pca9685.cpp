@@ -15,6 +15,7 @@ int Pca9685LEDController::_init_device() {
     int init_ok = 1;
 
     // region Mode1 configuration
+#if 0
     BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode1 config" << std::endl;
 
     register_address = Pca9685LEDController::Addresses::Registers::MODE1;
@@ -55,10 +56,11 @@ int Pca9685LEDController::_init_device() {
     else {
         BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
     }
-
+#endif
     // endregion Mode1 configuration
 
     // region Mode2 configuration
+#if 0
     BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode2 config" << std::endl;
 
     register_address = Pca9685LEDController::Addresses::Registers::MODE2;
@@ -96,10 +98,11 @@ int Pca9685LEDController::_init_device() {
     else {
         BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE2 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
     }
-
+#endif
     // endregion
 
     // region Pre-scale configuration
+#if 0
     /*
      * prescale value = round(osc_clock / 4096 * update_rate) - 1
      * osc_clock = 25MHz
@@ -127,7 +130,7 @@ int Pca9685LEDController::_init_device() {
     else {
         BOOST_LOG_TRIVIAL(debug) << device_name <<": PRESCALE register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
     }
-
+#endif
     // endregion
 
     // region Wake Device
@@ -157,7 +160,9 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Restart device
+#if 0
     this->_restart_device();
+#endif
     // endregion
 
     std::lock_guard<std::mutex> run_lock(this->run_servo_status_thread_mutex);
