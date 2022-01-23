@@ -34,20 +34,19 @@ int Pca9685LEDController::_init_device() {
         init_ok = 0;
     }
 
-    control_reg[0] =
-        mode1_register_data[0] |
-        (Pca9685LEDController::BitMasks::Mode1::RESTART & DISABLE) |
+    mode1_register_data[0] =
+        (Pca9685LEDController::BitMasks::Mode1::RESTART & ENABLE) |
         (Pca9685LEDController::BitMasks::Mode1::EXTCLK & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::AI & DISABLE) |
-        (Pca9685LEDController::BitMasks::Mode1::SLEEP & DISABLE) |
+        (Pca9685LEDController::BitMasks::Mode1::SLEEP & ENABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB1 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB2 & DISABLE) |
         (Pca9685LEDController::BitMasks::Mode1::SUB3 & DISABLE) |
-        (Pca9685LEDController::BitMasks::Mode1::ALLCALL & ENABLE);
+        (Pca9685LEDController::BitMasks::Mode1::ALLCALL & DISABLE);
 
     outbound_message = {
-            .bytes = control_reg,
-            .size = sizeof(control_reg)
+            .bytes = mode1_register_data,
+            .size = sizeof(mode1_register_data)
     };
 
     if(send_i2c(&outbound_message, register_address)) {

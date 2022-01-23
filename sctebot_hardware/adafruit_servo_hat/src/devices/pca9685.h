@@ -283,7 +283,7 @@ private:
 
         if(clear_sleep) {
             control_reg[0] = mode1_register_data[0] & ~(Pca9685LEDController::BitMasks::Mode1::SLEEP);
-            control_reg[0] = 0x01;
+            control_reg[0] = 0x00;
 
             outbound_message = {
                     .bytes = control_reg,
@@ -301,9 +301,10 @@ private:
         }
 
         // wait 500us
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::microseconds (500));
 
         // Write 1 to bit 7 of MODE1
+#if 0
         control_reg[0] = mode1_register_data[0] & ~(Pca9685LEDController::BitMasks::Mode1::RESTART);
 
         outbound_message = {
@@ -319,7 +320,7 @@ private:
 
             restart_ok = 0;
         }
-
+#endif
         BOOST_LOG_TRIVIAL(debug) << device_name <<": _restart_device() exit" << std::endl;
     }
 
