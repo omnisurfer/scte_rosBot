@@ -442,8 +442,8 @@ public:
 
         float pwm_on_count_percent = (pwm_minimum_ms + pwm_extension_ms) / period;
 
-        int pwm_on_count = int(pwm_on_count_percent * 4095);
-        int pwm_off_count = 4095 - pwm_on_count;
+        int pwm_off_count = int(pwm_on_count_percent * 4095);
+        int pwm_on_count = 4095 - pwm_off_count;
 
         std::cout << "pwm_on_count: " << pwm_on_count
         << " pwm_off_count: " << pwm_off_count
