@@ -193,6 +193,9 @@ private:
 
     host_callback_function _host_callback_function{};
 
+    int osc_clock = 25e6;
+    int update_rate = 50;
+
     int _connect_to_device() {
 
         /*
@@ -208,24 +211,6 @@ private:
             //BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect to device";
             return 0;
         }
-
-        /*
-        // try read chip id
-        uint8_t chip_id[1] = {0};
-        buffer_t inbound_message = {
-                .bytes = chip_id,
-                .size = sizeof(chip_id)
-        };
-
-        uint8_t register_address;
-        register_address = Bmp180Pressure::Addresses::DataRegisters::CHIP_ID;
-        i2c_recv(&_i2c_device_context, &inbound_message, register_address);
-
-        if(chip_id[0] != Bmp180Pressure::MagicNumbers::ChipId::CHIP_ID) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device chip id";
-            return 0;
-        }
-        */
 
         return 1;
     }
@@ -435,9 +420,37 @@ public:
 
     }
 
-    void set_pwm(LEDn led_n, uint16_t pwm_on, uint16_t pwm_off) {
+    //50Hz, -100(+1 ms, -19ms), 0(1.5ms, 18.5ms), +100(+2ms, -18ms)
+    void set_pwm(LEDn led_n, float pwm_on_percent) {
 
-        this->_set_pwm(led_n, pwm_on, pwm_off);
+        if(pwm_on_percent > 1.0) {
+            pwm_on_percent = 1.0;
+        }
+
+        if(pwm_on_percent < 0.0) {
+            pwm_on_percent = 0.0;
+        }
+
+        float pwm_minimum_ms = 1e-3;
+        float pwm_maximum_ms = 2e-3;
+        float period = 1.0f / float(update_rate);
+
+        float pwm_range_ms = pwm_maximum_ms - pwm_minimum_ms;
+        float pwm_extension_ms = pwm_on_percent * pwm_range_ms;
+
+        std::cout << "pwm_range " << pwm_range_ms << " pwm_exten_ms " << pwm_extension_ms << std::endl;
+
+        float pwm_on_count_percent = (pwm_minimum_ms + pwm_extension_ms) / period;
+
+        int pwm_on_count = int(pwm_on_count_percent * 4095);
+        int pwm_off_count = 4095 - pwm_on_count;
+
+        std::cout << "pwm_on_count: " << pwm_on_count
+        << " pwm_off_count: " << pwm_off_count
+        << " pwm_total: " << pwm_on_count + pwm_off_count
+        << std::endl;
+
+        this->_set_pwm(led_n, pwm_on_count, pwm_off_count);
     }
 
 };

@@ -109,9 +109,6 @@ int Pca9685LEDController::_init_device() {
      */
 
     BOOST_LOG_TRIVIAL(debug) << device_name <<": pre-scale device" << std::endl;
-
-    int osc_clock = 25e6;
-    int update_rate = 40;
     uint8_t prescale_value = round(osc_clock / (4096 * update_rate)) - 1;
 
     register_address = Pca9685LEDController::Addresses::Registers::PRE_SCALE;
@@ -231,8 +228,6 @@ void handle_servo_callback(int x, int y) {
 
     //std::cout << "servo callback called!" << std::endl;
 
-    //50Hz, -100(+1 ms, -19ms), 0(1.5ms, 18.5ms), +100(+2ms, -18ms)
-
     // Boost logging causing thread race conditions (all of them???)
     //BOOST_LOG_TRIVIAL(debug) << "handle_servo_callback " << x << " " << y;
     //BOOST_LOG_TRIVIAL(info) << "callback info message";
@@ -288,7 +283,8 @@ int main(int argc, char* argv[]) {
         std::cout << "press e key to exit" << std::endl;
 
         char input[2];
-        uint16_t pwm_on = 0;
+        float pwm_on_percent = 0.0;
+        float pwm_delta = 0.1;
 
         while(true) {
 
@@ -299,11 +295,20 @@ int main(int argc, char* argv[]) {
             if (input[0] == 'e') {
                 return 0;
             } else {
-                pwm_on = (pwm_on + 250) % 4096;
 
-                std::cout << "pwm_on " << pwm_on << std::endl;
+                pwm_on_percent += pwm_delta;
 
-                pca9685DeviceHandle->set_pwm(Pca9685LEDController::LED0, pwm_on, 0);
+                if (pwm_on_percent > 1.0 & pwm_delta > 0.0) {
+                    pwm_delta = -0.1;
+                }
+                else if(pwm_on_percent <= 0.0001 & pwm_delta < 0.0) {
+                    pwm_delta = 0.1;
+                    pwm_on_percent = 0.0;
+                }
+
+                std::cout << "pwm_on_percent " << pwm_on_percent << std::endl;
+
+                pca9685DeviceHandle->set_pwm(Pca9685LEDController::LED0, pwm_on_percent);
 
                 std::cin.clear();
                 std::cin.ignore();
