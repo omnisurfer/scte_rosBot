@@ -294,7 +294,12 @@ int main(int argc, char* argv[]) {
 
             if (input[0] == 'e') {
                 return 0;
-            } else {
+            }
+            else if(input[0] == 'f') {
+                pca9685DeviceHandle->set_pwm_DEBUG(true);
+                pca9685DeviceHandle->set_pwm_DEBUG(false);
+            }
+            else {
 
                 pwm_on_percent += pwm_delta;
 
