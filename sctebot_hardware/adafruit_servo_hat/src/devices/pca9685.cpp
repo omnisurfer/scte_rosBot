@@ -3,135 +3,6 @@
 //
 #include "pca9685.h"
 
-int Pca9685LEDController::_init_device_X() {
-
-    std::string device_name = this->_device_name;
-
-    buffer_t inbound_message;
-    buffer_t outbound_message;
-    uint8_t register_address;
-    uint8_t control_reg[1] = {0};
-
-    int init_ok = 1;
-
-    // region Mode1 configuration
-#if 1
-    BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode1 config" << std::endl;
-
-    register_address = Pca9685LEDController::Addresses::Registers::MODE1;
-
-    uint8_t mode1_register_data[1];
-
-    mode1_register_data[0] = 0x90;
-
-    outbound_message = {
-            .bytes = mode1_register_data,
-            .size = sizeof(mode1_register_data)
-    };
-
-    if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(mode1_register_data[0]) << ")";
-    }
-    else {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(mode1_register_data[0]) << ")";
-    }
-#endif
-    // endregion Mode1 configuration
-
-    // region Mode2 configuration
-#if 0
-    BOOST_LOG_TRIVIAL(debug) << device_name <<": Mode2 config" << std::endl;
-
-    register_address = Pca9685LEDController::Addresses::Registers::MODE2;
-
-    uint8_t mode2_register_data[1];
-
-    control_reg[0] =
-            (Pca9685LEDController::BitMasks::Mode2::INVRT & DISABLE) |
-            (Pca9685LEDController::BitMasks::Mode2::OCH & DISABLE) |
-            (Pca9685LEDController::BitMasks::Mode2::OUTDRV & ENABLE) |
-            (Pca9685LEDController::BitMasks::Mode2::OUTNE_LEDN_HIGH_Z & DISABLE) |
-            (Pca9685LEDController::BitMasks::Mode2::OUTNE_LEDN_SET_1 & DISABLE);
-
-    outbound_message = {
-            .bytes = control_reg,
-            .size = sizeof(control_reg)
-    };
-
-
-    if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE2 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
-    }
-    else {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE2 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
-    }
-#endif
-    // endregion
-
-    // region Pre-scale configuration
-#if 1
-    /*
-     * prescale value = round(osc_clock / 4096 * update_rate) - 1
-     * osc_clock = 25MHz
-     * update_rate = 50Hz
-     */
-
-    BOOST_LOG_TRIVIAL(debug) << device_name <<": pre-scale device" << std::endl;
-    uint8_t prescale_value = round(osc_clock / (4096 * update_rate)) - 1;
-
-    register_address = Pca9685LEDController::Addresses::Registers::PRE_SCALE;
-
-    control_reg[0] = 0x1E;
-
-    outbound_message = {
-            .bytes = control_reg,
-            .size = sizeof(control_reg)
-    };
-
-    if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": PRESCALE register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
-    }
-    else {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": PRESCALE register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
-    }
-#endif
-    // endregion
-
-    // region Wake Device
-#if 1
-    BOOST_LOG_TRIVIAL(debug) << device_name <<": wake device" << std::endl;
-
-    register_address = Pca9685LEDController::Addresses::Registers::MODE1;
-
-    mode1_register_data[0] = mode1_register_data[0] & ~(
-            Pca9685LEDController::BitMasks::Mode1::SLEEP
-            );
-
-    control_reg[0] = 0x00;
-
-    outbound_message = {
-            .bytes = control_reg,
-            .size = sizeof(control_reg)
-    };
-
-    if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configure OK (b" << std::bitset<8>(control_reg[0]) << ")";
-    }
-    else {
-        BOOST_LOG_TRIVIAL(debug) << device_name <<": MODE1 register configuration failed (b" << std::bitset<8>(control_reg[0]) << ")";
-    }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
-#endif
-    // endregion
-
-    std::lock_guard<std::mutex> run_lock(this->run_servo_status_thread_mutex);
-    this->run_servo_status_thread = true;
-    this->run_servo_status_thread_cv.notify_all();
-
-    return init_ok;
-}
-
 int Pca9685LEDController::_init_device() {
 
     std::string device_name = this->_device_name;
@@ -259,8 +130,10 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Wake Device
-#if 0
+#if 1
     BOOST_LOG_TRIVIAL(debug) << device_name <<": wake device" << std::endl;
+
+    register_address = Pca9685LEDController::Addresses::Registers::MODE1;
 
     mode1_register_data[0] = mode1_register_data[0] & ~(
             Pca9685LEDController::BitMasks::Mode1::SLEEP
