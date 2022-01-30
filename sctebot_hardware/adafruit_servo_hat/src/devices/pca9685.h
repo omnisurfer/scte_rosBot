@@ -324,7 +324,7 @@ private:
             pwm_off = pwm_off + 1;
         }
 
-        //std::cout << "setting led #" << led_n << " pwm_on " << pwm_on << " pwm_off " << pwm_off << std::endl;
+        std::cout << "setting led #" << led_n << " pwm_on " << pwm_on << " pwm_off " << pwm_off << std::endl;
 
         int setting_ok = 1;
 
@@ -455,34 +455,31 @@ public:
 
     void set_pwm_DEBUG(bool count_up) {
 
-        int pwm_on_count = 1;
-        int pwm_off_count = 4095;
+        int pwm_on_count = 4095;
+        int pwm_off_count = 0;
 
         if(count_up) {
-            pwm_on_count = 4095;
-            pwm_off_count = 1;
+            pwm_on_count = 0;
+            pwm_off_count = 4095;
         }
 
         while(true) {
 
             if(count_up) {
-                pwm_on_count--;
-                pwm_off_count++;
+                pwm_on_count++;
+
+                if(pwm_on_count > pwm_off_count - 1) {
+                    break;
+                }
+
             }
             else {
-                pwm_on_count++;
-                pwm_off_count--;
-            }
+                pwm_on_count--;
 
-            if(pwm_on_count == pwm_off_count) {
-                pwm_on_count -= 1;
-            }
+                if (pwm_on_count < 1) {
+                    break;
+                }
 
-            if(pwm_on_count > 4095) {
-                break;
-            }
-            else if (pwm_on_count < 1) {
-                break;
             }
 
             this->_set_pwm(Pca9685LEDController::LED0, pwm_on_count, pwm_off_count);
