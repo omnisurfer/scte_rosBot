@@ -301,7 +301,7 @@ int main(int argc, char* argv[]) {
                 pca9685DeviceHandle->set_pwm_DEBUG(true);
                 pca9685DeviceHandle->set_pwm_DEBUG(false);
             }
-            else {
+            else if (input[0] == 'm') {
 
                 pwm_on_percent += pwm_delta;
 

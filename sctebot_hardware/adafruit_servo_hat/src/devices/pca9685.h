@@ -215,7 +215,6 @@ private:
         return 1;
     }
 
-    int _init_device_X();
     int _init_device();
 
     int _close_device() {
@@ -467,9 +466,15 @@ public:
 
             if(count_up) {
                 pwm_on_count--;
+                pwm_off_count++;
             }
             else {
                 pwm_on_count++;
+                pwm_off_count--;
+            }
+
+            if(pwm_on_count == pwm_off_count) {
+                pwm_on_count -= 1;
             }
 
             if(pwm_on_count > 4095) {
