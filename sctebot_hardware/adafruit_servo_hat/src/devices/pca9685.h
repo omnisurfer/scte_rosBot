@@ -456,10 +456,11 @@ public:
     void set_pwm_DEBUG(bool count_up) {
 
         int pwm_on_count = 1;
-        int pwm_off_count = 0;
+        int pwm_off_count = 4095;
 
         if(count_up) {
             pwm_on_count = 4095;
+            pwm_off_count = 1;
         }
 
         while(true) {

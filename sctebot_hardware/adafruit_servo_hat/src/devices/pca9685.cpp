@@ -292,14 +292,15 @@ int main(int argc, char* argv[]) {
 
             std::cin.get(input, 2);
 
-            std::cout << "input " << input << std::endl;
-
             if (input[0] == 'e') {
                 return 0;
             }
             else if(input[0] == 'f') {
                 pca9685DeviceHandle->set_pwm_DEBUG(true);
                 pca9685DeviceHandle->set_pwm_DEBUG(false);
+
+                std::cin.clear();
+                std::cin.ignore();
             }
             else if (input[0] == 'm') {
 
