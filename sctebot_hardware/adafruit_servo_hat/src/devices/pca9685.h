@@ -417,7 +417,7 @@ public:
 
     int init_device() {
 
-        return  this->_init_device();
+        return  this->_init_device_X();
 
     }
 

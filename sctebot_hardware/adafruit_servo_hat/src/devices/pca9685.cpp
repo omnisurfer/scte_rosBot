@@ -22,18 +22,6 @@ int Pca9685LEDController::_init_device_X() {
 
     uint8_t mode1_register_data[1];
 
-    inbound_message = {
-            .bytes = mode1_register_data,
-            .size = sizeof(mode1_register_data)
-    };
-
-    if(receive_i2c(&inbound_message, register_address)) {
-        // nothing to do here
-    }
-    else {
-        init_ok = 0;
-    }
-
     mode1_register_data[0] = 0x90;
 
     outbound_message = {
@@ -58,18 +46,6 @@ int Pca9685LEDController::_init_device_X() {
 
     uint8_t mode2_register_data[1];
 
-    inbound_message = {
-            .bytes = mode2_register_data,
-            .size = sizeof(mode2_register_data)
-    };
-
-    if(receive_i2c(&inbound_message, register_address)) {
-        // nothing to do here
-    }
-    else {
-        init_ok = 0;
-    }
-
     control_reg[0] =
             (Pca9685LEDController::BitMasks::Mode2::INVRT & DISABLE) |
             (Pca9685LEDController::BitMasks::Mode2::OCH & DISABLE) |
@@ -93,7 +69,7 @@ int Pca9685LEDController::_init_device_X() {
     // endregion
 
     // region Pre-scale configuration
-#if 0
+#if 1
     /*
      * prescale value = round(osc_clock / 4096 * update_rate) - 1
      * osc_clock = 25MHz
@@ -105,7 +81,7 @@ int Pca9685LEDController::_init_device_X() {
 
     register_address = Pca9685LEDController::Addresses::Registers::PRE_SCALE;
 
-    control_reg[0] = prescale_value;
+    control_reg[0] = 0x1E;
 
     outbound_message = {
             .bytes = control_reg,
@@ -144,12 +120,6 @@ int Pca9685LEDController::_init_device_X() {
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
-#endif
-    // endregion
-
-    // region Restart device
-#if 0
-    this->_restart_device();
 #endif
     // endregion
 
@@ -313,7 +283,7 @@ int Pca9685LEDController::_init_device() {
     // endregion
 
     // region Restart device
-#if 1
+#if 0
     this->_restart_device();
 #endif
     // endregion
