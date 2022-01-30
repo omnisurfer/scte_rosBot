@@ -19,23 +19,29 @@ LED0_OFF_PWM_H=0x04
 
 echo "Servo test script"
 
+echo "Detected I2C devices:"
+
 i2cdetect -y 1
 
-echo "READ $SERVO_ADD:"
-
-#i2cdump -y 1 $SERVO_ADD
+echo "Set MODE1 to 0x90"
 
 i2cset -y 1 $SERVO_ADD $MODE1 0x90
 
 i2cdeump -y 1 $SERVO_ADD
 
-echo "SET $LED0":
+echo "Set PRE_SCALE 0x1E"
 
-i2cdump -y 1 $SERVO_ADD
+i2cset -y 1 $SERVO_ADD $PRE_SCALE 0x1E
 
-i2cset -y 1 $SERVO_ADD $PRE_SCALE 0x90
+i2cdeump -y 1 $SERVO_ADD
+
+echo "Set MODE1 to 0x00"
 
 i2cset -y 1 $SERVO_ADD $MODE1 0x00
+
+i2cdeump -y 1 $SERVO_ADD
+
+echo "SET PWM"
 
 i2cset -y 1 $SERVO_ADD $LED0_ON_L $LED0_ON_PWM_L
 i2cset -y 1 $SERVO_ADD $LED0_ON_H $LED0_ON_PWM_H

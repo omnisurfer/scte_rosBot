@@ -101,6 +101,8 @@ int Pca9685LEDController::_init_device_X() {
 #if 1
     BOOST_LOG_TRIVIAL(debug) << device_name <<": wake device" << std::endl;
 
+    register_address = Pca9685LEDController::Addresses::Registers::MODE1;
+
     mode1_register_data[0] = mode1_register_data[0] & ~(
             Pca9685LEDController::BitMasks::Mode1::SLEEP
             );
