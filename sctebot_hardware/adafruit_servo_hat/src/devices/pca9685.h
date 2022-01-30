@@ -215,6 +215,7 @@ private:
         return 1;
     }
 
+    int _init_device_X();
     int _init_device();
 
     int _close_device() {
