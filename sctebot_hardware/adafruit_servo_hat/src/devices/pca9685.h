@@ -455,35 +455,42 @@ public:
 
     void set_pwm_DEBUG(bool count_up) {
 
-        int pwm_max_count_cycle = 4095;
-        int pwm_on_phase_count_offset = 0;
-        int pwm_off_phase_count_relative_offset = 4094;
+        float pwm_max_count_cycle = 4095.0;
+
+        float duty_cycle = 0.2;
+        float delay = 0.1;
+
+        int pwm_on_count = int(round(duty_cycle * pwm_max_count_cycle));
+        int pwm_on_delay_offset_count = int(round(delay * pwm_max_count_cycle));
+        int pwm_off_delay_count_limit = int(round(pwm_on_count + pwm_on_delay_offset_count)) - 1;
+
+        int pwm_off_count = pwm_off_delay_count_limit;
 
         if(count_up) {
-            pwm_off_phase_count_relative_offset = 0;
+            pwm_off_count = pwm_on_delay_offset_count;
         }
 
         while(true) {
 
             if(count_up) {
 
-                pwm_off_phase_count_relative_offset++;
+                pwm_off_count++;
 
-                if(pwm_off_phase_count_relative_offset > pwm_max_count_cycle - 1) {
+                if(pwm_off_count > pwm_off_delay_count_limit) {
                     break;
                 }
 
             }
             else {
-                pwm_off_phase_count_relative_offset--;
 
-                if (pwm_off_phase_count_relative_offset < 1) {
+                pwm_off_count--;
+
+                if(pwm_off_count < pwm_on_delay_offset_count) {
                     break;
                 }
-
             }
 
-            this->_set_pwm(Pca9685LEDController::LED0, pwm_on_phase_count_offset, pwm_off_phase_count_relative_offset);
+            this->_set_pwm(Pca9685LEDController::LED0, pwm_on_delay_offset_count, pwm_off_count);
 
             std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
