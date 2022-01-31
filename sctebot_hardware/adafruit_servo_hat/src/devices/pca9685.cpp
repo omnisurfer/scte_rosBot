@@ -295,10 +295,14 @@ int main(int argc, char* argv[]) {
             if (input[0] == 'e') {
                 return 0;
             }
-            else if(input[0] == 'f') {
-                pca9685DeviceHandle->set_pwm_DEBUG(true);
-                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-                pca9685DeviceHandle->set_pwm_DEBUG(false);
+            else if(input[0] == 'u') {
+                pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED0, true);
+
+                std::cin.clear();
+                std::cin.ignore();
+            }
+            else if(input[0] == 'd') {
+                pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED0, false);
 
                 std::cin.clear();
                 std::cin.ignore();
@@ -319,6 +323,10 @@ int main(int argc, char* argv[]) {
 
                 pca9685DeviceHandle->set_pwm(Pca9685LEDController::LED0, pwm_on_percent);
 
+                std::cin.clear();
+                std::cin.ignore();
+            }
+            else {
                 std::cin.clear();
                 std::cin.ignore();
             }

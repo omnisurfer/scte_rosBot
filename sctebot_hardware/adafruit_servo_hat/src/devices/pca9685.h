@@ -339,7 +339,7 @@ private:
         ledn_on_low[0] = (pwm_on & 0x00FF);
         ledn_on_high[0] = (pwm_on & 0xFF00) >> 8;
 
-        ledn_off_low[0] = (pwm_off & 0x00F);
+        ledn_off_low[0] = (pwm_off & 0x0FF);
         ledn_off_high[0] = (pwm_off & 0xFF00) >> 8;
 
         register_address = Pca9685LEDController::Addresses::LED0_ON_L;
@@ -453,16 +453,27 @@ public:
         this->_set_pwm(led_n, pwm_on_count, pwm_off_count);
     }
 
-    void set_pwm_DEBUG(bool count_up) {
+    void set_pwm_DEBUG(LEDn led_n, bool count_up) {
 
         float pwm_max_count_cycle = 4095.0;
 
-        float duty_cycle = 0.2;
-        float delay = 0.1;
+        float pwm_on_percent = 1.0;
 
-        int pwm_on_count = int(round(duty_cycle * pwm_max_count_cycle));
+        if(count_up) {
+            pwm_on_percent = 0.0;
+        }
+
+        float min_duty_cycle = 0.02;
+        float max_duty_cycle = 0.04;
+        float delay = 0.0;
+
+        int min_pwm_on_count = int(round(min_duty_cycle * pwm_max_count_cycle));
+        int max_pwm_on_count = int(round(max_duty_cycle * pwm_max_count_cycle));
+
+        int pwm_on_span = max_pwm_on_count - min_pwm_on_count;
+
         int pwm_on_delay_offset_count = int(round(delay * pwm_max_count_cycle));
-        int pwm_off_delay_count_limit = int(round(pwm_on_count + pwm_on_delay_offset_count)) - 1;
+        int pwm_off_delay_count_limit = int(round(max_pwm_on_count + pwm_on_delay_offset_count)) - 1;
 
         int pwm_off_count = pwm_off_delay_count_limit;
 
@@ -474,23 +485,29 @@ public:
 
             if(count_up) {
 
-                pwm_off_count++;
+                pwm_on_percent += 0.01;
 
-                if(pwm_off_count > pwm_off_delay_count_limit) {
+                int percent_count = int(float(pwm_on_span) * pwm_on_percent);
+                pwm_off_count = pwm_on_delay_offset_count + min_pwm_on_count + percent_count;
+
+                if(pwm_on_percent > 1.0) {
                     break;
                 }
 
             }
             else {
 
-                pwm_off_count--;
+                pwm_on_percent -= 0.01;
 
-                if(pwm_off_count < pwm_on_delay_offset_count) {
+                int percent_count = int(float(pwm_on_span) * pwm_on_percent);
+                pwm_off_count = pwm_on_delay_offset_count + min_pwm_on_count + percent_count;
+
+                if(pwm_on_percent < 0.0) {
                     break;
                 }
             }
 
-            this->_set_pwm(Pca9685LEDController::LED0, pwm_on_delay_offset_count, pwm_off_count);
+            this->_set_pwm(led_n, pwm_on_delay_offset_count, pwm_off_count);
 
             std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
