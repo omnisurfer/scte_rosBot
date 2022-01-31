@@ -421,39 +421,41 @@ public:
     }
 
     //50Hz, -100(+1 ms, -19ms), 0(1.5ms, 18.5ms), +100(+2ms, -18ms)
-    void set_pwm(LEDn led_n, float pwm_on_percent) {
+    void set_pwm(LEDn led_n,
+                 float pwm_on_percent,
+                 float min_duty_cycle,
+                 float max_duty_cycle,
+                 float pwm_on_delay
+                 ) {
 
+        float pwm_max_count_cycle = 4095.0;
+
+        // TODO perform some sanity checks?
         if(pwm_on_percent > 1.0) {
             pwm_on_percent = 1.0;
         }
-
-        if(pwm_on_percent < 0.0) {
+        else if (pwm_on_percent < 0.0) {
             pwm_on_percent = 0.0;
         }
 
-        float pwm_minimum_ms = 1e-3;
-        float pwm_maximum_ms = 2e-3;
-        float period = 1.0f / float(update_rate);
+        int min_pwm_on_count = int(round(min_duty_cycle * pwm_max_count_cycle));
+        int max_pwm_on_count = int(round(max_duty_cycle * pwm_max_count_cycle));
 
-        float pwm_range_ms = pwm_maximum_ms - pwm_minimum_ms;
-        float pwm_extension_ms = pwm_on_percent * pwm_range_ms;
+        int pwm_on_span = max_pwm_on_count - min_pwm_on_count;
 
-        std::cout << "pwm_range " << pwm_range_ms << " pwm_exten_ms " << pwm_extension_ms << std::endl;
+        int pwm_on_delay_offset_count = int(round(pwm_on_delay * pwm_max_count_cycle));
+        int pwm_off_delay_count_limit = int(round(max_pwm_on_count + pwm_on_delay_offset_count)) - 1;
 
-        float pwm_on_count_percent = (pwm_minimum_ms + pwm_extension_ms) / period;
+        int pwm_off_count = pwm_off_delay_count_limit;
 
-        int pwm_off_count = int(pwm_on_count_percent * 4095);
-        int pwm_on_count = 4095 - pwm_off_count;
+        int percent_count = int(float(pwm_on_span) * pwm_on_percent);
+        pwm_off_count = pwm_on_delay_offset_count + min_pwm_on_count + percent_count;
 
-        std::cout << "pwm_on_count: " << pwm_on_count
-        << " pwm_off_count: " << pwm_off_count
-        << " pwm_total: " << pwm_on_count + pwm_off_count
-        << std::endl;
+        this->_set_pwm(led_n, pwm_on_delay_offset_count, pwm_off_count);
 
-        this->_set_pwm(led_n, pwm_on_count, pwm_off_count);
     }
 
-    void set_pwm_DEBUG(LEDn led_n, bool count_up) {
+    void set_pwm_bool(LEDn led_n, bool count_up) {
 
         float pwm_max_count_cycle = 4095.0;
 
@@ -463,8 +465,8 @@ public:
             pwm_on_percent = 0.0;
         }
 
-        float min_duty_cycle = 0.02;
-        float max_duty_cycle = 0.04;
+        float min_duty_cycle = 0.05;
+        float max_duty_cycle = 0.10;
         float delay = 0.0;
 
         int min_pwm_on_count = int(round(min_duty_cycle * pwm_max_count_cycle));

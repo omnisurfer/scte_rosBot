@@ -286,42 +286,61 @@ int main(int argc, char* argv[]) {
 
         char input[2];
         float pwm_on_percent = 0.0;
+        float pwm_min_duty_cycle = 0.05;
+        float pwm_max_duty_cycle = 0.10;
+        float pwm_on_delay = 0.0;
         float pwm_delta = 0.1;
 
         while(true) {
 
             std::cin.get(input, 2);
 
+            if(pwm_on_percent > 1.0) {
+                pwm_on_percent = 1.0;
+            }
+            else if (pwm_on_percent < 0.0) {
+                pwm_on_percent = 0.0;
+            }
+
             if (input[0] == 'e') {
                 return 0;
             }
             else if(input[0] == 'u') {
-                pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED0, true);
+
+                pca9685DeviceHandle->set_pwm(
+                        Pca9685LEDController::LED0,
+                        pwm_on_percent,
+                        pwm_min_duty_cycle,
+                        pwm_max_duty_cycle,
+                        pwm_on_delay
+                        );
+
+                pwm_on_percent += pwm_delta;
 
                 std::cin.clear();
                 std::cin.ignore();
             }
             else if(input[0] == 'd') {
-                pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED0, false);
+
+                pca9685DeviceHandle->set_pwm(
+                        Pca9685LEDController::LED0,
+                        pwm_on_percent,
+                        pwm_min_duty_cycle,
+                        pwm_max_duty_cycle,
+                        pwm_on_delay
+                );
+
+                pwm_on_percent -= pwm_delta;
 
                 std::cin.clear();
                 std::cin.ignore();
             }
             else if (input[0] == 'm') {
 
-                pwm_on_percent += pwm_delta;
 
-                if (pwm_on_percent > 1.0 & pwm_delta > 0.0) {
-                    pwm_delta = -0.1;
-                }
-                else if(pwm_on_percent <= 0.0001 & pwm_delta < 0.0) {
-                    pwm_delta = 0.1;
-                    pwm_on_percent = 0.0;
-                }
-
-                std::cout << "pwm_on_percent " << pwm_on_percent << std::endl;
-
-                pca9685DeviceHandle->set_pwm(Pca9685LEDController::LED0, pwm_on_percent);
+                pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED0, true);
+                std::this_thread::sleep_for(std::chrono::milliseconds (2000));
+                pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED0, false);
 
                 std::cin.clear();
                 std::cin.ignore();
