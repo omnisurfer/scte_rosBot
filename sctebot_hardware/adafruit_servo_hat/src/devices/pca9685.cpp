@@ -297,6 +297,7 @@ int main(int argc, char* argv[]) {
             }
             else if(input[0] == 'f') {
                 pca9685DeviceHandle->set_pwm_DEBUG(true);
+                std::this_thread::sleep_for(std::chrono::milliseconds(2000));
                 pca9685DeviceHandle->set_pwm_DEBUG(false);
 
                 std::cin.clear();

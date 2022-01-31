@@ -455,33 +455,35 @@ public:
 
     void set_pwm_DEBUG(bool count_up) {
 
-        int pwm_on_count = 4094;
-        int pwm_off_count = 4095;
+        int pwm_max_count_cycle = 4095;
+        int pwm_on_phase_count_offset = 0;
+        int pwm_off_phase_count_relative_offset = 4094;
 
         if(count_up) {
-            pwm_on_count = 0;
+            pwm_off_phase_count_relative_offset = 0;
         }
 
         while(true) {
 
             if(count_up) {
-                pwm_on_count++;
 
-                if(pwm_on_count > pwm_off_count - 1) {
+                pwm_off_phase_count_relative_offset++;
+
+                if(pwm_off_phase_count_relative_offset > pwm_max_count_cycle - 1) {
                     break;
                 }
 
             }
             else {
-                pwm_on_count--;
+                pwm_off_phase_count_relative_offset--;
 
-                if (pwm_on_count < 1) {
+                if (pwm_off_phase_count_relative_offset < 1) {
                     break;
                 }
 
             }
 
-            this->_set_pwm(Pca9685LEDController::LED0, pwm_on_count, pwm_off_count);
+            this->_set_pwm(Pca9685LEDController::LED0, pwm_on_phase_count_offset, pwm_off_phase_count_relative_offset);
 
             std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
