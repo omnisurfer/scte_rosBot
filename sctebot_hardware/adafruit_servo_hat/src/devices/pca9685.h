@@ -174,6 +174,26 @@ private:
         } Mode2;
     };
 
+    std::map<Pca9685LEDController::LEDn, Pca9685LEDController::Addresses::Registers> LED_LEDAddressMap = {
+            {Pca9685LEDController::LED0, Pca9685LEDController::Addresses::Registers::LED0_ON_L},
+            {Pca9685LEDController::LED1, Pca9685LEDController::Addresses::Registers::LED1_ON_L},
+            {Pca9685LEDController::LED2, Pca9685LEDController::Addresses::Registers::LED2_ON_L},
+            {Pca9685LEDController::LED3, Pca9685LEDController::Addresses::Registers::LED3_ON_L},
+            {Pca9685LEDController::LED4, Pca9685LEDController::Addresses::Registers::LED4_ON_L},
+            {Pca9685LEDController::LED5, Pca9685LEDController::Addresses::Registers::LED5_ON_L},
+            {Pca9685LEDController::LED6, Pca9685LEDController::Addresses::Registers::LED6_ON_L},
+            {Pca9685LEDController::LED7, Pca9685LEDController::Addresses::Registers::LED7_ON_L},
+
+            {Pca9685LEDController::LED8, Pca9685LEDController::Addresses::Registers::LED8_ON_L},
+            {Pca9685LEDController::LED9, Pca9685LEDController::Addresses::Registers::LED9_ON_L},
+            {Pca9685LEDController::LED10, Pca9685LEDController::Addresses::Registers::LED10_ON_L},
+            {Pca9685LEDController::LED11, Pca9685LEDController::Addresses::Registers::LED11_ON_L},
+            {Pca9685LEDController::LED12, Pca9685LEDController::Addresses::Registers::LED12_ON_L},
+            {Pca9685LEDController::LED13, Pca9685LEDController::Addresses::Registers::LED13_ON_L},
+            {Pca9685LEDController::LED14, Pca9685LEDController::Addresses::Registers::LED14_ON_L},
+            {Pca9685LEDController::LED15, Pca9685LEDController::Addresses::Registers::LED15_ON_L}
+    };
+
     std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
@@ -350,7 +370,13 @@ private:
         ledn_off_low[0] = (pwm_off & 0x0FF);
         ledn_off_high[0] = (pwm_off & 0xFF00) >> 8;
 
-        register_address = Pca9685LEDController::Addresses::LED0_ON_L;
+        if(LED_LEDAddressMap.find(led_n) == LED_LEDAddressMap.end()) {
+            std::cout << "no address found for LEDn " << led_n  << std::endl;
+            return;
+        }
+        else {
+            register_address = LED_LEDAddressMap[led_n];
+        }
 
         uint8_t led_register_data[4];
         led_register_data[0] = ledn_on_low[0];

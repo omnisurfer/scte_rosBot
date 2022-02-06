@@ -344,8 +344,10 @@ int main(int argc, char* argv[]) {
 
 
                 pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED0, true);
+                pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED1, false);
                 std::this_thread::sleep_for(std::chrono::milliseconds (2000));
                 pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED0, false);
+                pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED1, true);
 
                 std::cin.clear();
                 std::cin.ignore();
