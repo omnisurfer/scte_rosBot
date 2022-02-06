@@ -536,7 +536,7 @@ public:
 
     }
 
-    void set_pwm_DEBUG(LEDn led_n, float pwm_on_percent) {
+    void set_pwm(LEDn led_n, float pwm_on_percent) {
 
         std::unique_lock<std::mutex> guard(LEDn_PWMOnPercentage_mutex);
         if(LEDn_PwmOnPercentMap.find(led_n) == LEDn_PwmOnPercentMap.end()) {
@@ -548,64 +548,6 @@ public:
         guard.unlock();
 
         std::map<Pca9685LEDController::LEDn, float>::iterator led_map_iterator;
-
-    }
-
-    void set_pwm_sweep(LEDn led_n, bool count_up, float &pwm_on_percent) {
-
-        pwm_on_percent = 1.0;
-
-        if(count_up) {
-            pwm_on_percent = 0.0;
-        }
-
-        float pwm_max_count_cycle = float(this->_pwm_max_count_cycle);
-
-        float min_duty_cycle = this->_pwm_min_limit_duty_cycle_percent;
-        float max_duty_cycle = this->_pwm_max_limit_duty_cycle_percent;
-        float delay = this->_pwm_on_delay_percent;
-
-        int min_pwm_on_count = int(round(min_duty_cycle * pwm_max_count_cycle));
-        int max_pwm_on_count = int(round(max_duty_cycle * pwm_max_count_cycle));
-
-        int pwm_on_span = max_pwm_on_count - min_pwm_on_count;
-
-        int pwm_on_delay_offset_count = int(round(delay * pwm_max_count_cycle));
-        int pwm_off_delay_count_limit = int(round(max_pwm_on_count + pwm_on_delay_offset_count)) - 1;
-
-        int pwm_off_count = pwm_off_delay_count_limit;
-
-        if(count_up) {
-            pwm_off_count = pwm_on_delay_offset_count;
-        }
-
-        if(count_up) {
-
-            pwm_on_percent += 0.01;
-
-            int percent_count = int(float(pwm_on_span) * pwm_on_percent);
-            pwm_off_count = pwm_on_delay_offset_count + min_pwm_on_count + percent_count;
-
-            if(pwm_on_percent > 1.0) {
-                pwm_on_percent = 1.0;
-            }
-
-        }
-        else {
-
-            pwm_on_percent -= 0.01;
-
-            int percent_count = int(float(pwm_on_span) * pwm_on_percent);
-            pwm_off_count = pwm_on_delay_offset_count + min_pwm_on_count + percent_count;
-
-            if(pwm_on_percent < 0.0) {
-                pwm_on_percent = 0.0;
-            }
-        }
-
-        this->_set_pwm_on_and_off(led_n, pwm_on_delay_offset_count, pwm_off_count);
-
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
 
     }
 
