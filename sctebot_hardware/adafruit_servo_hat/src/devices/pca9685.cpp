@@ -253,6 +253,14 @@ int main(int argc, char* argv[]) {
 
     bool init_ok = true;
 
+    int op_pwm_max_count_cycle = 4095;
+    float op_pwm_on_percent = 0.0;
+    float op_pwm_min_limit_duty_cycle = 0.03;
+    float op_pwm_max_limit_duty_cycle = 0.125;
+    float op_pwm_min_operating_duty_cycle = 0.03;
+    float op_pwm_max_operating_duty_cycle = 0.125;
+    float op_pwm_on_delay = 0.0;
+
     // lame way to do this but good enough for debug
     if(argv[1]) {
         if (!memcmp("-d", argv[1], 2)) {
@@ -280,26 +288,29 @@ int main(int argc, char* argv[]) {
     }
     else {
 
-        pca9685DeviceHandle->init_device();
+        pca9685DeviceHandle->init_device(
+                op_pwm_max_count_cycle,
+                op_pwm_on_delay,
+                op_pwm_min_limit_duty_cycle,
+                op_pwm_max_limit_duty_cycle,
+                op_pwm_min_operating_duty_cycle,
+                op_pwm_max_operating_duty_cycle
+                );
 
         std::cout << "press e key to exit" << std::endl;
 
         char input[2];
-        float pwm_on_percent = 0.0;
-        float pwm_min_duty_cycle = 0.05;
-        float pwm_max_duty_cycle = 0.10;
-        float pwm_on_delay = 0.0;
         float pwm_delta = 0.1;
 
         while(true) {
 
             std::cin.get(input, 2);
 
-            if(pwm_on_percent > 1.0) {
-                pwm_on_percent = 1.0;
+            if(op_pwm_on_percent > 1.0) {
+                op_pwm_on_percent = 1.0;
             }
-            else if (pwm_on_percent < 0.0) {
-                pwm_on_percent = 0.0;
+            else if (op_pwm_on_percent < 0.0) {
+                op_pwm_on_percent = 0.0;
             }
 
             if (input[0] == 'e') {
@@ -309,13 +320,10 @@ int main(int argc, char* argv[]) {
 
                 pca9685DeviceHandle->set_pwm(
                         Pca9685LEDController::LED0,
-                        pwm_on_percent,
-                        pwm_min_duty_cycle,
-                        pwm_max_duty_cycle,
-                        pwm_on_delay
+                        op_pwm_on_percent
                         );
 
-                pwm_on_percent += pwm_delta;
+                op_pwm_on_percent += pwm_delta;
 
                 std::cin.clear();
                 std::cin.ignore();
@@ -324,13 +332,10 @@ int main(int argc, char* argv[]) {
 
                 pca9685DeviceHandle->set_pwm(
                         Pca9685LEDController::LED0,
-                        pwm_on_percent,
-                        pwm_min_duty_cycle,
-                        pwm_max_duty_cycle,
-                        pwm_on_delay
+                        op_pwm_on_percent
                 );
 
-                pwm_on_percent -= pwm_delta;
+                op_pwm_on_percent -= pwm_delta;
 
                 std::cin.clear();
                 std::cin.ignore();

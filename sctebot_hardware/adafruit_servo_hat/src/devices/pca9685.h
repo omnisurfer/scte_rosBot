@@ -196,6 +196,14 @@ private:
     int osc_clock = 25e6;
     int update_rate = 50;
 
+    int _pwm_max_count_cycle = 0;
+    float _pwm_on_delay_percent = 0.0;
+    float _pwm_min_limit_duty_cycle_percent = 0.0;
+    float _pwm_max_limit_duty_cycle_percent = 0.0;
+
+    float _pwm_min_operating_duty_cycle_percent = 0.0;
+    float _pwm_max_operating_duty_cycle_percent = 0.0;
+
     int _connect_to_device() {
 
         /*
@@ -414,21 +422,31 @@ public:
         return status;
     }
 
-    int init_device() {
+    int init_device(
+            int pwm_max_count_cycle,
+            float pwm_on_delay,
+            float pwm_min_limit_duty_cycle_percent,
+            float pwm_max_limit_duty_cycle_percent,
+            float pwm_min_operating_duty_cycle_percent,
+            float pwm_max_operating_duty_cycle_percent
+            ) {
+
+        this->_pwm_max_count_cycle = pwm_max_count_cycle;
+        this->_pwm_on_delay_percent = pwm_on_delay;
+        this->_pwm_min_limit_duty_cycle_percent = pwm_min_limit_duty_cycle_percent;
+        this->_pwm_max_limit_duty_cycle_percent = pwm_max_limit_duty_cycle_percent;
+
+        this->_pwm_min_operating_duty_cycle_percent = pwm_min_operating_duty_cycle_percent;
+        this->_pwm_max_operating_duty_cycle_percent = pwm_max_operating_duty_cycle_percent;
 
         return  this->_init_device();
 
     }
 
     //50Hz, -100(+1 ms, -19ms), 0(1.5ms, 18.5ms), +100(+2ms, -18ms)
-    void set_pwm(LEDn led_n,
-                 float pwm_on_percent,
-                 float min_duty_cycle,
-                 float max_duty_cycle,
-                 float pwm_on_delay
-                 ) {
+    void set_pwm(LEDn led_n, float pwm_on_percent) {
 
-        float pwm_max_count_cycle = 4095.0;
+        float pwm_max_count_cycle = float(this->_pwm_max_count_cycle);
 
         // TODO perform some sanity checks?
         if(pwm_on_percent > 1.0) {
@@ -438,12 +456,12 @@ public:
             pwm_on_percent = 0.0;
         }
 
-        int min_pwm_on_count = int(round(min_duty_cycle * pwm_max_count_cycle));
-        int max_pwm_on_count = int(round(max_duty_cycle * pwm_max_count_cycle));
+        int min_pwm_on_count = int(round(this->_pwm_min_limit_duty_cycle_percent * pwm_max_count_cycle));
+        int max_pwm_on_count = int(round(this->_pwm_max_limit_duty_cycle_percent * pwm_max_count_cycle));
 
         int pwm_on_span = max_pwm_on_count - min_pwm_on_count;
 
-        int pwm_on_delay_offset_count = int(round(pwm_on_delay * pwm_max_count_cycle));
+        int pwm_on_delay_offset_count = int(round(this->_pwm_on_delay_percent * pwm_max_count_cycle));
         int pwm_off_delay_count_limit = int(round(max_pwm_on_count + pwm_on_delay_offset_count)) - 1;
 
         int pwm_off_count = pwm_off_delay_count_limit;
@@ -457,7 +475,7 @@ public:
 
     void set_pwm_bool(LEDn led_n, bool count_up) {
 
-        float pwm_max_count_cycle = 4095.0;
+        float pwm_max_count_cycle = float(this->_pwm_max_count_cycle);
 
         float pwm_on_percent = 1.0;
 
@@ -465,9 +483,9 @@ public:
             pwm_on_percent = 0.0;
         }
 
-        float min_duty_cycle = 0.05;
-        float max_duty_cycle = 0.10;
-        float delay = 0.0;
+        float min_duty_cycle = this->_pwm_min_limit_duty_cycle_percent;
+        float max_duty_cycle = this->_pwm_max_limit_duty_cycle_percent;
+        float delay = this->_pwm_on_delay_percent;
 
         int min_pwm_on_count = int(round(min_duty_cycle * pwm_max_count_cycle));
         int max_pwm_on_count = int(round(max_duty_cycle * pwm_max_count_cycle));
