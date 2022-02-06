@@ -193,7 +193,7 @@ void Pca9685LEDController::_servo_management_worker() {
             this->_set_pwm(led_map_iterator->first, led_map_iterator->second);
 
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
 
         std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
@@ -333,6 +333,7 @@ int main(int argc, char* argv[]) {
 
                 //pca9685DeviceHandle->set_pwm(Pca9685LEDController::LED0,op_pwm_on_percent);
                 pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED0, op_pwm_on_percent);
+                pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED1, op_pwm_on_percent);
 
                 op_pwm_on_percent += pwm_delta;
 
@@ -343,6 +344,7 @@ int main(int argc, char* argv[]) {
 
                 //pca9685DeviceHandle->set_pwm(Pca9685LEDController::LED0,op_pwm_on_percent);
                 pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED0, op_pwm_on_percent);
+                pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED1, op_pwm_on_percent);
 
                 op_pwm_on_percent -= pwm_delta;
 
@@ -351,12 +353,13 @@ int main(int argc, char* argv[]) {
             }
             else if (input[0] == 'm') {
 
-
+                /*
                 pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED0, true);
                 pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED1, false);
                 std::this_thread::sleep_for(std::chrono::milliseconds (2000));
                 pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED0, false);
                 pca9685DeviceHandle->set_pwm_bool(Pca9685LEDController::LED1, true);
+                */
 
                 std::cin.clear();
                 std::cin.ignore();
