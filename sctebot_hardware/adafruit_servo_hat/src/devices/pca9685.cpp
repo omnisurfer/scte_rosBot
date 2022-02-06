@@ -182,6 +182,19 @@ void Pca9685LEDController::_servo_management_worker() {
 
         this->_host_callback_function(1, 2);
 
+        std::map<Pca9685LEDController::LEDn, float>::iterator led_map_iterator;
+        std::map<Pca9685LEDController::LEDn, float> ledn_map_pwm_power_on_percentage;
+
+        ledn_map_pwm_power_on_percentage = this->get_ledn_pwr_on_percent_map();
+
+        for(led_map_iterator = ledn_map_pwm_power_on_percentage.begin(); led_map_iterator != ledn_map_pwm_power_on_percentage.end(); led_map_iterator++) {
+            //std::cout << "ch #: " << led_map_iterator->first << " %: " << led_map_iterator->second << " ";
+
+            this->_set_pwm(led_map_iterator->first, led_map_iterator->second);
+
+        }
+        std::cout << std::endl;
+
         std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
         run_lock.lock();
@@ -318,10 +331,8 @@ int main(int argc, char* argv[]) {
             }
             else if(input[0] == 'u') {
 
-                pca9685DeviceHandle->set_pwm(
-                        Pca9685LEDController::LED0,
-                        op_pwm_on_percent
-                        );
+                //pca9685DeviceHandle->set_pwm(Pca9685LEDController::LED0,op_pwm_on_percent);
+                pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED0, op_pwm_on_percent);
 
                 op_pwm_on_percent += pwm_delta;
 
@@ -330,10 +341,8 @@ int main(int argc, char* argv[]) {
             }
             else if(input[0] == 'd') {
 
-                pca9685DeviceHandle->set_pwm(
-                        Pca9685LEDController::LED0,
-                        op_pwm_on_percent
-                );
+                //pca9685DeviceHandle->set_pwm(Pca9685LEDController::LED0,op_pwm_on_percent);
+                pca9685DeviceHandle->set_pwm_DEBUG(Pca9685LEDController::LED0, op_pwm_on_percent);
 
                 op_pwm_on_percent -= pwm_delta;
 

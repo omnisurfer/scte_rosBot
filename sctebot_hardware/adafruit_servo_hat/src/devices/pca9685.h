@@ -194,6 +194,27 @@ private:
             {Pca9685LEDController::LED15, Pca9685LEDController::Addresses::Registers::LED15_ON_L}
     };
 
+    std::mutex LEDn_PWMOnPercentage_mutex;
+    std::map<Pca9685LEDController::LEDn, float> LEDn_PwmOnPercentMap = {
+            {Pca9685LEDController::LED0, 0.0},
+            {Pca9685LEDController::LED1, 0.0},
+            {Pca9685LEDController::LED2, 0.0},
+            {Pca9685LEDController::LED3, 0.0},
+            {Pca9685LEDController::LED4, 0.0},
+            {Pca9685LEDController::LED5, 0.0},
+            {Pca9685LEDController::LED6, 0.0},
+            {Pca9685LEDController::LED7, 0.0},
+
+            {Pca9685LEDController::LED8, 0.0},
+            {Pca9685LEDController::LED9, 0.0},
+            {Pca9685LEDController::LED10, 0.0},
+            {Pca9685LEDController::LED11, 0.0},
+            {Pca9685LEDController::LED12, 0.0},
+            {Pca9685LEDController::LED13, 0.0},
+            {Pca9685LEDController::LED14, 0.0},
+            {Pca9685LEDController::LED15, 0.0}
+    };
+
     std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
@@ -337,7 +358,7 @@ private:
         BOOST_LOG_TRIVIAL(debug) << device_name <<": _restart_device() exit" << std::endl;
     }
 
-    void _set_pwm(LEDn led_n, uint16_t pwm_on, uint16_t pwm_off) {
+    void _set_pwm_on_and_off(LEDn led_n, uint16_t pwm_on, uint16_t pwm_off) {
 
         if(pwm_on > 4095) {
             pwm_on = 4095;
@@ -352,7 +373,7 @@ private:
             pwm_off = pwm_off + 1;
         }
 
-        std::cout << "setting led #" << led_n << " pwm_on " << pwm_on << " pwm_off " << pwm_off << std::endl;
+        //std::cout << "setting led #" << led_n << " pwm_on " << pwm_on << " pwm_off " << pwm_off << std::endl;
 
         int setting_ok = 1;
 
@@ -402,6 +423,16 @@ private:
     int open_i2c_dev(int device_number, int slave_address);
     int is_i2c_dev_connected();
     void close_i2c_dev(int bus_number);
+
+    std::map<Pca9685LEDController::LEDn, float> get_ledn_pwr_on_percent_map() {
+        std::map<Pca9685LEDController::LEDn, float> led_map;
+
+        std::unique_lock<std::mutex> guard(LEDn_PWMOnPercentage_mutex);
+        led_map = LEDn_PwmOnPercentMap;
+        guard.unlock();
+
+        return led_map;
+    }
 
 public:
 
@@ -465,12 +496,18 @@ public:
         this->_pwm_min_operating_duty_cycle_percent = pwm_min_operating_duty_cycle_percent;
         this->_pwm_max_operating_duty_cycle_percent = pwm_max_operating_duty_cycle_percent;
 
-        return  this->_init_device();
+        int init_ok = this->_init_device();
+
+        if(init_ok) {
+            // start the pwm_update thread
+        }
+
+        return init_ok;
 
     }
 
     //50Hz, -100(+1 ms, -19ms), 0(1.5ms, 18.5ms), +100(+2ms, -18ms)
-    void set_pwm(LEDn led_n, float pwm_on_percent) {
+    void _set_pwm(LEDn led_n, float pwm_on_percent) {
 
         float pwm_max_count_cycle = float(this->_pwm_max_count_cycle);
 
@@ -495,7 +532,22 @@ public:
         int percent_count = int(float(pwm_on_span) * pwm_on_percent);
         pwm_off_count = pwm_on_delay_offset_count + min_pwm_on_count + percent_count;
 
-        this->_set_pwm(led_n, pwm_on_delay_offset_count, pwm_off_count);
+        this->_set_pwm_on_and_off(led_n, pwm_on_delay_offset_count, pwm_off_count);
+
+    }
+
+    void set_pwm_DEBUG(LEDn led_n, float pwm_on_percent) {
+
+        std::unique_lock<std::mutex> guard(LEDn_PWMOnPercentage_mutex);
+        if(LEDn_PwmOnPercentMap.find(led_n) == LEDn_PwmOnPercentMap.end()) {
+            // not found
+        }
+        else {
+            LEDn_PwmOnPercentMap[led_n] = pwm_on_percent;
+        }
+        guard.unlock();
+
+        std::map<Pca9685LEDController::LEDn, float>::iterator led_map_iterator;
 
     }
 
@@ -553,7 +605,7 @@ public:
                 }
             }
 
-            this->_set_pwm(led_n, pwm_on_delay_offset_count, pwm_off_count);
+            this->_set_pwm_on_and_off(led_n, pwm_on_delay_offset_count, pwm_off_count);
 
             std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
