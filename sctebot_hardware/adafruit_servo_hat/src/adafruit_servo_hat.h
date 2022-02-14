@@ -52,7 +52,7 @@ public:
         pca9685DeviceHandle->config_device(
                 _i2c_bus_number,
                 i2c_device_address,
-                3000,
+                10,
                 "pca9685_led_pwm",
                 handle_pca9685_status
                 );

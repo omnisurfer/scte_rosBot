@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
             op_pwm_on_percent = 1.0;
             pwm_gain = -1.0;
         }
-        else if (op_pwm_on_percent < 0.1) {
+        else if (op_pwm_on_percent < 0.0) {
             op_pwm_on_percent = 0.0;
             pwm_gain = 1.0;
         }
