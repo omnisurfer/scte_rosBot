@@ -45,89 +45,14 @@ int main(int argc, char* argv[]) {
     }
     // endregion
 
-    bool run_ros_publisher = true;
+    bool run_ros_subscriber = true;
     bool run_i2c_code = true;
 
-#if 0
-    std::unique_ptr<Pca9685LEDController> pca9685LedController(new Pca9685LEDController());
-
-    if(run_i2c_code) {
-
-        int i2c_bus_number = 0;
-        int i2c_device_address = 0x40;
-        int update_period_ms = 1000;
-
-        // lame way to do this but good enough for debug
-        if(argv[1]) {
-            if (!memcmp("-d", argv[1], 2)) {
-
-                char* p_end;
-                i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
-
-                if (*p_end) {
-                    //not sure what to do in this case
-                }
-            }
-        }
-
-        if(i2c_bus_number > 1) {
-            ROS_WARN("%s: WARNING! I2C Bus number is %i", node_name.c_str(), i2c_bus_number);
-        }
-
-        bool init_ok = true;
-
-        int op_pwm_max_count_cycle = 4095;
-        float op_pwm_on_percent = 0.0;
-        float op_pwm_min_limit_duty_cycle = 0.03;
-        float op_pwm_max_limit_duty_cycle = 0.125;
-        float op_pwm_min_operating_duty_cycle = 0.03;
-        float op_pwm_max_operating_duty_cycle = 0.125;
-        float op_pwm_on_delay = 0.0;
-
-        pca9685LedController->config_device(
-                i2c_bus_number,
-                i2c_device_address,
-                update_period_ms,
-                "pca9685_servo",
-                handle_servo_callback
-        );
-
-        if(!pca9685LedController->connect_to_device()) {
-            std::cout << "pca9685 failed to connect" << std::endl;
-            return 0;
-        }
-        else {
-
-            pca9685LedController->init_device(
-                    op_pwm_max_count_cycle,
-                    op_pwm_on_delay,
-                    op_pwm_min_limit_duty_cycle,
-                    op_pwm_max_limit_duty_cycle,
-                    op_pwm_min_operating_duty_cycle,
-                    op_pwm_max_operating_duty_cycle
-            );
-
-        }
-
-        if(init_ok) {
-            //pca9685LedController->run();
-            ROS_INFO("%s: Servo Hat initialization success", node_name.c_str());
-        }
-        else {
-            ROS_WARN("%s: Servo Hat initialization failed", node_name.c_str());
-            return 0;
-        }
-    }
-
-    if(run_ros_publisher) {
-
-    }
-#else
     std::unique_ptr<AdaFruitServoHat> adaFruitServoHat(new AdaFruitServoHat());
 
     if(run_i2c_code) {
 
-        int i2c_bus_number = 0;
+        int i2c_bus_number = 1;
 
         // lame way to do this but good enough for debug
         if(argv[1]) {
@@ -164,19 +89,37 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if(run_ros_publisher) {
+    if(run_ros_subscriber) {
 
     }
-#endif
-
-
 
     std::cout << "Adafruit Servo Hat node running..." << std::endl;
+
+    // TODO DEBUG sign of life
+    float op_pwm_on_percent = 0.0;
+    float pwm_delta = 0.1;
+    float pwm_gain = 1.0;
 
     while(ros::ok()) {
 
         ros::spinOnce();
         loop_rate.sleep();
+
+        if(op_pwm_on_percent > 1.0) {
+            op_pwm_on_percent = 1.0;
+            pwm_gain = -1.0;
+        }
+        else if (op_pwm_on_percent < 0.1) {
+            op_pwm_on_percent = 0.0;
+            pwm_gain = 1.0;
+        }
+
+        op_pwm_on_percent += pwm_delta * pwm_gain;
+
+        std::cout << "pwm set to " << op_pwm_on_percent << std::endl;
+
+        adaFruitServoHat->command_pwm(Pca9685LEDController::LED0, op_pwm_on_percent);
+        adaFruitServoHat->command_pwm(Pca9685LEDController::LED1, op_pwm_on_percent);
 
         bool shutdown = ros::isShuttingDown();
 
@@ -186,7 +129,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if(run_ros_publisher) {
+    if(run_ros_subscriber) {
 
     }
 

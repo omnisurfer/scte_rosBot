@@ -30,7 +30,7 @@ include_directories(
         src/devices
 )
 
-#[[
+#[[]]
 add_executable(
         pca9685.exe
 
@@ -43,7 +43,6 @@ target_link_libraries(
         Boost::log
         ${catkin_LIBRARIES}
 )
-]]
 
 add_library(
         pca9685

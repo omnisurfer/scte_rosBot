@@ -7,7 +7,7 @@
 
 #define ENABLE_PCA9685_LED_DEVICE 1
 
-#define PCA9685_RPI_ADDRESS 0x77
+#define PCA9685_RPI_ADDRESS 0x40
 
 #include <iostream>
 #include <thread>
@@ -57,6 +57,8 @@ public:
                 handle_pca9685_status
                 );
 
+        std::cout << "connecting to " << _i2c_bus_number << " at " << i2c_device_address << std::endl;
+
         if(!pca9685DeviceHandle->connect_to_device()) {
             init_ok = false;
         }
@@ -86,6 +88,12 @@ public:
                 op_pwm_max_operating_duty_cycle
                 );
 #endif
+    }
+
+    void command_pwm(Pca9685LEDController::LEDn led_n, float pwm_on_percent) {
+
+        pca9685DeviceHandle->set_pwm(led_n, pwm_on_percent);
+
     }
 };
 
