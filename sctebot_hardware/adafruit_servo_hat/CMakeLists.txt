@@ -30,22 +30,7 @@ include_directories(
         src/devices
 )
 
-add_library(
-        pca9685 src/devices/pca9685.cpp
-)
-
-add_executable(
-        adafruit_servo_hat_node src/adafruit_servo_hat_node.cpp
-)
-
-target_link_libraries(
-        adafruit_servo_hat_node
-
-        pca9685
-        Boost::log
-        ${catkin_LIBRARIES}
-)
-
+#[[
 add_executable(
         pca9685.exe
 
@@ -55,6 +40,35 @@ add_executable(
 target_link_libraries(
         pca9685.exe
 
+        Boost::log
+        ${catkin_LIBRARIES}
+)
+]]
+
+add_library(
+        pca9685
+
+        src/devices/pca9685.cpp
+)
+
+add_library(
+        adafruit_servo_hat
+
+        src/adafruit_servo_hat.cpp
+)
+
+add_executable(
+        adafruit_servo_hat_node
+
+        src/adafruit_servo_hat_node.cpp
+)
+
+target_link_libraries(
+        adafruit_servo_hat_node
+
+        adafruit_servo_hat
+        pca9685
+        pthread
         Boost::log
         ${catkin_LIBRARIES}
 )

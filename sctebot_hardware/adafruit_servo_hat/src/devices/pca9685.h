@@ -436,7 +436,7 @@ private:
 
 public:
 
-    Pca9685LEDController() = default;
+    Pca9685LEDController();
 
     ~Pca9685LEDController() {
 

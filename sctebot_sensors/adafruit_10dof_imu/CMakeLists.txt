@@ -31,23 +31,33 @@ include_directories(
 )
 
 add_library(
-        bmp180 src/devices/bmp180.cpp
+        bmp180
+
+        src/devices/bmp180.cpp
 )
 
 add_library(
-        l3gd20 src/devices/l3gd20.cpp
+        l3gd20
+
+        src/devices/l3gd20.cpp
 )
 
 add_library(
-        lsm303dlhc src/devices/lsm303dlhc.cpp
+        lsm303dlhc
+
+        src/devices/lsm303dlhc.cpp
 )
 
 add_library(
-        adafruit_10dof_imu src/adafruit_10dof_imu.cpp
+        adafruit_10dof_imu
+
+        src/adafruit_10dof_imu.cpp
 )
 
 add_executable(
-        adafruit_10dof_imu_node src/adafruit_10dof_imu_node.cpp
+        adafruit_10dof_imu_node
+
+        src/adafruit_10dof_imu_node.cpp
 )
 
 target_link_libraries(

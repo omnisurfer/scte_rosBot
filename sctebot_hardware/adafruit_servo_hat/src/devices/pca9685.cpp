@@ -3,6 +3,10 @@
 //
 #include "pca9685.h"
 
+Pca9685LEDController::Pca9685LEDController() {
+
+}
+
 int Pca9685LEDController::_init_device() {
 
     std::string device_name = this->_device_name;
