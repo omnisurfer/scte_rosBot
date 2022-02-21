@@ -31,22 +31,20 @@ void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
 
     ROS_INFO("I got twist msg l_x [%f] m/s, a_z [%f] rad/s", msg->linear.x, msg->angular.z);
 
-    double linear_x = msg->linear.x + 2.0;
-    double angular_z = msg->angular.z + 1.5;
+    double max_speed_m_s = 2.0;
+    double max_angular_rad_s = 1.5;
+    double linear_x = msg->linear.x;
+    double angular_z = msg->angular.z;
+    double cmd_liner_pwm;
+    double cmd_angular_pwm;
 
-    if(linear_x > 1.0) {
-        linear_x = 1.0;
-    }
-    else if (linear_x < 0.0) {
-        linear_x = 0.0;
-    }
+    cmd_liner_pwm = (linear_x / max_speed_m_s) * 0.5 + 0.5;
 
-    if(angular_z > 1.0) {
-        angular_z = 1.0;
-    }
-    else if (angular_z < 0.0) {
-        angular_z = 0.0;
-    }
+    std::cout << "cmd_linear_x " << cmd_liner_pwm << std::endl;
+
+    cmd_angular_pwm = (angular_z / max_angular_rad_s) * 0.5 + 0.5;
+
+    std::cout << "cmd_angular_z " << cmd_angular_pwm << std::endl;
 
     adaFruitServoHat->command_pwm(Pca9685LEDController::LED0, float(linear_x));
     adaFruitServoHat->command_pwm(Pca9685LEDController::LED1, float(angular_z));
