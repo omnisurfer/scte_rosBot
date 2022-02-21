@@ -35,19 +35,19 @@ void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
     double max_angular_rad_s = 1.5;
     double linear_x = msg->linear.x;
     double angular_z = msg->angular.z;
-    double cmd_liner_pwm;
+    double cmd_linear_pwm;
     double cmd_angular_pwm;
 
-    cmd_liner_pwm = (linear_x / max_speed_m_s) * 0.5 + 0.5;
+    cmd_linear_pwm = (linear_x / max_speed_m_s) * 0.5 + 0.5;
 
-    std::cout << "cmd_linear_x " << cmd_liner_pwm << std::endl;
+    std::cout << "cmd_linear_x " << cmd_linear_pwm << std::endl;
 
     cmd_angular_pwm = (angular_z / max_angular_rad_s) * 0.5 + 0.5;
 
     std::cout << "cmd_angular_z " << cmd_angular_pwm << std::endl;
 
-    adaFruitServoHat->command_pwm(Pca9685LEDController::LED0, float(linear_x));
-    adaFruitServoHat->command_pwm(Pca9685LEDController::LED1, float(angular_z));
+    adaFruitServoHat->command_pwm(Pca9685LEDController::LED0, float(cmd_linear_pwm));
+    adaFruitServoHat->command_pwm(Pca9685LEDController::LED1, float(cmd_angular_pwm));
 
 }
 
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
     ros::NodeHandle ros_node_handle;
     signal(SIGINT | SIGTERM | SIGABRT | SIGKILL, signal_handler);
 
-    ros::Rate loop_rate(1);
+    ros::Rate loop_rate(20);
 
     // region ROS Params
     std::string robot_namespace;
@@ -119,45 +119,18 @@ int main(int argc, char* argv[]) {
 
     ros::Subscriber command_twist_ros_subscriber;
 
-    //if(run_ros_subscriber) {
+    if (run_ros_subscriber) {
 
-    std::string cmd_vel_topic = "/" + robot_namespace + "/ackermann_steering_controller/" + "cmd_vel";
-    command_twist_ros_subscriber = ros_node_handle.subscribe(cmd_vel_topic, 1, handle_twist_command_callback);
-
-    std::cout << "sub count " << command_twist_ros_subscriber.getTopic() << std::endl;
-    //}
+        std::string cmd_vel_topic = "/" + robot_namespace + "/ackermann_steering_controller/" + "cmd_vel";
+        command_twist_ros_subscriber = ros_node_handle.subscribe(cmd_vel_topic, 1, handle_twist_command_callback);
+    }
 
     std::cout << "Adafruit Servo Hat node running..." << std::endl;
-
-    // TODO DEBUG sign of life
-    /*
-    float op_pwm_on_percent = 0.0;
-    float pwm_delta = 0.1;
-    float pwm_gain = 1.0;
-    */
 
     while(ros::ok()) {
 
         ros::spinOnce();
         loop_rate.sleep();
-
-        /*
-        if(op_pwm_on_percent > 1.0) {
-            op_pwm_on_percent = 1.0;
-            pwm_gain = -1.0;
-        }
-        else if (op_pwm_on_percent < 0.0) {
-            op_pwm_on_percent = 0.0;
-            pwm_gain = 1.0;
-        }
-
-        op_pwm_on_percent += pwm_delta * pwm_gain;
-
-        std::cout << "pwm set to " << op_pwm_on_percent << std::endl;
-
-        adaFruitServoHat->command_pwm(Pca9685LEDController::LED0, op_pwm_on_percent);
-        adaFruitServoHat->command_pwm(Pca9685LEDController::LED1, op_pwm_on_percent);
-        */
 
         bool shutdown = ros::isShuttingDown();
 
