@@ -14,6 +14,8 @@
 #include <utility>
 #include <condition_variable>
 
+#include <geometry_msgs/TwistStamped.h>
+
 #include "pca9685.h"
 
 class AdaFruitServoHat {
