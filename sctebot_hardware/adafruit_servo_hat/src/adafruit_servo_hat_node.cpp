@@ -31,21 +31,21 @@ void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
 
     ROS_INFO("I got twist msg l_x [%f] m/s, a_z [%f] rad/s", msg->linear.x, msg->angular.z);
 
-    double linear_x = msg->linear.x;
-    double angular_z = msg->angular.z;
+    double linear_x = msg->linear.x + 2.0;
+    double angular_z = msg->angular.z + 1.5;
 
     if(linear_x > 1.0) {
         linear_x = 1.0;
     }
-    else if (linear_x < -1.0) {
-        linear_x = -1.0;
+    else if (linear_x < 0.0) {
+        linear_x = 0.0;
     }
 
     if(angular_z > 1.0) {
         angular_z = 1.0;
     }
-    else if (angular_z < -1.0) {
-        angular_z = -1.0;
+    else if (angular_z < 0.0) {
+        angular_z = 0.0;
     }
 
     adaFruitServoHat->command_pwm(Pca9685LEDController::LED0, float(linear_x));
@@ -56,6 +56,8 @@ void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
 int main(int argc, char* argv[]) {
 
     std::string node_name = "adafruit_servo_hat_node";
+    ROS_INFO("%s: initializing node", node_name.c_str());
+
     ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
 
     ros::NodeHandle ros_node_handle;
