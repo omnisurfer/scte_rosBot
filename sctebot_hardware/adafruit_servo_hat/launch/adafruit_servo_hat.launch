@@ -1,0 +1,24 @@
+<launch>
+    <arg name="node_name" default="adafruit_servo_hat"/>
+    <arg name="robot_namespace" default="/sctebot"/>
+    <arg name="update_rate" default="30.0"/>
+    <arg name="i2c_bus_number" default="0"/>
+    <arg name="max_linear_speed_m_s" default="2.0"/>
+    <arg name="max_angular_speed_rad_s" default="1.5"/>
+
+    <arg name="cmd_vel_topic" default="/ackermann_steering_controller/cmd_vel"/>
+
+    <arg name="simulation_on" default="false"/>
+
+    <group ns="$(arg robot_namespace)">
+
+        <node pkg="adafruit_servo_hat" type="adafruit_servo_hat_node" name="$(arg node_name)" output="screen">
+            <param name="update_rate" value="$(arg update_rate)"/>
+            <param name="i2c_bus_number" value="$(arg i2c_bus_number)"/>
+            <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
+            <param name="max_linear_speed_m_s" value="2.0"/>
+            <param name="max_angular_speed_rad_s" value="1.5"/>
+        </node>
+
+    </group>
+</launch>

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(adafruit_servo_hat_node)
+project(adafruit_servo_hat)
 
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 

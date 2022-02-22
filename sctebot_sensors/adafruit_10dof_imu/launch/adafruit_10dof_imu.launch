@@ -1,0 +1,17 @@
+<launch>
+    <arg name="node_name" default="adafruit_10dof_imu"/>
+    <arg name="robot_namespace" default="/sctebot"/>
+    <arg name="update_rate" value="30.0"/>
+    <arg name="i2c_bus_number" default="0"/>
+
+    <arg name="simulation_on" default="false"/>
+
+    <group ns="$(arg robot_namespace)">
+
+        <node pkg="adafruit_10dof_imu" type="adafruit_10dof_imu_node" name="$(arg node_name)" output="screen">
+            <param name="update_rate" value="$(arg update_rate)"/>
+            <param name="i2c_bus_number" value="$(arg i2c_bus_number)"/>
+        </node>
+
+    </group>
+</launch>

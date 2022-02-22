@@ -1,5 +1,5 @@
 <package format="2">
-  <name>adafruit_servo_hat_node</name>
+  <name>adafruit_servo_hat</name>
   <version>0.0.0</version>
   <description>The adafruit_servo_hat package</description>
 

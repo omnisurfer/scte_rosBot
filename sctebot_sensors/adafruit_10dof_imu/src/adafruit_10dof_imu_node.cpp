@@ -497,24 +497,53 @@ void signal_handler(int sig) {
 
 int main(int argc, char* argv[]) {
 
+    signal(SIGINT | SIGTERM | SIGABRT | SIGKILL, signal_handler);
+
     std::string node_name = "adafruit_10dof_imu_node";
+
+    int i2c_bus_number = 0;
+
+    // lame way to do this but good enough for debug
+    if(argv[1]) {
+        if (!memcmp("-d", argv[1], 2)) {
+
+            char* p_end;
+            i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
+
+            if (*p_end) {
+                //not sure what to do in this case
+            }
+        }
+    }
+
     ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
 
     ros::NodeHandle ros_node_handle;
-    signal(SIGINT | SIGTERM | SIGABRT | SIGKILL, signal_handler);
 
-    ros::Rate loop_rate(1);
+    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+
+    ROS_INFO("%s: initializing node", node_name.c_str());
 
     //region ROS Params
     std::string robot_namespace;
 
-    if (ros_node_handle.getParam("/robot_namespace", robot_namespace)) {
+    node_name = ros::this_node::getName();
+
+    if (ros_node_handle.getParam("robot_namespace", robot_namespace)) {
         ROS_INFO("%s: robot_namespace %s", node_name.c_str(), robot_namespace.c_str());
     } else {
-        robot_namespace = "sctebot_debug";
+        robot_namespace = "sctebot";
         ROS_WARN("%s: robot_namespace not found, using default %s", node_name.c_str(), robot_namespace.c_str());
     }
+
+    if(ros_node_handle.getParam(node_name + "/i2c_bus_number", i2c_bus_number)) {
+        ROS_INFO("%s: i2c_bus_number %i", node_name.c_str(), i2c_bus_number);
+    } else {
+        ROS_WARN("%s: i2c_bus_number not found, using default %i", node_name.c_str(), i2c_bus_number);
+    }
     //endregion
+
+    ros::Rate loop_rate(1);
 
     bool run_ros_publisher = true;
     bool run_i2c_code = true;
@@ -524,24 +553,7 @@ int main(int argc, char* argv[]) {
 
     if(run_i2c_code) {
 
-        int i2c_bus_number = 0;
-
-        // lame way to do this but good enough for debug
-        if(argv[1]) {
-            if (!memcmp("-d", argv[1], 2)) {
-
-                char* p_end;
-                i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
-
-                if (*p_end) {
-                    //not sure what to do in this case
-                }
-            }
-        }
-
-        if(i2c_bus_number > 1) {
-            ROS_WARN("%s: WARNING! I2C Bus number is %i", node_name.c_str(), i2c_bus_number);
-        }
+        ROS_INFO("%s: Connecting to I2C Bus number is %i", node_name.c_str(), i2c_bus_number);
 
         // TODO change this to an exception?
         bool init_ok = true;

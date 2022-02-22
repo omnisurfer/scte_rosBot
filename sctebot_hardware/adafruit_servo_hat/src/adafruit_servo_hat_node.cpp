@@ -7,8 +7,10 @@
 
 #include "adafruit_servo_hat.h"
 
-// TODO put this into a class instead of a global variable. Only OK for proof of concept.
+// TODO create a thread and interface through guarded variables?
 std::unique_ptr<AdaFruitServoHat> adaFruitServoHat;
+double max_linear_speed_m_s = 2.0;
+double max_angular_rad_s = 1.5;
 
 void signal_handler(int sig) {
 
@@ -29,73 +31,109 @@ void handle_servo_callback(int x, int y) {
 
 void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
 
-    ROS_INFO("I got twist msg l_x [%f] m/s, a_z [%f] rad/s", msg->linear.x, msg->angular.z);
-
-    double max_speed_m_s = 2.0;
-    double max_angular_rad_s = 1.5;
     double linear_x = msg->linear.x;
     double angular_z = msg->angular.z;
     double cmd_linear_pwm;
     double cmd_angular_pwm;
 
-    cmd_linear_pwm = (linear_x / max_speed_m_s) * 0.5 + 0.5;
-
-    std::cout << "cmd_linear_x " << cmd_linear_pwm << std::endl;
+    cmd_linear_pwm = (linear_x / max_linear_speed_m_s) * 0.5 + 0.5;
 
     cmd_angular_pwm = (angular_z / max_angular_rad_s) * 0.5 + 0.5;
 
-    std::cout << "cmd_angular_z " << cmd_angular_pwm << std::endl;
-
     adaFruitServoHat->command_pwm(Pca9685LEDController::LED0, float(cmd_linear_pwm));
     adaFruitServoHat->command_pwm(Pca9685LEDController::LED1, float(cmd_angular_pwm));
+
+    ROS_DEBUG("Twist msg l_x [%f] m/s, a_z [%f] rad/s - Cmd l_x [%f], a_z [%f]", msg->linear.x, msg->angular.z, cmd_linear_pwm, cmd_angular_pwm);
 
 }
 
 int main(int argc, char* argv[]) {
 
+    signal(SIGINT | SIGTERM | SIGABRT | SIGKILL, signal_handler);
+
     std::string node_name = "adafruit_servo_hat_node";
-    ROS_INFO("%s: initializing node", node_name.c_str());
+
+    int i2c_bus_number = 0;
+
+    // lame way to do this but good enough for debug
+    if(argv[1]) {
+        if (!memcmp("-d", argv[1], 2)) {
+
+            char* p_end;
+            i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
+
+            if (*p_end) {
+                //not sure what to do in this case
+            }
+        }
+    }
 
     ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
 
     ros::NodeHandle ros_node_handle;
-    signal(SIGINT | SIGTERM | SIGABRT | SIGKILL, signal_handler);
 
-    ros::Rate loop_rate(20);
+    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+
+    ROS_INFO("%s: initializing node", node_name.c_str());
 
     // region ROS Params
     std::string robot_namespace;
+    std::string cmd_vel_topic;
+    double update_rate = 20.0;
 
-    if (ros_node_handle.getParam("/robot_namespace", robot_namespace)) {
+    node_name = ros::this_node::getName();
+
+    if (ros_node_handle.getParam("robot_namespace", robot_namespace)) {
         ROS_INFO("%s: robot_namespace %s", node_name.c_str(), robot_namespace.c_str());
     } else {
         robot_namespace = "sctebot";
         ROS_WARN("%s: robot_namespace not found, using default %s", node_name.c_str(), robot_namespace.c_str());
     }
+
+    if(ros_node_handle.getParam(node_name + "/update_rate", update_rate)) {
+        ROS_INFO("%s: robot_namespace %f", node_name.c_str(), update_rate);
+    } else {
+        ROS_WARN("%s: update_rate not found, using default %f", node_name.c_str(), update_rate);
+    }
+
+    if(ros_node_handle.getParam(node_name + "/i2c_bus_number", i2c_bus_number)) {
+        ROS_INFO("%s: i2c_bus_number %i", node_name.c_str(), i2c_bus_number);
+    } else {
+        ROS_WARN("%s: i2c_bus_number not found, using default %i", node_name.c_str(), i2c_bus_number);
+    }
+
+    if(ros_node_handle.getParam(node_name + "/cmd_vel_topic", cmd_vel_topic)) {
+        ROS_INFO("%s: cmd_vel_topic %s", node_name.c_str(), (robot_namespace + cmd_vel_topic).c_str());
+    } else {
+        cmd_vel_topic = "/ackermann_steering_controller/cmd_vel";
+        ROS_WARN("%s: cmd_vel_topic not found, using default %s", node_name.c_str(), (robot_namespace + cmd_vel_topic).c_str());
+    }
+
+    if(ros_node_handle.getParam(node_name + "/max_linear_speed_m_s", max_linear_speed_m_s)) {
+        ROS_INFO("%s: max_linear_speed_m_s %f", node_name.c_str(), max_linear_speed_m_s);
+    } else {
+        ROS_WARN("%s: max_linear_speed_m_s, using default %f", node_name.c_str(), max_linear_speed_m_s);
+    }
+
+    if(ros_node_handle.getParam(node_name + "/max_angular_speed_rad_s", max_angular_rad_s)) {
+        ROS_INFO("%s: max_angular_rad_s %f", node_name.c_str(), max_angular_rad_s);
+    } else {
+        ROS_WARN("%s: max_angular_rad_s, using default %f", node_name.c_str(), max_angular_rad_s);
+    }
+
+    cmd_vel_topic = robot_namespace + cmd_vel_topic;
     // endregion
+
+    ros::Subscriber command_twist_ros_subscriber;
+
+    ros::Rate loop_rate(update_rate);
 
     bool run_ros_subscriber = true;
     bool run_i2c_code = true;
 
-    //std::unique_ptr<AdaFruitServoHat> adaFruitServoHat(new AdaFruitServoHat());
     adaFruitServoHat.reset(new AdaFruitServoHat());
 
     if(run_i2c_code) {
-
-        int i2c_bus_number = 0;
-
-        // lame way to do this but good enough for debug
-        if(argv[1]) {
-            if (!memcmp("-d", argv[1], 2)) {
-
-                char* p_end;
-                i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
-
-                if (*p_end) {
-                    //not sure what to do in this case
-                }
-            }
-        }
 
         ROS_INFO("%s: Connecting to I2C Bus number %i", node_name.c_str(), i2c_bus_number);
 
@@ -117,11 +155,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    ros::Subscriber command_twist_ros_subscriber;
-
     if (run_ros_subscriber) {
 
-        std::string cmd_vel_topic = "/" + robot_namespace + "/ackermann_steering_controller/" + "cmd_vel";
         command_twist_ros_subscriber = ros_node_handle.subscribe(cmd_vel_topic, 1, handle_twist_command_callback);
     }
 
@@ -141,7 +176,7 @@ int main(int argc, char* argv[]) {
     }
 
     if(run_ros_subscriber) {
-
+        // TODO close stuff
     }
 
     return 0;

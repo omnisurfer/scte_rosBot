@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(adafruit_10dof_imu_node)
+project(adafruit_10dof_imu)
 
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 
