@@ -1,0 +1,14 @@
+<launch>
+
+    <arg name="robot_namespace" default="/sctebot"/>
+
+    <group ns="$(arg robot_namespace)">
+
+        <include file="$(find adafruit_servo_hat)/launch/adafruit_servo_hat.launch">
+            <arg name="max_linear_speed_m_s" default="2.0"/>
+            <arg name="max_angular_speed_rad_s" default="1.5"/>
+        </include>
+
+    </group>
+
+</launch>

@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="robot_namespace" default="/sctebot"/>
+    <arg name="robot_namespace" default="sctebot"/>
     <arg name="gps_name" default="primary_gps"/>
     <arg name="host_ip" default="localhost"/>
     <arg name="host_port" default="2947"/>

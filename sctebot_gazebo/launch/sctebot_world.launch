@@ -7,7 +7,7 @@
     <env name="SVGA_VGPU10" value="0"/>
 
     <arg name="model" default="$(find sctebot_description)/urdf/sctebot_chassis.xacro"/>
-    <arg name="robot_namespace" default="/sctebot" />
+    <arg name="robot_namespace" default="sctebot" />
     <arg name="gazebo_world" default="sctebot.world" />
     <arg name="cmd_timeout" default="0.5"/>
 
@@ -47,36 +47,28 @@
 
         <!-- Load the robot description -->
         <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
-        <param name="robot_namespace" value="$(arg robot_namespace)"/>
 
         <!-- Load ros_controllers configuration parameters -->
-        <rosparam command="load" file="$(find sctebot_control)/config/scte_ackermann_controller.yaml" ns="$(arg robot_namespace)"/>
-        <rosparam command="load" file="$(find sctebot_control)/config/scte_steer_bot_gains.yaml" ns="$(arg robot_namespace)"/>
-        <rosparam command="load" file="$(find sctebot_control)/config/scte_joint_state_publisher.yaml" ns="$(arg robot_namespace)"/>
-        <rosparam command="load" file="$(find sctebot_control)/config/scte_steer_bot_hardware_gazebo.yaml" ns="$(arg robot_namespace)"/>
+        <rosparam command="load" file="$(find sctebot_control)/config/scte_ackermann_controller.yaml"/>
+        <rosparam command="load" file="$(find sctebot_control)/config/scte_steer_bot_gains.yaml" />
+        <rosparam command="load" file="$(find sctebot_control)/config/scte_joint_state_publisher.yaml" />
+        <rosparam command="load" file="$(find sctebot_control)/config/scte_steer_bot_hardware_gazebo.yaml" />
 
         <!-- Spawn the sctebot_gazebo_plugins -->
-        <node pkg="controller_manager" type="spawner" name="controller_spawner" ns="$(arg robot_namespace)"
+        <node pkg="controller_manager" type="spawner" name="controller_spawner"
               args="joint_state_publisher ackermann_steering_controller"
               output="screen" respawn="false" />
 
         <!-- Launch  the robot state publisher -->
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" ns="$(arg robot_namespace)">
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
             <param name="publish_frequency" value="10.0"/>
         </node>
-
-        <!-- Launch a rqt steering GUI for publishing to /steer_bot/steer_drive_controller/cmd_vel -->
-        <!--
-        <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
-            <param name="default_topic" value="$(arg robot_namespace)/ackermann_steering_controller/cmd_vel"/>
-        </node>
-        -->
 
         <!-- Spawn robot in Gazebo -->
         <group if="$(arg use_geodetic)">
         <node name="spawn_vehicle" pkg="gazebo_ros" type="spawn_model"
               args="-urdf -param robot_description -model sctebot
-                -gazebo_namespace /$(arg robot_namespace)/gazebo
+                -gazebo_namespace gazebo
                 -latitude $(arg latitude)
                 -longitude $(arg longitude)
                 -depth $(arg depth)
@@ -90,7 +82,7 @@
         <group unless="$(arg use_geodetic)">
             <node name="spawn_vehicle" pkg="gazebo_ros" type="spawn_model"
                   args="-urdf -param robot_description -model sctebot
-                -gazebo_namespace /$(arg robot_namespace)/gazebo
+                -gazebo_namespace gazebo
                 -x $(arg x) -y $(arg y) -z $(arg z)
                 -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
                   respawn="false" output="screen"/>
