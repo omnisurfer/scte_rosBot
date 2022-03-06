@@ -2,8 +2,6 @@
     <!--
     https://emanual.robotis.com/docs/en/platform/turtlebot3/nav_simulation/
     -->
-    <!-- Arguments -->
-    <!--arg name="model" default="$(env SCTEBOT_MODEL)" doc="model type [sctebot, sctebot_a]"/-->
     <arg name="model" default="sctebot"/>
     <arg name="map_file" default="$(find sctebot_navigation)/maps/map.yaml"/>
     <arg name="move_forward_only" default="false"/>
