@@ -44,7 +44,6 @@ void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
     adaFruitServoHat->command_pwm(Pca9685LEDController::LED1, float(cmd_angular_pwm));
 
     ROS_DEBUG("Twist msg l_x [%f] m/s, a_z [%f] rad/s - Cmd l_x [%f], a_z [%f]", msg->linear.x, msg->angular.z, cmd_linear_pwm, cmd_angular_pwm);
-
 }
 
 int main(int argc, char* argv[]) {

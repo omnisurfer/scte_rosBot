@@ -17,21 +17,27 @@
         <rosparam command="load" file="$(find sctebot_control)/config/scte_joint_state_publisher.yaml"/>
         <rosparam  command="load" file="$(find sctebot_control)/config/scte_steer_bot_hardware_gazebo.yaml"/>
 
-        <!-- Start sctebot_gazebo_plugins -->
-        <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
-              args="joint_state_publisher ackermann_steering_controller"/>
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" ns="$(arg robot_namespace)">
+            <param name="publish_frequency" value="10.0"/>
+        </node>
 
-        <!---->
+        <!-- Start sctebot_gazebo_plugins -->
+        <node pkg="controller_manager" type="spawner" name="controller_spawner" ns="$(arg robot_namespace)"
+              args="joint_state_publisher ackermann_steering_controller"
+              output="screen" respawn="false" />
+
+        <!--
         <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"
               respawn="false" output="screen">
             <param name="publish_frequency" type="double" value="$(arg tf_freq)"/>
         </node>
-        <!---->
+        -->
 
+        <!--
         <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
-            <param name="default_topic" value="ackermann_steering_controller/cmd_vel"/>
+            <param name="default_topic" value="/ackermann_steering_controller/cmd_vel"/>
         </node>
-
+        -->
     </group>
 
 </launch>

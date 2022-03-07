@@ -6,7 +6,7 @@
     <arg name="max_linear_speed_m_s" default="2.0"/>
     <arg name="max_angular_speed_rad_s" default="1.5"/>
 
-    <arg name="cmd_vel_topic" default="ackermann_steering_controller/cmd_vel"/>
+    <arg name="cmd_vel_topic" default="/ackermann_steering_controller/cmd_vel"/>
 
     <arg name="simulation_on" default="false"/>
 

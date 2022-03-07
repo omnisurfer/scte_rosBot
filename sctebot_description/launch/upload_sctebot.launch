@@ -44,7 +44,7 @@
         <rosparam command="load" file="$(find sctebot_control)/config/scte_steer_bot_hardware_gazebo.yaml" ns="$(arg robot_namespace)"/>
 
         <!-- Spawn the sctebot_gazebo_plugins -->
-        <node pkg="controller_manager" type="spawner" name="controller_spawner" ns="$(arg robot_namespace)"
+        <node pkg="controller_manager" type="spawner" name="controller_spawner"
               args="joint_state_publisher ackermann_steering_controller"
               output="screen" respawn="false" />
 
