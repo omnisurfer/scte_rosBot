@@ -15,12 +15,28 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         utils
         i2c_linux
+        geometry_msgs
+        nav_msgs
+        sensor_msgs
+        tf
+        hardware_interface
+        controller_manager
         )
 
 find_package(Boost 1.69.0 COMPONENTS log REQUIRED)
 
 catkin_package(
-        CATKIN_DEPENDS message_runtime roscpp rosgraph_msgs rospy std_msgs
+        CATKIN_DEPENDS
+        message_runtime
+        roscpp
+        rosgraph_msgs
+        rospy
+        std_msgs
+        nav_msgs
+        sensor_msgs
+        tf
+        hardware_interface
+        controller_manager
 )
 
 include_directories(

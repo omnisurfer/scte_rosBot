@@ -7,6 +7,52 @@
 
 #include "adafruit_servo_hat.h"
 
+#include <hardware_interface/joint_command_interface.h>
+#include <hardware_interface/joint_state_interface.h>
+#include <hardware_interface/robot_hw.h>
+#include <controller_manager/controller_manager.h>
+
+class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
+
+public:
+    AdafruitServoHatHardwareInterface() {
+        hardware_interface::JointStateHandle state_handle_a("front_steer_joint", &pos[0], &vel[0], &eff[0]);
+        jnt_state_interface.registerHandle(state_handle_a);
+
+        registerInterface(&jnt_state_interface);
+
+        // connect and register the joint position interface
+        hardware_interface::JointHandle pos_handle_a(jnt_state_interface.getHandle("front_steer_joint"), &cmd[0]);
+        jnt_pos_interface.registerHandle(pos_handle_a);
+
+        registerInterface(&jnt_pos_interface);
+    }
+
+    ~AdafruitServoHatHardwareInterface() {
+
+    };
+
+    void read();
+
+    void write();
+
+private:
+    hardware_interface::JointStateInterface jnt_state_interface;
+    hardware_interface::PositionJointInterface jnt_pos_interface;
+    double cmd[2];
+    double pos[2];
+    double vel[2];
+    double eff[2];
+};
+
+void AdafruitServoHatHardwareInterface::read() {
+    std::cout << "read" << std::endl;
+}
+
+void AdafruitServoHatHardwareInterface::write() {
+    std::cout << "write" << std::endl;
+}
+
 // TODO create a thread and interface through guarded variables?
 std::unique_ptr<AdaFruitServoHat> adaFruitServoHat;
 double max_linear_speed_m_s = 2.0;
@@ -123,7 +169,16 @@ int main(int argc, char* argv[]) {
     cmd_vel_topic = robot_namespace + cmd_vel_topic;
     // endregion
 
+    ros::Publisher odometry_publisher;
+    ros::Publisher steering_publisher;
+    tf::TransformBroadcaster odometry_tf_broadcaster;
+
     ros::Subscriber command_twist_ros_subscriber;
+
+    odometry_publisher = ros_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
+    steering_publisher = ros_node_handle.advertise<geometry_msgs::Twist>("/steer_ctrl", 1);
+
+    ros::Time current_ros_time, last_ros_time;
 
     ros::Rate loop_rate(update_rate);
 
@@ -159,6 +214,15 @@ int main(int argc, char* argv[]) {
         command_twist_ros_subscriber = ros_node_handle.subscribe(cmd_vel_topic, 1, handle_twist_command_callback);
     }
 
+#if 1
+    AdafruitServoHatHardwareInterface adafruit_servo_hat_hw_interface;
+    controller_manager::ControllerManager cm(&adafruit_servo_hat_hw_interface);
+
+    adafruit_servo_hat_hw_interface.read();
+    adafruit_servo_hat_hw_interface.write();
+
+#endif
+
     std::cout << "Adafruit Servo Hat node running..." << std::endl;
 
     while(ros::ok()) {
@@ -166,6 +230,43 @@ int main(int argc, char* argv[]) {
         ros::spinOnce();
         loop_rate.sleep();
 
+#if 1
+        // http://wiki.ros.org/ros_control/Tutorials/Create%20your%20own%20hardware%20interface
+        // Debug Odom/TF code
+        current_ros_time = ros::Time::now();
+
+        geometry_msgs::Quaternion odom_quaternion {
+            tf::createQuaternionMsgFromYaw(0.0)
+        };
+        geometry_msgs::TransformStamped odom_transform;
+        odom_transform.header.stamp = current_ros_time;
+        odom_transform.header.frame_id = "odom";
+        odom_transform.child_frame_id = "base_link";
+
+        odom_transform.transform.translation.x = 0.0;
+        odom_transform.transform.translation.y = 0.0;
+        odom_transform.transform.translation.z = 0.0;
+        odom_transform.transform.rotation = odom_quaternion;
+
+        odometry_tf_broadcaster.sendTransform(odom_transform);
+
+        nav_msgs::Odometry odom_message;
+        odom_message.header.stamp = current_ros_time;
+        odom_message.header.frame_id = "odom";
+
+        odom_message.pose.pose.position.x = 0.0;
+        odom_message.pose.pose.position.y = 0.0;
+        odom_message.pose.pose.position.z = 0.0;
+        odom_message.pose.pose.orientation = odom_quaternion;
+
+        odom_message.child_frame_id = "base_link";
+        odom_message.twist.twist.linear.x = 0.0;
+        odom_message.twist.twist.linear.y = 0.0;
+        odom_message.twist.twist.linear.z = 0.0;
+
+        odometry_publisher.publish(odom_message);
+
+#endif
         bool shutdown = ros::isShuttingDown();
 
         if(shutdown) {
@@ -180,3 +281,4 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+

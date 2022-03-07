@@ -15,9 +15,14 @@
   <depend>roscpp</depend>
   <depend>rosgraph_msgs</depend>
   <depend>rospy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>tf</depend>
   <depend>utils</depend>
   <depend>i2c_linux</depend>
+  <depend>controller_manager</depend>
+  <depend>hardware_interface</depend>
 
 </package>
