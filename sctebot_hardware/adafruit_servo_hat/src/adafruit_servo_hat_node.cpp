@@ -7,50 +7,207 @@
 
 #include "adafruit_servo_hat.h"
 
+#include <controller_manager/controller_manager.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
-#include <controller_manager/controller_manager.h>
+
+#include <sensor_msgs/JointState.h>
+
+#define JOINT_INDEX_REAR_RIGHT 0
+#define JOINT_INDEX_REAR_LEFT 1
+#define JOINT_INDEX_FRONT 2
+
+enum VIRTUAL_JOINT_IND {
+    VIRTUAL_JOINT_IND_RIGHT_REAR        = 0,
+    VIRTUAL_JOINT_IND_LEFT_REAR         = 1,
+    VIRTUAL_JOINT_IND_RIGHT_FRONT       = 2,
+    VIRTUAL_JOINT_IND_LEFT_FRONT        = 3,
+    VIRTUAL_JOINT_IND_RIGHT_FRONT_STEER = 4,
+    VIRTUAL_JOINT_IND_LEFT_FRONT_STEER  = 5
+};
 
 class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
 public:
-    AdafruitServoHatHardwareInterface() {
-        hardware_interface::JointStateHandle state_handle_a("front_steer_joint", &pos[0], &vel[0], &eff[0]);
-        jnt_state_interface.registerHandle(state_handle_a);
 
-        registerInterface(&jnt_state_interface);
-
-        // connect and register the joint position interface
-        hardware_interface::JointHandle pos_handle_a(jnt_state_interface.getHandle("front_steer_joint"), &cmd[0]);
-        jnt_pos_interface.registerHandle(pos_handle_a);
-
-        registerInterface(&jnt_pos_interface);
-    }
+    AdafruitServoHatHardwareInterface(const ros::NodeHandle& node_handle);
+    ros::Time getTime() const { return ros::Time::now(); }
+    ros::Duration getPeriod() const {return ros::Duration(0.01); }
+    void read();
+    void write();
 
     ~AdafruitServoHatHardwareInterface() {
 
     };
 
-    void read();
+protected:
+    void publishSteer(double angle_cmd);
+    void registerVirtualJointState(
+            std::vector<double> &virtual_wheels_pos,
+            std::vector<double> &virtual_wheels_vel,
+            std::vector<double> &virtual_wheels_eff,
+            std::vector<std::string> &virtual_wheels_names
+            );
 
-    void write();
+    ros::NodeHandle node_handle;
+    hardware_interface::PositionJointInterface front_steer_jnt_pos_cmd_interface;
+    double front_steer_pos;
+    double front_steer_vel;
+    double front_steer_eff;
+    double front_steer_pos_cmd;
 
-private:
-    hardware_interface::JointStateInterface jnt_state_interface;
-    hardware_interface::PositionJointInterface jnt_pos_interface;
-    double cmd[2];
-    double pos[2];
-    double vel[2];
-    double eff[2];
+    hardware_interface::VelocityJointInterface rear_wheel_jnt_vel_cmd_interface;
+    double rear_wheel_pos;
+    double rear_wheel_vel;
+    double rear_wheel_eff;
+    double rear_wheel_vel_cmd;
+
+    hardware_interface::JointStateInterface joint_state_interface;
+    std::vector<double> virtual_wheels_pos;
+    std::vector<double> virtual_wheels_vel;
+    std::vector<double> virtual_wheels_eff;
+
+    ros::Publisher steer_cmd_publisher;
 };
 
+AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const ros::NodeHandle &node_handle):
+    node_handle(node_handle),
+    steer_cmd_publisher(this->node_handle.advertise<geometry_msgs::Twist>("/steer_ctrl", 1))
+{
+    ros::NodeHandle _node_handle("~");
+    std::string front_steer_joint_name("front_steer_joint");
+    std::string rear_wheel_joint_name("rear_wheel_joint");
+    std::vector<std::string> virtual_wheels_names;
+    virtual_wheels_names.emplace_back("base_to_right_rear_wheel");
+    virtual_wheels_names.emplace_back("base_to_left_rear_wheel");
+    virtual_wheels_names.emplace_back("base_to_right_front_wheel");
+    virtual_wheels_names.emplace_back("base_to_left_front_wheel");
+    virtual_wheels_names.emplace_back("base_to_right_front_steer");
+    virtual_wheels_names.emplace_back("base_to_left_front_steer");
+
+    virtual_wheels_vel.resize(6);
+    virtual_wheels_pos.resize(6);
+    virtual_wheels_eff.resize(6);
+
+    // front steer
+    hardware_interface::JointStateHandle front_steer_state_handle(
+            front_steer_joint_name,
+            &front_steer_pos,
+            &front_steer_vel,
+            &front_steer_eff
+            );
+
+    joint_state_interface.registerHandle(front_steer_state_handle);
+
+    hardware_interface::JointHandle front_steer_pos_cmd_handle(
+            joint_state_interface.getHandle(front_steer_joint_name),
+            &front_steer_pos_cmd
+            );
+
+    front_steer_jnt_pos_cmd_interface.registerHandle(front_steer_pos_cmd_handle);
+
+    // rear wheels
+    hardware_interface::JointStateHandle rear_wheel_state_handle(
+            rear_wheel_joint_name,
+            &rear_wheel_pos,
+            &rear_wheel_vel,
+            &rear_wheel_eff
+            );
+
+    joint_state_interface.registerHandle(rear_wheel_state_handle);
+
+    hardware_interface::JointHandle rear_wheel_vel_cmd_handle(
+            joint_state_interface.getHandle(rear_wheel_joint_name),
+            &rear_wheel_vel_cmd
+            );
+
+    rear_wheel_jnt_vel_cmd_interface.registerHandle(rear_wheel_vel_cmd_handle);
+
+    this->registerVirtualJointState(
+            virtual_wheels_pos,
+            virtual_wheels_vel,
+            virtual_wheels_eff,
+            virtual_wheels_names
+            );
+
+    registerInterface(&front_steer_jnt_pos_cmd_interface);
+    registerInterface(&rear_wheel_jnt_vel_cmd_interface);
+    registerInterface(&joint_state_interface);
+}
+
+void AdafruitServoHatHardwareInterface::registerVirtualJointState(std::vector<double> &virtual_wheels_pos,
+                                                                  std::vector<double> &virtual_wheels_vel,
+                                                                  std::vector<double> &virtual_wheels_eff,
+                                                                  std::vector<std::string> &virtual_wheels_names) {
+    for(int i = 0; i < 6; ++i) {
+        hardware_interface::JointStateHandle state_handle(
+                virtual_wheels_names[i],
+                &virtual_wheels_pos[i],
+                &virtual_wheels_vel[i],
+                &virtual_wheels_eff[i]
+                );
+        joint_state_interface.registerHandle(state_handle);
+    }
+}
+
+void AdafruitServoHatHardwareInterface::publishSteer(double angle_cmd) {
+    double limited_angle = angle_cmd * 180.0 / M_PI;
+    limited_angle = std::max(limited_angle, -60.0);
+    limited_angle = std::min(limited_angle, 60.0);
+    geometry_msgs::Twist steer;
+
+    double angle_diff = limited_angle - (front_steer_pos * 180.0 / M_PI);
+
+    if(angle_diff > 0) {
+        steer.angular.z = 1.0;
+        steer.angular.x = fabs(angle_diff);
+    } else if (angle_diff < 0) {
+        steer.angular.z = -1.0;
+        steer.angular.x = fabs(angle_diff);
+    } else {
+        steer.angular.z = 0;
+        steer.angular.x = 0;
+    }
+
+    steer_cmd_publisher.publish(steer);
+}
+
 void AdafruitServoHatHardwareInterface::read() {
-    std::cout << "read" << std::endl;
+
+    sensor_msgs::JointState joints_state;
+
+    front_steer_pos = joints_state.position[JOINT_INDEX_FRONT];
+
+    rear_wheel_pos = (joints_state.position[JOINT_INDEX_REAR_RIGHT]
+            + joints_state.position[JOINT_INDEX_REAR_RIGHT]) / 2.0;
+
+    rear_wheel_vel = (joints_state.velocity[JOINT_INDEX_REAR_RIGHT]
+            + joints_state.velocity[JOINT_INDEX_REAR_LEFT]) /  2.0;
+
+    const double h = 0.75;
+    const double w = 0.28;
+
+    virtual_wheels_vel[VIRTUAL_JOINT_IND_RIGHT_REAR] = joints_state.velocity[JOINT_INDEX_REAR_RIGHT];
+    virtual_wheels_pos[VIRTUAL_JOINT_IND_RIGHT_REAR] = joints_state.position[JOINT_INDEX_REAR_RIGHT];
+    virtual_wheels_vel[VIRTUAL_JOINT_IND_LEFT_REAR] = joints_state.velocity[JOINT_INDEX_REAR_LEFT];
+    virtual_wheels_pos[VIRTUAL_JOINT_IND_LEFT_REAR] = joints_state.velocity[JOINT_INDEX_REAR_LEFT];
+
+    virtual_wheels_vel[VIRTUAL_JOINT_IND_RIGHT_FRONT] = virtual_wheels_vel[VIRTUAL_JOINT_IND_RIGHT_REAR];
+    virtual_wheels_pos[VIRTUAL_JOINT_IND_RIGHT_FRONT] = virtual_wheels_pos[VIRTUAL_JOINT_IND_RIGHT_REAR];
+    virtual_wheels_vel[VIRTUAL_JOINT_IND_LEFT_FRONT] = virtual_wheels_vel[VIRTUAL_JOINT_IND_LEFT_REAR];
+    virtual_wheels_pos[VIRTUAL_JOINT_IND_LEFT_FRONT] = virtual_wheels_pos[VIRTUAL_JOINT_IND_LEFT_REAR];
+
+    virtual_wheels_pos[VIRTUAL_JOINT_IND_RIGHT_FRONT_STEER] = atan2(2.0 * h * tan(front_steer_pos),
+                                                                   2.0 * h + w / 2.0 * tan(front_steer_pos)
+                                                                   );
+    virtual_wheels_pos[VIRTUAL_JOINT_IND_LEFT_FRONT_STEER] = atan2(2.0 * h * tan(front_steer_pos),
+                                                                   2.0 * h - w / 2.0 * tan(front_steer_pos)
+                                                                   );
 }
 
 void AdafruitServoHatHardwareInterface::write() {
-    std::cout << "write" << std::endl;
+    this->publishSteer(front_steer_pos_cmd);
 }
 
 // TODO create a thread and interface through guarded variables?
@@ -215,11 +372,8 @@ int main(int argc, char* argv[]) {
     }
 
 #if 1
-    AdafruitServoHatHardwareInterface adafruit_servo_hat_hw_interface;
+    AdafruitServoHatHardwareInterface adafruit_servo_hat_hw_interface(ros_node_handle);
     controller_manager::ControllerManager cm(&adafruit_servo_hat_hw_interface);
-
-    adafruit_servo_hat_hw_interface.read();
-    adafruit_servo_hat_hw_interface.write();
 
 #endif
 
@@ -230,7 +384,7 @@ int main(int argc, char* argv[]) {
         ros::spinOnce();
         loop_rate.sleep();
 
-#if 1
+#if 0
         // http://wiki.ros.org/ros_control/Tutorials/Create%20your%20own%20hardware%20interface
         // Debug Odom/TF code
         current_ros_time = ros::Time::now();
@@ -265,8 +419,14 @@ int main(int argc, char* argv[]) {
         odom_message.twist.twist.linear.z = 0.0;
 
         odometry_publisher.publish(odom_message);
-
 #endif
+        ros::Time now = adafruit_servo_hat_hw_interface.getTime();
+        ros::Duration dt = adafruit_servo_hat_hw_interface.getPeriod();
+
+        adafruit_servo_hat_hw_interface.read();
+        cm.update(now, dt);
+        adafruit_servo_hat_hw_interface.write();
+
         bool shutdown = ros::isShuttingDown();
 
         if(shutdown) {

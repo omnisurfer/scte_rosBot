@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         hardware_interface
         controller_manager
+        ackermann_steering_controller
         )
 
 find_package(Boost 1.69.0 COMPONENTS log REQUIRED)
@@ -37,6 +38,7 @@ catkin_package(
         tf
         hardware_interface
         controller_manager
+        ackermann_steering_controller
 )
 
 include_directories(
