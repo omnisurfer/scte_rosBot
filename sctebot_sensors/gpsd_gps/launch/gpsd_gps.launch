@@ -8,7 +8,7 @@
 
     <group ns="$(arg robot_namespace)">
         <!--
-        address must match the hostname EXACTLY and/or be all lower case. Otherwise get known_hosts error.
+        address must match the hostname EXACTLY and/or be all lower case. Otherwise, get known_hosts error.
         -->
         <group if="$(eval node_name == 'local')">
             <node name="$(arg gps_name)" pkg="gpsd_client" type="gpsd_client" output="screen">
