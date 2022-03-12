@@ -69,6 +69,8 @@ protected:
     std::vector<double> virtual_wheels_eff;
 
     ros::Publisher steer_cmd_publisher;
+
+    sensor_msgs::JointState joints_state;
 };
 
 AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const ros::NodeHandle &node_handle):
@@ -175,9 +177,33 @@ void AdafruitServoHatHardwareInterface::publishSteer(double angle_cmd) {
 
 void AdafruitServoHatHardwareInterface::read() {
 
-    sensor_msgs::JointState joints_state;
+    // TODO read the "joint" state from the hardware at this point
+    // region debug joint state
+
+    int number_of_joints = 3;
+
+    joints_state.header.stamp = ros::Time::now();
+    joints_state.position.resize(number_of_joints);
+    joints_state.velocity.resize(number_of_joints);
+    joints_state.effort.resize(number_of_joints);
+    joints_state.name.resize(number_of_joints);
+
+    for(int i = 0; i < number_of_joints; ++i) {
+        joints_state.position[i] = 0.0;
+        joints_state.velocity[i] = 0.0;
+        joints_state.effort[i] = 0.0;
+    }
+
+    joints_state.name[0] = "rear_right_wheel_joint";
+    joints_state.name[1] = "rear_left_wheel_joint";
+    joints_state.name[2] = "front_steer_joint";
+
+    // endregion
+
 
     front_steer_pos = joints_state.position[JOINT_INDEX_FRONT];
+
+    //std::cout << "adafruit hat front_steer_pos" << front_steer_pos << std::endl;
 
     rear_wheel_pos = (joints_state.position[JOINT_INDEX_REAR_RIGHT]
             + joints_state.position[JOINT_INDEX_REAR_RIGHT]) / 2.0;

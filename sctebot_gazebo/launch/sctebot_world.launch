@@ -15,6 +15,11 @@
     <arg name="longitude_ref" default="0"/>
     <arg name="altitude_ref" default="0"/>
 
+    <arg name="gui" default="true"/>
+    <arg name="paused" default="false"/>
+    <arg name="set_timeout" default="false"/>
+    <arg name="timeout" default="0.0"/>
+
     <include file="$(find sctebot_description)/launch/upload_sctebot.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
         <arg name="x" value="$(arg x)"/>
@@ -31,11 +36,6 @@
 
         <!-- Gazebo  -->
         <arg name="gazebo_world" default="sctebot.world" />
-
-        <arg name="gui" default="true"/>
-        <arg name="paused" default="false"/>
-        <arg name="set_timeout" default="false"/>
-        <arg name="timeout" default="0.0"/>
 
         <include file="$(find gazebo_ros)/launch/empty_world.launch">
             <arg name="world_name" default="$(find sctebot_gazebo)/worlds/$(arg gazebo_world)"/>
