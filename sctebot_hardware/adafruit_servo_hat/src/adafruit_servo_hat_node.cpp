@@ -81,12 +81,25 @@ AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const ros::
     std::string front_steer_joint_name("front_steer_joint");
     std::string rear_wheel_joint_name("rear_wheel_joint");
     std::vector<std::string> virtual_wheels_names;
+    /*
     virtual_wheels_names.emplace_back("base_to_right_rear_wheel");
     virtual_wheels_names.emplace_back("base_to_left_rear_wheel");
     virtual_wheels_names.emplace_back("base_to_right_front_wheel");
     virtual_wheels_names.emplace_back("base_to_left_front_wheel");
     virtual_wheels_names.emplace_back("base_to_right_front_steer");
     virtual_wheels_names.emplace_back("base_to_left_front_steer");
+    */
+
+    virtual_wheels_names.emplace_back("front_left_steer_joint");
+    virtual_wheels_names.emplace_back("front_left_wheel_joint");
+
+    virtual_wheels_names.emplace_back("front_right_steer_joint");
+    virtual_wheels_names.emplace_back("front_right_wheel_joint");
+
+    virtual_wheels_names.emplace_back("rear_left_wheel_joint");
+    virtual_wheels_names.emplace_back("rear_right_wheel_joint");
+
+
 
     virtual_wheels_vel.resize(6);
     virtual_wheels_pos.resize(6);
