@@ -23,8 +23,10 @@
 
 /*
  * Using as reference
- * https://github.com/CIR-KIT-Unit03/cirkit_unit03_robot/blob/master/cirkit_unit03_driver/src/cirkit_unit03_driver.cpp
+
  * http://wiki.ros.org/ros_control/Tutorials/Create%20your%20own%20hardware%20interface
+ * http://wiki.ros.org/ros_control
+ * http://wiki.ros.org/tf/Tutorials
  */
 
 class AdaFruitServoHat {
