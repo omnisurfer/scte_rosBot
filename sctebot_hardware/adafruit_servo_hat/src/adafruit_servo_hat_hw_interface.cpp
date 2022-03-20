@@ -47,11 +47,15 @@ bool AdafruitServoHatHardwareInterface::init(const std::string &robot_namespace,
 
 void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration period) {
 
-    std::cout << "read not implemented" << std::endl;
+    std::cout << "front_steer_joint_position_command" << _front_steer_joint_position_command << std::endl;
+
 }
 
 void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration period) {
-    std::cout << "write not implemented" << std::endl;
+    //std::cout << "write not implemented" << std::endl;
+
+    _rear_wheel_joint_position = 0.5;
+    _front_steer_joint_position = 0.5;
 }
 
 void AdafruitServoHatHardwareInterface::CleanUp() {

@@ -222,11 +222,11 @@ int main(int argc, char* argv[]) {
         ros::Time now = adafruit_servo_hat_hw_interface.getTime();
         ros::Duration dt = adafruit_servo_hat_hw_interface.getPeriod();
 
-        /*
+        /**/
         adafruit_servo_hat_hw_interface.read(now, dt);
         cm.update(now, dt);
         adafruit_servo_hat_hw_interface.write(now, dt);
-        */
+        /**/
 
         bool shutdown = ros::isShuttingDown();
 
