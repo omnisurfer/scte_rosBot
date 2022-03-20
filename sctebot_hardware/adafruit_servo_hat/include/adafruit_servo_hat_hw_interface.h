@@ -13,6 +13,7 @@
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
+#include <joint_limits_interface/joint_limits_interface.h>
 
 #include <controller_manager/controller_manager.h>
 
@@ -47,6 +48,12 @@ public:
     };
 
 private:
+
+    enum {
+        INDEX_RIGHT = 0,
+        INDEX_LEFT = 1
+    };
+
     ros::NodeHandle _node_handle;
     std::string _robot_namespace;
 

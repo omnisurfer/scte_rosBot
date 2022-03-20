@@ -19,6 +19,29 @@ bool AdafruitServoHatHardwareInterface::init(const std::string &robot_namespace,
     this->GetJointNames(this->_node_handle);
     this->RegisterHardwareInterfaces();
 
+    node_handle.getParam(robot_namespace + "wheel_separation_w", _wheel_separation_w);
+    node_handle.getParam(robot_namespace + "wheel_separation_h", _wheel_separation_h);
+    ROS_INFO_STREAM("wheel_separation_w = " << _wheel_separation_w);
+    ROS_INFO_STREAM("wheel_separation_h = " << _wheel_separation_h);
+
+    // position joint limits interface
+    /**/
+    std::vector<std::string> front_steer_joint_position_command_interface_handle_names = _front_steer_joint_position_command_interface.getNames();
+    for (size_t i = 0; i < front_steer_joint_position_command_interface_handle_names.size(); ++i) {
+
+        const std::string front_steer_interface_name = front_steer_joint_position_command_interface_handle_names[i];
+
+        ROS_INFO_STREAM("front_steer_interface_name " << front_steer_interface_name);
+
+        // skip non position interface for steer
+        if(front_steer_interface_name != _virtual_front_steer_joint_names[INDEX_RIGHT] && front_steer_interface_name != _virtual_front_steer_joint_names[INDEX_LEFT])
+            continue;
+
+        hardware_interface::JointHandle front_steer_command_handle = _front_steer_joint_position_command_interface.getHandle(front_steer_interface_name);
+
+        ROS_INFO_STREAM("front_steer_command_handle " << front_steer_command_handle.getName());
+    }
+    /**/
     return true;
 }
 
@@ -107,11 +130,12 @@ void AdafruitServoHatHardwareInterface::RegisterHardwareInterfaces() {
     this->RegisterSteerInterface();
     this->RegisterWheelInterface();
 
+    registerInterface(&_joint_state_interface);
+    //registerInterface(&_rear_wheel_joint_velocity_command_interface);
+    registerInterface(&_front_steer_joint_position_command_interface);
 }
 
 void AdafruitServoHatHardwareInterface::RegisterSteerInterface() {
-    std::cout << "RegisterSteerInterface not implemented" << std::endl;
-
 
     // actual steer joints
     this->RegisterInterfaceHandles(
@@ -139,7 +163,40 @@ void AdafruitServoHatHardwareInterface::RegisterSteerInterface() {
 }
 
 void AdafruitServoHatHardwareInterface::RegisterWheelInterface() {
-    std::cout << "RegisterWheelInterface not implemented" << std::endl;
+
+    this->RegisterInterfaceHandles(
+            _joint_state_interface,
+            _rear_wheel_joint_velocity_command_interface,
+            _rear_wheel_joint_name,
+            _rear_wheel_joint_position,
+            _rear_wheel_joint_velocity,
+            _rear_wheel_joint_effort,
+            _rear_wheel_joint_velocity_command
+            );
+
+    // virtual rear wheel joints
+    for(int i = 0; i < (int)_virtual_rear_wheel_joint_names.size(); i++) {
+        this->RegisterInterfaceHandles(
+                _joint_state_interface,
+                _rear_wheel_joint_velocity_command_interface,
+                _virtual_rear_wheel_joint_names[i],
+                _virtual_rear_wheel_joint_position[i],
+                _virtual_front_steer_joint_velocity[i],
+                _virtual_rear_wheel_joint_effort[i],
+                _virtual_rear_wheel_joint_velocity_command[i]
+                );
+    }
+
+    // virtual front wheel joints
+    for(int i = 0; i < (int)_virtual_front_wheel_joint_names.size(); i++) {
+        this->RegisterInterfaceHandles(
+                _joint_state_interface,
+                _virtual_front_wheel_joint_names[i],
+                _virtual_front_wheel_joint_position[i],
+                _virtual_front_wheel_joint_velocity[i],
+                _virtual_front_wheel_joint_effort[i]
+                );
+    }
 }
 
 void AdafruitServoHatHardwareInterface::RegisterInterfaceHandles(
@@ -166,6 +223,21 @@ void AdafruitServoHatHardwareInterface::RegisterInterfaceHandles(
             joint_name,
             joint_command
             );
+}
+
+void AdafruitServoHatHardwareInterface::RegisterInterfaceHandles(
+        hardware_interface::JointStateInterface& joint_state_interface,
+        const std::string joint_name,
+        double& joint_position,
+        double& joint_velocity,
+        double& joint_effort
+        ) {
+
+    this->RegisterJointStateInterfaceHandle(joint_state_interface,
+                                            joint_name,
+                                            joint_position,
+                                            joint_velocity,
+                                            joint_effort);
 }
 
 void AdafruitServoHatHardwareInterface::RegisterJointStateInterfaceHandle(
