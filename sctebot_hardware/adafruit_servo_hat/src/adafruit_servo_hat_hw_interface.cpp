@@ -42,17 +42,109 @@ bool AdafruitServoHatHardwareInterface::init(const std::string &robot_namespace,
         ROS_INFO_STREAM("front_steer_command_handle " << front_steer_command_handle.getName());
     }
     /**/
+
+    jointStatePublisher = this->_node_handle.advertise<sensor_msgs::JointState>("joint_states", 1);
+
     return true;
 }
 
+// take data from hardware and send to ROS
 void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration period) {
 
-    std::cout << "front_steer_joint_position_command" << _front_steer_joint_position_command << std::endl;
+    //std::cout << "read " << _virtual_rear_wheel_joint_position.size() << std::endl;
 
+    _front_steer_joint_position = 0.5;
+    _rear_wheel_joint_position = 0.5;
+    _rear_wheel_joint_velocity = 0.0;
+
+    const double h = 0.75;
+    const double w = 0.28;
+
+    _virtual_rear_wheel_joint_velocity[0] = 0.1;
+    _virtual_rear_wheel_joint_position[0] = 0.0;
+    _virtual_rear_wheel_joint_velocity[1] = 0.1;
+    _virtual_rear_wheel_joint_position[1] = 0.0;
 }
 
+// take commands from ROS and send to hardware
 void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration period) {
     //std::cout << "write not implemented" << std::endl;
+
+    sensor_msgs::JointState joint_state;
+
+    // https://choreonoid.org/en/documents/latest/ros/tank-tutorial/step2.html
+
+    /*
+header:
+seq: 1950
+stamp:
+secs: 216
+nsecs: 603000000
+frame_id: ''
+name:
+- front_left_steer_joint
+- front_left_wheel_joint
+- front_right_steer_joint
+- front_right_wheel_joint
+- front_steer_joint
+- rear_left_wheel_joint
+- rear_right_wheel_joint
+- rear_wheel_joint
+position: [0.0, 0.0, 0.0, 0.0, 0.6, 0.0, 0.0, 0.0]
+velocity: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+effort: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+     */
+
+    joint_state.header.stamp = ros::Time::now();
+
+    joint_state.name.resize(8);
+    joint_state.position.resize(8);
+    joint_state.velocity.resize(8);
+    joint_state.effort.resize(8);
+
+    joint_state.name[0] = "front_left_steer_joint";
+    joint_state.name[1] = "front_left_wheel_joint";
+    joint_state.name[2] = "front_right_steer_joint";
+    joint_state.name[3] = "front_right_wheel_joint";
+    joint_state.name[4] = "front_steer_joint";
+    joint_state.name[5] = "rear_left_wheel_joint";
+    joint_state.name[6] = "rear_right_wheel_joint";
+    joint_state.name[7] = "rear_wheel_joint";
+
+    joint_state.position = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,};
+    /*
+    joint_state.position[1] = 0.0;
+    joint_state.position[2] = 0.0;
+    joint_state.position[3] = 0.0;
+    joint_state.position[4] = 0.0;
+    joint_state.position[5] = 0.0;
+    joint_state.position[6] = 0.0;
+    joint_state.position[7] = 0.0;
+    */
+
+    joint_state.velocity = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,};
+    /*
+    joint_state.velocity[1] = 0.0;
+    joint_state.velocity[2] = 0.0;
+    joint_state.velocity[3] = 0.0;
+    joint_state.velocity[4] = 0.0;
+    joint_state.velocity[5] = 0.0;
+    joint_state.velocity[6] = 0.0;
+    joint_state.velocity[7] = 0.0;
+    */
+
+    joint_state.effort = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,};
+    /*
+    joint_state.effort[1] = 0.0;
+    joint_state.effort[2] = 0.0;
+    joint_state.effort[3] = 0.0;
+    joint_state.effort[4] = 0.0;
+    joint_state.effort[5] = 0.0;
+    joint_state.effort[6] = 0.0;
+    joint_state.effort[7] = 0.0;
+    */
+
+    jointStatePublisher.publish(joint_state);
 
     _rear_wheel_joint_position = 0.5;
     _front_steer_joint_position = 0.5;

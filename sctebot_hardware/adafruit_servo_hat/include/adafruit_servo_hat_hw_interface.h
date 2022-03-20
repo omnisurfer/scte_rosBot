@@ -101,6 +101,8 @@ private:
     double _wheel_separation_w;
     double _wheel_separation_h;
 
+    ros::Publisher jointStatePublisher;
+
     // region methods
     void CleanUp();
 
