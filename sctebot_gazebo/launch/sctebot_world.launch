@@ -35,6 +35,7 @@
     <group ns="$(arg robot_namespace)">
 
         <!-- Gazebo  -->
+        <!---->
         <arg name="gazebo_world" default="sctebot.world" />
 
         <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -46,7 +47,7 @@
             <arg name="debug" value="false"/>
             <arg name="verbose" value="true"/>
         </include>
-
+        <!---->
     </group>
 
 </launch>

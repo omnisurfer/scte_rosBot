@@ -47,6 +47,7 @@
         <node pkg="controller_manager" type="spawner" name="controller_spawner"
               args="joint_state_publisher ackermann_steering_controller"
               output="screen" respawn="false" />
+        <!-- ackermann_steering_controller-->
 
         <!-- Spawn robot in Gazebo -->
         <group if="$(arg use_geodetic)">

@@ -43,7 +43,7 @@ bool AdafruitServoHatHardwareInterface::init(const std::string &robot_namespace,
     }
     /**/
 
-    jointStatePublisher = this->_node_handle.advertise<sensor_msgs::JointState>("joint_states", 1);
+    //jointStatePublisher = this->_node_handle.advertise<sensor_msgs::JointState>("joint_states", 1);
 
     return true;
 }
@@ -144,7 +144,7 @@ effort: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     joint_state.effort[7] = 0.0;
     */
 
-    jointStatePublisher.publish(joint_state);
+    //jointStatePublisher.publish(joint_state);
 
     _rear_wheel_joint_position = 0.5;
     _front_steer_joint_position = 0.5;
@@ -227,7 +227,7 @@ void AdafruitServoHatHardwareInterface::RegisterHardwareInterfaces() {
     this->RegisterWheelInterface();
 
     registerInterface(&_joint_state_interface);
-    //registerInterface(&_rear_wheel_joint_velocity_command_interface);
+    registerInterface(&_rear_wheel_joint_velocity_command_interface);
     registerInterface(&_front_steer_joint_position_command_interface);
 }
 
@@ -336,6 +336,18 @@ void AdafruitServoHatHardwareInterface::RegisterInterfaceHandles(
                                             joint_effort);
 }
 
+void AdafruitServoHatHardwareInterface::RegisterInterfaceHandles(
+        hardware_interface::PositionJointInterface& position_joint_interface,
+        const std::string& joint_name,
+        double& joint_position) {
+
+    this->RegisterPositionJointInterfaceHandle(
+            position_joint_interface,
+            joint_name,
+            joint_position
+            );
+}
+
 void AdafruitServoHatHardwareInterface::RegisterJointStateInterfaceHandle(
         hardware_interface::JointStateInterface &joint_state_interface,
         const std::string joint_name,
@@ -371,6 +383,4 @@ void AdafruitServoHatHardwareInterface::RegisterCommandJointInterfaceHandle(
 
     ROS_INFO_STREAM("Registered joint '" << joint_name << "' in the CommandJointInterface");
 }
-
-
 

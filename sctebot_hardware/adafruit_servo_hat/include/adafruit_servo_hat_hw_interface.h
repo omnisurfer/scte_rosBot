@@ -24,6 +24,16 @@
 #define JOINT_INDEX_REAR_LEFT 1
 #define JOINT_INDEX_FRONT 2
 
+/* Getting this error regarding interfaces when starting the node...
+[ERROR] [1647807900.893345751]: This controller requires a hardware interface of type 'hardware_interface::PositionJointInterface', but is not exposed by the robot. Available interfaces in robot:
+- 'hardware_interface::JointStateInterface'
+- 'hardware_interface::VelocityJointInterface'
+[ERROR] [1647807900.893419939]: Initializing controller 'ackermann_steering_controller' failed
+[ERROR] [1647807900.923908066]: Could not start controller with name 'ackermann_steering_controller' because no controller with this name exists
+
+ *
+ */
+
 enum FRONT_REAR {
     FRONT = 0,
     REAR = 1
@@ -126,10 +136,16 @@ private:
 
     void RegisterInterfaceHandles(
             hardware_interface::JointStateInterface& joint_state_interface,
-            const std::string joint_name,
+            std::string joint_name,
             double& joint_position,
             double& joint_velocity,
             double& joint_effort
+            );
+
+    void RegisterInterfaceHandles(
+            hardware_interface::PositionJointInterface& position_joint_interface,
+            const std::string& joint_name,
+            double& joint_position
             );
 
     void RegisterJointStateInterfaceHandle(
@@ -145,6 +161,12 @@ private:
             hardware_interface::JointCommandInterface& joint_command_interface,
             const std::string joint_name,
             double& joint_command
+            );
+
+    void RegisterPositionJointInterfaceHandle(
+            hardware_interface::PositionJointInterface& position_joint_interface,
+            const std::string& joint_name,
+            double& joint_position_command
             );
 
     // passed on ComputeEffCommandFromVelError
