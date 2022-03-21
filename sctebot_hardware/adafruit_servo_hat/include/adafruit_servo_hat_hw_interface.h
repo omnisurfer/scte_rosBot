@@ -31,6 +31,12 @@
 [ERROR] [1647807900.893419939]: Initializing controller 'ackermann_steering_controller' failed
 [ERROR] [1647807900.923908066]: Could not start controller with name 'ackermann_steering_controller' because no controller with this name exists
 
+
+[ERROR] [1647810624.529987002]: Exception thrown while initializing controller 'ackermann_steering_controller'.
+Could not find resource 'rear_wheel_joint' in 'hardware_interface::VelocityJointInterface'.
+[ERROR] [1647810624.530027517]: Initializing controller 'ackermann_steering_controller' failed
+[ERROR] [1647810624.548787840]: Could not start controller with name 'ackermann_steering_controller' because no controller with this name exists
+
  *
  */
 
@@ -69,7 +75,6 @@ private:
 
     hardware_interface::JointStateInterface _joint_state_interface;
 
-    // region wheel names
     // rear wheel, actual joint that moves the robot
     std::string _rear_wheel_joint_name;
     double _rear_wheel_joint_position;
@@ -91,7 +96,6 @@ private:
     std::vector<double> _virtual_front_wheel_joint_velocity;
     std::vector<double> _virtual_front_wheel_joint_effort;
     std::vector<double> _virtual_front_wheel_joint_velocity_command;
-    // endregion
 
     // front steer, actual joint that moves the robot
     std::string _front_steer_joint_name;
@@ -108,6 +112,9 @@ private:
     std::vector<double> _virtual_front_steer_joint_effort;
     std::vector<double> _virtual_front_steer_joint_position_command;
 
+    hardware_interface::PositionJointInterface _front_steer_position_joint_command_interface_WIP;
+    hardware_interface::VelocityJointInterface _rear_wheel_velocity_joint_command_interface_WIP;
+
     double _wheel_separation_w;
     double _wheel_separation_h;
 
@@ -123,6 +130,9 @@ private:
     void RegisterHardwareInterfaces();
     void RegisterWheelInterface();
     void RegisterSteerInterface();
+
+    void RegisterSteerPositionInterface();
+    void RegisterWheelVelocityInterface();
 
     void RegisterInterfaceHandles(
             hardware_interface::JointStateInterface& joint_state_interface,
@@ -143,10 +153,24 @@ private:
             );
 
     void RegisterInterfaceHandles(
-            hardware_interface::PositionJointInterface& position_joint_interface,
+            hardware_interface::JointStateInterface& joint_state_interface,
+            hardware_interface::PositionJointInterface& joint_position_interface,
             const std::string& joint_name,
-            double& joint_position
+            double& joint_position,
+            double& joint_velocity,
+            double& joint_effort,
+            double& joint_position_command
             );
+
+    void RegisterInterfaceHandles(
+            hardware_interface::JointStateInterface& joint_state_interface,
+            hardware_interface::VelocityJointInterface& joint_velocity_interface,
+            const std::string& joint_name,
+            double& joint_position,
+            double& joint_velocity,
+            double& joint_effort,
+            double& joint_velocity_command
+    );
 
     void RegisterJointStateInterfaceHandle(
             hardware_interface::JointStateInterface& joint_state_interface,
@@ -164,10 +188,20 @@ private:
             );
 
     void RegisterPositionJointInterfaceHandle(
+            hardware_interface::JointStateInterface& joint_state_interface,
             hardware_interface::PositionJointInterface& position_joint_interface,
             const std::string& joint_name,
+            double& joint_position,
             double& joint_position_command
             );
+
+    void RegisterVelocityJointInterfaceHandle(
+            hardware_interface::JointStateInterface& joint_state_interface,
+            hardware_interface::VelocityJointInterface& velocity_joint_interface,
+            const std::string& joint_name,
+            double& joint_velocity,
+            double& joint_velocity_command
+    );
 
     // passed on ComputeEffCommandFromVelError
 
