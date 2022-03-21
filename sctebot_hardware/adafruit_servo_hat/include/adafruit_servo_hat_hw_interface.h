@@ -37,6 +37,9 @@ Could not find resource 'rear_wheel_joint' in 'hardware_interface::VelocityJoint
 [ERROR] [1647810624.530027517]: Initializing controller 'ackermann_steering_controller' failed
 [ERROR] [1647810624.548787840]: Could not start controller with name 'ackermann_steering_controller' because no controller with this name exists
 
+[ERROR] [1647833055.978541545]: This controller requires a hardware interface of type 'hardware_interface::JointStateInterface'. Make sure this is registered in the hardware_interface::RobotHW class.
+[ERROR] [1647833055.978606056]: Initializing controller 'joint_state_publisher' failed
+
  *
  */
 
@@ -112,8 +115,8 @@ private:
     std::vector<double> _virtual_front_steer_joint_effort;
     std::vector<double> _virtual_front_steer_joint_position_command;
 
-    hardware_interface::PositionJointInterface _front_steer_position_joint_command_interface_WIP;
-    hardware_interface::VelocityJointInterface _rear_wheel_velocity_joint_command_interface_WIP;
+    hardware_interface::PositionJointInterface _front_steer_position_joint_command_interface;
+    hardware_interface::VelocityJointInterface _rear_wheel_velocity_joint_command_interface;
 
     double _wheel_separation_w;
     double _wheel_separation_h;

@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     // region ROS Params
     std::string robot_namespace;
     std::string cmd_vel_topic;
-    double update_rate = 20.0;
+    double update_rate = 100.0;
 
     node_name = ros::this_node::getName();
 
@@ -172,7 +172,7 @@ int main(int argc, char* argv[]) {
 #if 1
     AdafruitServoHatHardwareInterface adafruit_servo_hat_hw_interface;
     adafruit_servo_hat_hw_interface.init(robot_namespace, ros_node_handle);
-    controller_manager::ControllerManager cm(&adafruit_servo_hat_hw_interface);
+    controller_manager::ControllerManager cm(&adafruit_servo_hat_hw_interface, ros_node_handle);
 
 #endif
 
@@ -222,18 +222,22 @@ int main(int argc, char* argv[]) {
         ros::Time now = adafruit_servo_hat_hw_interface.getTime();
         ros::Duration dt = adafruit_servo_hat_hw_interface.getPeriod();
 
+        std::cout << "ros now " << now.toSec() << " dt " << dt.toSec() << std::endl;
+
         /**/
         adafruit_servo_hat_hw_interface.read(now, dt);
         cm.update(now, dt);
         adafruit_servo_hat_hw_interface.write(now, dt);
         /**/
 
+        /*
         bool shutdown = ros::isShuttingDown();
 
         if(shutdown) {
             std::cout << node_name + ": Shutting down ROS node" << std::endl;
             break;
         }
+        */
     }
 
     if(run_ros_subscriber) {

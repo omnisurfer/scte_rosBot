@@ -43,7 +43,7 @@ bool AdafruitServoHatHardwareInterface::init(const std::string &robot_namespace,
     }
     /**/
 
-    //jointStatePublisher = this->_node_handle.advertise<sensor_msgs::JointState>("joint_states", 1);
+    jointStatePublisher = this->_node_handle.advertise<sensor_msgs::JointState>("joint_states", 1);
 
     return true;
 }
@@ -54,20 +54,22 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     //std::cout << "read " << _virtual_rear_wheel_joint_position.size() << std::endl;
 
     _front_steer_joint_position = 0.5;
-    _rear_wheel_joint_position = 0.5;
     _rear_wheel_joint_velocity = 0.0;
 
     const double h = 0.75;
     const double w = 0.28;
 
+    /*
     _virtual_rear_wheel_joint_velocity[0] = 0.1;
     _virtual_rear_wheel_joint_position[0] = 0.0;
     _virtual_rear_wheel_joint_velocity[1] = 0.1;
     _virtual_rear_wheel_joint_position[1] = 0.0;
+     */
 }
 
 // take commands from ROS and send to hardware
 void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration period) {
+
     //std::cout << "write not implemented" << std::endl;
 
     sensor_msgs::JointState joint_state;
@@ -146,8 +148,8 @@ effort: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     //jointStatePublisher.publish(joint_state);
 
-    _rear_wheel_joint_position = 0.5;
-    _front_steer_joint_position = 0.5;
+    _rear_wheel_joint_velocity = 0.5;
+    _front_steer_joint_position = 0.0;
 }
 
 void AdafruitServoHatHardwareInterface::CleanUp() {
@@ -230,13 +232,13 @@ void AdafruitServoHatHardwareInterface::RegisterHardwareInterfaces() {
     registerInterface(&_joint_state_interface);
     registerInterface(&_rear_wheel_joint_velocity_command_interface);
     registerInterface(&_front_steer_joint_position_command_interface);
-    registerInterface(&_front_steer_joint_position_command_interface_WIP);
 #else
     this->RegisterSteerPositionInterface();
     this->RegisterWheelVelocityInterface();
 
-    registerInterface(&_front_steer_position_joint_command_interface_WIP);
-    registerInterface(&_rear_wheel_velocity_joint_command_interface_WIP);
+    registerInterface(&_front_steer_position_joint_command_interface);
+    registerInterface(&_rear_wheel_velocity_joint_command_interface);
+    registerInterface(&_joint_state_interface);
 #endif
 }
 
@@ -310,7 +312,7 @@ void AdafruitServoHatHardwareInterface::RegisterSteerPositionInterface() {
 
     this->RegisterInterfaceHandles(
             _joint_state_interface,
-            _front_steer_position_joint_command_interface_WIP,
+            _front_steer_position_joint_command_interface,
             _front_steer_joint_name,
             _front_steer_joint_position,
             _front_steer_joint_velocity,
@@ -325,7 +327,7 @@ void AdafruitServoHatHardwareInterface::RegisterWheelVelocityInterface() {
 
     this->RegisterInterfaceHandles(
             _joint_state_interface,
-            _rear_wheel_velocity_joint_command_interface_WIP,
+            _rear_wheel_velocity_joint_command_interface,
             _rear_wheel_joint_name,
             _rear_wheel_joint_position,
             _rear_wheel_joint_velocity,
