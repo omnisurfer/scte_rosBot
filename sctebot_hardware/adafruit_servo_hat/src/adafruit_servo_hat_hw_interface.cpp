@@ -3,8 +3,6 @@
 //
 #include "adafruit_servo_hat_hw_interface.h"
 
-#include <utility>
-
 AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::string& robot_namespace, const ros::NodeHandle& node_handle):
         _node_handle(node_handle) {
 
@@ -14,13 +12,33 @@ AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::
     std::string front_steer_joint_names("front_steer_joint");
     std::string rear_wheel_joint_names("rear_wheel_joint");
 
+    /*
+    steer_bot_hardware_gazebo_cpp: jnt name front_left_steer_joint
+    steer_bot_hardware_gazebo_cpp: jnt name front_left_wheel_joint
+    steer_bot_hardware_gazebo_cpp: jnt name front_right_steer_joint
+    steer_bot_hardware_gazebo_cpp: jnt name front_right_wheel_joint
+    steer_bot_hardware_gazebo_cpp: jnt name front_steer_joint
+    steer_bot_hardware_gazebo_cpp: jnt name rear_left_wheel_joint
+    steer_bot_hardware_gazebo_cpp: jnt name rear_right_wheel_joint
+    steer_bot_hardware_gazebo_cpp: jnt name rear_wheel_joint
+     *
+     */
+
     std::vector<std::string> virtual_wheels_names;
+    /*
     virtual_wheels_names.emplace_back("base_to_right_rear_wheel");
     virtual_wheels_names.emplace_back("base_to_left_rear_wheel");
     virtual_wheels_names.emplace_back("base_to_right_front_wheel");
     virtual_wheels_names.emplace_back("base_to_left_front_wheel");
     virtual_wheels_names.emplace_back("base_to_right_front_steer");
     virtual_wheels_names.emplace_back("base_to_left_front_steer");
+    */
+    virtual_wheels_names.emplace_back("rear_right_wheel_joint");
+    virtual_wheels_names.emplace_back("rear_left_wheel_joint");
+    virtual_wheels_names.emplace_back("front_right_wheel_joint");
+    virtual_wheels_names.emplace_back("front_left_wheel_joint");
+    virtual_wheels_names.emplace_back("front_right_steer_joint");
+    virtual_wheels_names.emplace_back("front_left_steer_joint");
 
     virtual_wheels_velocities.resize(6);
     virtual_wheels_position.resize(6);
@@ -61,7 +79,6 @@ AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::
             virtual_wheels_names
     );
 
-    std::cout << "REGISTERING INTERFACES!!!" << std::endl;
     registerInterface(&front_steer_joint_position_cmd_interface);
     registerInterface(&rear_wheel_joint_velocity_cmd_interface);
     registerInterface(&joint_state_interface);
@@ -136,80 +153,10 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
 
 // take commands from ROS and send to hardware
 void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration period) {
+    // TODO write out the desired steer and velocity command to the servo hat here
 
-    sensor_msgs::JointState joint_state;
+    if(rear_wheel_velocity_cmd > 0.0) {
+        std::cout << "rear vel cmd: " << rear_wheel_velocity_cmd << " steer cmd: " << front_steer_position_cmd << std::endl;
+    }
 
-    // https://choreonoid.org/en/documents/latest/ros/tank-tutorial/step2.html
-
-    /*
-header:
-seq: 1950
-stamp:
-secs: 216
-nsecs: 603000000
-frame_id: ''
-name:
-- front_left_steer_joint
-- front_left_wheel_joint
-- front_right_steer_joint
-- front_right_wheel_joint
-- front_steer_joint
-- rear_left_wheel_joint
-- rear_right_wheel_joint
-- rear_wheel_joint
-position: [0.0, 0.0, 0.0, 0.0, 0.6, 0.0, 0.0, 0.0]
-velocity: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-effort: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-     */
-
-    joint_state.header.stamp = ros::Time::now();
-
-    joint_state.name.resize(8);
-    joint_state.position.resize(8);
-    joint_state.velocity.resize(8);
-    joint_state.effort.resize(8);
-
-    joint_state.name[0] = "front_left_steer_joint";
-    joint_state.name[1] = "front_left_wheel_joint";
-    joint_state.name[2] = "front_right_steer_joint";
-    joint_state.name[3] = "front_right_wheel_joint";
-    joint_state.name[4] = "front_steer_joint";
-    joint_state.name[5] = "rear_left_wheel_joint";
-    joint_state.name[6] = "rear_right_wheel_joint";
-    joint_state.name[7] = "rear_wheel_joint";
-
-    joint_state.position = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,};
-    /*
-    joint_state.position[1] = 0.0;
-    joint_state.position[2] = 0.0;
-    joint_state.position[3] = 0.0;
-    joint_state.position[4] = 0.0;
-    joint_state.position[5] = 0.0;
-    joint_state.position[6] = 0.0;
-    joint_state.position[7] = 0.0;
-    */
-
-    joint_state.velocity = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,};
-    /*
-    joint_state.velocity[1] = 0.0;
-    joint_state.velocity[2] = 0.0;
-    joint_state.velocity[3] = 0.0;
-    joint_state.velocity[4] = 0.0;
-    joint_state.velocity[5] = 0.0;
-    joint_state.velocity[6] = 0.0;
-    joint_state.velocity[7] = 0.0;
-    */
-
-    joint_state.effort = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,};
-    /*
-    joint_state.effort[1] = 0.0;
-    joint_state.effort[2] = 0.0;
-    joint_state.effort[3] = 0.0;
-    joint_state.effort[4] = 0.0;
-    joint_state.effort[5] = 0.0;
-    joint_state.effort[6] = 0.0;
-    joint_state.effort[7] = 0.0;
-    */
-
-    //jointStatePublisher.publish(joint_state);
 }
