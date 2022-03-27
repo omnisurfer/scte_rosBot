@@ -135,8 +135,6 @@ int main(int argc, char* argv[]) {
 
     ros::Time current_ros_time, last_ros_time;
 
-    ros::Rate loop_rate(update_rate);
-
     bool run_ros_subscriber = true;
     bool run_i2c_code = true;
 
@@ -169,60 +167,25 @@ int main(int argc, char* argv[]) {
         command_twist_ros_subscriber = ros_node_handle.subscribe(cmd_vel_topic, 1, handle_twist_command_callback);
     }
 
-#if 1
-    AdafruitServoHatHardwareInterface adafruit_servo_hat_hw_interface;
-    adafruit_servo_hat_hw_interface.init(robot_namespace, ros_node_handle);
+    double controller_period = 1.0;
+
+    AdafruitServoHatHardwareInterface adafruit_servo_hat_hw_interface(robot_namespace, ros_node_handle);
     controller_manager::ControllerManager cm(&adafruit_servo_hat_hw_interface, ros_node_handle);
 
-#endif
+    controller_period = adafruit_servo_hat_hw_interface.getPeriod().toSec();
+
+    ros::AsyncSpinner spinner(1);
+    spinner.start();
+
+    ros::Rate loop_rate(1.0 / controller_period);
 
     std::cout << "Adafruit Servo Hat node running..." << std::endl;
 
+    int debug_count = 0;
     while(ros::ok()) {
 
-        ros::spinOnce();
-        loop_rate.sleep();
-
-#if 0
-        // http://wiki.ros.org/ros_control/Tutorials/Create%20your%20own%20hardware%20interface
-        // Debug Odom/TF code
-        current_ros_time = ros::Time::now();
-
-        geometry_msgs::Quaternion odom_quaternion {
-            tf::createQuaternionMsgFromYaw(0.0)
-        };
-        geometry_msgs::TransformStamped odom_transform;
-        odom_transform.header.stamp = current_ros_time;
-        odom_transform.header.frame_id = "odom";
-        odom_transform.child_frame_id = "base_link";
-
-        odom_transform.transform.translation.x = 0.0;
-        odom_transform.transform.translation.y = 0.0;
-        odom_transform.transform.translation.z = 0.0;
-        odom_transform.transform.rotation = odom_quaternion;
-
-        odometry_tf_broadcaster.sendTransform(odom_transform);
-
-        nav_msgs::Odometry odom_message;
-        odom_message.header.stamp = current_ros_time;
-        odom_message.header.frame_id = "odom";
-
-        odom_message.pose.pose.position.x = 0.0;
-        odom_message.pose.pose.position.y = 0.0;
-        odom_message.pose.pose.position.z = 0.0;
-        odom_message.pose.pose.orientation = odom_quaternion;
-
-        odom_message.child_frame_id = "base_link";
-        odom_message.twist.twist.linear.x = 0.0;
-        odom_message.twist.twist.linear.y = 0.0;
-        odom_message.twist.twist.linear.z = 0.0;
-
-        odometry_publisher.publish(odom_message);
-#endif
         ros::Time now = adafruit_servo_hat_hw_interface.getTime();
         ros::Duration dt = adafruit_servo_hat_hw_interface.getPeriod();
-
-        std::cout << "ros now " << now.toSec() << " dt " << dt.toSec() << std::endl;
 
         /**/
         adafruit_servo_hat_hw_interface.read(now, dt);
@@ -230,15 +193,25 @@ int main(int argc, char* argv[]) {
         adafruit_servo_hat_hw_interface.write(now, dt);
         /**/
 
-        /*
+        if(debug_count % 100 == 0) {
+            std::cout << "ros now " << now.toSec() << " dt " << dt.toSec() << std::endl;
+            debug_count = 0;
+        }
+
+        debug_count++;
+
+        /**/
         bool shutdown = ros::isShuttingDown();
 
         if(shutdown) {
             std::cout << node_name + ": Shutting down ROS node" << std::endl;
             break;
         }
-        */
+        /**/
+
+        loop_rate.sleep();
     }
+    spinner.stop();
 
     if(run_ros_subscriber) {
         // TODO close stuff
