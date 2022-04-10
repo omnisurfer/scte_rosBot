@@ -104,31 +104,27 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
 
 #if 1
     /* DEBUG JOINT STATE */
-    // TODO replace this with joint position read from the adafruit servo hat driver
     sensor_msgs::JointState joints_state = sensor_msgs::JointState();
 
     joints_state.position.resize(6);
     joints_state.velocity.resize(6);
     joints_state.effort.resize(6);
 
-    static double i = 0.0;
+    double linear_velocity_x;
+    double angular_position_z;
 
-    /*
-    i += 0.1;
+    this->get_odometry_update(linear_velocity_x, angular_position_z);
 
-    if(i > 1.0) {
-        i = 0.0;
-    }
-    */
+    std::cout << "x out " << linear_velocity_x << " z out " << angular_position_z << std::endl;
 
-    i = this->_debug_current_commanded_linear_x_velocity;
+    // TODO populate with real values
+    joints_state.position[JOINT_INDEX_FRONT] = angular_position_z;
+    joints_state.position[JOINT_INDEX_REAR_LEFT] = linear_velocity_x;
+    joints_state.position[JOINT_INDEX_REAR_RIGHT] = linear_velocity_x;
 
-    joints_state.position[JOINT_INDEX_FRONT] = i;
-    joints_state.position[JOINT_INDEX_REAR_LEFT] = i;
-    joints_state.position[JOINT_INDEX_REAR_RIGHT] = i;
-
-    joints_state.velocity[JOINT_INDEX_REAR_LEFT] = i;
-    joints_state.velocity[JOINT_INDEX_REAR_RIGHT] = i;
+    // velocity state does not seem to update the visual transform. Unsure what else it may do.
+    //joints_state.velocity[JOINT_INDEX_REAR_LEFT] = linear_velocity_x;
+    //joints_state.velocity[JOINT_INDEX_REAR_RIGHT] = linear_velocity_x;
     /* END DEBUG JOINT STATE */
 #endif
 
