@@ -111,12 +111,17 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     joints_state.velocity.resize(6);
     joints_state.effort.resize(6);
 
-    static float i = 0.0;
+    static double i = 0.0;
+
+    /*
     i += 0.1;
 
     if(i > 1.0) {
         i = 0.0;
     }
+    */
+
+    i = this->_debug_current_commanded_linear_x_velocity;
 
     joints_state.position[JOINT_INDEX_FRONT] = i;
     joints_state.position[JOINT_INDEX_REAR_LEFT] = i;

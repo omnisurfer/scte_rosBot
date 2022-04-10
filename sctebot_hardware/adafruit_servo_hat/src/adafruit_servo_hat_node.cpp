@@ -5,13 +5,10 @@
 
 #include <ros/ros.h>
 
-#include "adafruit_servo_hat.h"
 #include "adafruit_servo_hat_hw_interface.h"
 
 // TODO create a thread and interface through guarded variables?
-std::unique_ptr<AdaFruitServoHat> adaFruitServoHat;
-double max_linear_speed_m_s = 2.0;
-double max_angular_rad_s = 1.5;
+std::shared_ptr<AdafruitServoHatHardwareInterface> adafruit_servo_hat;
 
 void signal_handler(int sig) {
 
@@ -32,19 +29,13 @@ void handle_servo_callback(int x, int y) {
 
 void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
 
-    double linear_x = msg->linear.x;
-    double angular_z = msg->angular.z;
-    double cmd_linear_pwm;
-    double cmd_angular_pwm;
+    double linear_x_velocity = msg->linear.x;
+    double angular_z_velocity = msg->angular.z;
 
-    cmd_linear_pwm = (linear_x / max_linear_speed_m_s) * 0.5 + 0.5;
+    adafruit_servo_hat->command_liner_x_velocity(linear_x_velocity);
+    adafruit_servo_hat->command_angular_z_velocity(angular_z_velocity);
 
-    cmd_angular_pwm = (angular_z / max_angular_rad_s) * 0.5 + 0.5;
-
-    adaFruitServoHat->command_pwm(Pca9685LEDController::LED0, float(cmd_linear_pwm));
-    adaFruitServoHat->command_pwm(Pca9685LEDController::LED1, float(cmd_angular_pwm));
-
-    ROS_INFO("Twist msg l_x [%f] m/s, a_z [%f] rad/s - Cmd l_x [%f], a_z [%f]", msg->linear.x, msg->angular.z, cmd_linear_pwm, cmd_angular_pwm);
+    ROS_INFO("Twist msg l_x [%f] m/s, a_z [%f] rad/s", msg->linear.x, msg->angular.z);
 }
 
 int main(int argc, char* argv[]) {
@@ -80,6 +71,9 @@ int main(int argc, char* argv[]) {
     std::string robot_namespace;
     std::string cmd_vel_topic;
     double update_rate = 100.0;
+
+    double max_linear_speed_m_s = 2.0;
+    double max_angular_rad_s = 1.5;
 
     node_name = ros::this_node::getName();
 
@@ -138,7 +132,7 @@ int main(int argc, char* argv[]) {
     bool run_ros_subscriber = true;
     bool run_i2c_code = true;
 
-    adaFruitServoHat.reset(new AdaFruitServoHat());
+    adafruit_servo_hat.reset(new AdafruitServoHatHardwareInterface(robot_namespace, ros_node_handle));
 
     if(run_i2c_code) {
 
@@ -147,13 +141,15 @@ int main(int argc, char* argv[]) {
         // TODO change this to an exception?
         bool init_ok = true;
 
-        init_ok = adaFruitServoHat->init_device(
+        init_ok = adafruit_servo_hat->init_device(
                 i2c_bus_number,
+                max_linear_speed_m_s,
+                max_angular_rad_s,
                 handle_servo_callback
                 );
 
         if(init_ok) {
-            adaFruitServoHat->run();
+            adafruit_servo_hat->run();
             ROS_INFO("%s: SERVO HAT initialization success", node_name.c_str());
         }
         else {
@@ -169,10 +165,10 @@ int main(int argc, char* argv[]) {
 
     double controller_period = 1.0;
 
-    AdafruitServoHatHardwareInterface adafruit_servo_hat_hw_interface(robot_namespace, ros_node_handle);
-    controller_manager::ControllerManager cm(&adafruit_servo_hat_hw_interface, ros_node_handle);
+    //AdafruitServoHatHardwareInterface adafruit_servo_hat_hw_interface(robot_namespace, ros_node_handle);
+    controller_manager::ControllerManager cm(adafruit_servo_hat.get(), ros_node_handle);
 
-    controller_period = adafruit_servo_hat_hw_interface.getPeriod().toSec();
+    controller_period = adafruit_servo_hat->getPeriod().toSec();
 
     ros::AsyncSpinner spinner(1);
     spinner.start();
@@ -184,13 +180,13 @@ int main(int argc, char* argv[]) {
     int debug_count = 0;
     while(ros::ok()) {
 
-        ros::Time now = adafruit_servo_hat_hw_interface.getTime();
-        ros::Duration dt = adafruit_servo_hat_hw_interface.getPeriod();
+        ros::Time now = adafruit_servo_hat->getTime();
+        ros::Duration dt = adafruit_servo_hat->getPeriod();
 
         /**/
-        adafruit_servo_hat_hw_interface.read(now, dt);
+        adafruit_servo_hat->read(now, dt);
         cm.update(now, dt);
-        adafruit_servo_hat_hw_interface.write(now, dt);
+        adafruit_servo_hat->write(now, dt);
         /**/
 
         if(debug_count % 100 == 0) {

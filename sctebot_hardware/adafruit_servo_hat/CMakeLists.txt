@@ -74,12 +74,6 @@ add_library(
         src/adafruit_servo_hat_hw_interface.cpp
 )
 
-add_library(
-        adafruit_servo_hat
-
-        src/adafruit_servo_hat.cpp
-)
-
 add_executable(
         adafruit_servo_hat_node
 
@@ -89,7 +83,6 @@ add_executable(
 target_link_libraries(
         adafruit_servo_hat_node
 
-        adafruit_servo_hat
         adafruit_servo_hat_hw_interface
         pca9685
         pthread

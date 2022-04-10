@@ -550,7 +550,6 @@ public:
         std::map<Pca9685LEDController::LEDn, float>::iterator led_map_iterator;
 
     }
-
 };
 
 #endif //PCA9685_H
