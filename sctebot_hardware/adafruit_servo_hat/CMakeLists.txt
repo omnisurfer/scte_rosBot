@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
         nav_msgs
         sensor_msgs
         tf
+        realtime_tools
         hardware_interface
         controller_manager
         ackermann_steering_controller
@@ -36,6 +37,7 @@ catkin_package(
         nav_msgs
         sensor_msgs
         tf
+        realtime_tools
         hardware_interface
         controller_manager
         ackermann_steering_controller
@@ -69,6 +71,12 @@ add_library(
 )
 
 add_library(
+        odometry
+
+        src/odometry.cpp
+)
+
+add_library(
         adafruit_servo_hat_hw_interface
 
         src/adafruit_servo_hat_hw_interface.cpp
@@ -84,6 +92,7 @@ target_link_libraries(
         adafruit_servo_hat_node
 
         adafruit_servo_hat_hw_interface
+        odometry
         pca9685
         pthread
         Boost::log

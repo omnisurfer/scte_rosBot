@@ -29,9 +29,11 @@
 
 #include <geometry_msgs/TwistStamped.h>
 #include <tf/transform_broadcaster.h>
-
+#include <realtime_tools/realtime_buffer.h>
+#include <realtime_tools/realtime_publisher.h>
 #include <nav_msgs/Odometry.h>
 
+#include "odometry.h"
 #include "pca9685.h"
 
 /*
@@ -107,6 +109,43 @@ public:
         }
 #endif
 
+        // region Odometry
+        int velocity_rolling_window_size = 10;
+
+        _odometry.setVelocityRollingWindowSize(velocity_rolling_window_size);
+
+        const double wheel_separation_height = wheel_separation_h_multiplier_ * wheel_separation_h_;
+        const double wheel_radius = wheel_radius_multiplier_ * wheel_radius_;;
+
+        _odometry.setWheelParams(wheel_separation_height,wheel_radius);
+
+        // TODO need real covariance and other configs
+        _odom_publisher.reset(
+                new realtime_tools::RealtimePublisher<nav_msgs::Odometry>(this->_node_handle, "odom", 100)
+                );
+        _odom_publisher->msg_.header.frame_id = "world";
+        _odom_publisher->msg_.child_frame_id = "base_frame";
+        _odom_publisher->msg_.pose.pose.position.z = 0;
+        _odom_publisher->msg_.pose.covariance = {
+                0.01, 0., 0., 0., 0., 0.,
+                0., 0.01, 0., 0., 0., 0.,
+                0., 0., 0.01, 0., 0., 0.,
+                0., 0., 0., 0.01, 0., 0.,
+                0., 0., 0., 0., 0.01, 0.,
+                0., 0., 0., 0., 0., 0.01 };
+        _odom_publisher->msg_.twist.twist.linear.y = 0;
+        _odom_publisher->msg_.twist.twist.linear.z = 0;
+        _odom_publisher->msg_.twist.twist.angular.x = 0;
+        _odom_publisher->msg_.twist.twist.angular.y = 0;
+        _odom_publisher->msg_.twist.covariance = {
+                0.01, 0., 0., 0., 0., 0.,
+                0., 0.01, 0., 0., 0., 0.,
+                0., 0., 0.01, 0., 0., 0.,
+                0., 0., 0., 0.01, 0., 0.,
+                0., 0., 0., 0., 0.01, 0.,
+                0., 0., 0., 0., 0., 0.01 };
+        // endregion
+
         return init_ok;
     }
 
@@ -131,6 +170,13 @@ public:
                 op_pwm_max_operating_duty_cycle
         );
 #endif
+
+        void brake();
+
+        ros::Time time = ros::Time();
+
+        _odometry.init(time);
+
     }
 
     void command_liner_x_velocity(double cmd_linear_x_velocity) {
@@ -178,7 +224,7 @@ public:
         }
         this->_debug_current_command_mutex.unlock();
 
-        std::cout << "x " << linear_x_velocity << " z " << angular_z_position << std::endl;
+        //std::cout << "get_odometry_update x " << linear_x_velocity << " z " << angular_z_position << std::endl;
     }
 
 private:
@@ -200,6 +246,8 @@ private:
     std::unique_ptr<Pca9685LEDController> pca9685DeviceHandle;
 
     void publishSteer(double angle_cmd);
+
+    void brake();
 
     // region Joint Variables
 
@@ -231,6 +279,25 @@ private:
 
     // endregion
 
+    // region Odometry
+    ackermann_steering_controller::Odometry _odometry;
+#if 1
+    std::shared_ptr<realtime_tools::RealtimePublisher<nav_msgs::Odometry>> _odom_publisher;
+    std::shared_ptr<realtime_tools::RealtimePublisher<tf::tfMessage> > _tf_odom_publisher;
+#endif
+
+    /// Wheel separation, wrt the midpoint of the wheel width:
+    double wheel_separation_h_ = 1.0;
+
+    /// Wheel radius (assuming it's the same for the left and right wheels):
+    double wheel_radius_ = 0.5;
+
+    /// Wheel separation and radius calibration multipliers:
+    double wheel_separation_h_multiplier_ = 0.1;
+    double wheel_radius_multiplier_ = 0.1;
+    double steer_pos_multiplier_ = 0.1;
+
+    // endregion
 };
 
 #endif //ADAFRUIT_SERVO_HAT_ADAFRUIT_SERVO_HAT_HW_INTERFACE_H

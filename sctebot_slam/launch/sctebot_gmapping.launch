@@ -4,7 +4,7 @@
   <arg name="configuration_basename" default="sctebot_lds_2d.lua"/>
   <!--arg name="set_base_frame" default="base_footprint"/-->
   <arg name="set_base_frame" default="base_footprint"/>
-  <arg name="set_odom_frame" default="odom"/>
+  <arg name="set_odom_frame" default="pal_odom"/>
   <arg name="set_map_frame"  default="map"/>
 
   <!-- Gmapping -->

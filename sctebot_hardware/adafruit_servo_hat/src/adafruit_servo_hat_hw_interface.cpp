@@ -102,6 +102,25 @@ void AdafruitServoHatHardwareInterface::registerVirtualJointState(std::vector<do
 // take data from hardware and send to ROS
 void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration period) {
 
+    double linear_velocity_x;
+    double angular_position_z;
+
+    this->get_odometry_update(linear_velocity_x, angular_position_z);
+
+#if 0
+    /* Odometry update */
+
+    bool _open_loop_odom = true;
+    bool _enable_odom_tf = true;
+
+    if (_open_loop_odom) {
+        _odometry.updateOpenLoop(linear_velocity_x, linear_velocity_x, time);
+    }
+    else {
+        // TODO read in real positions
+    }
+#endif
+
 #if 1
     /* DEBUG JOINT STATE */
     sensor_msgs::JointState joints_state = sensor_msgs::JointState();
@@ -110,21 +129,35 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     joints_state.velocity.resize(6);
     joints_state.effort.resize(6);
 
-    double linear_velocity_x;
-    double angular_position_z;
+    /*
+     * 0.4m/s ~ 0.9MPH ~ 1.3RPM
+     * 2.0m/s ~ 4.5MPH ~ 6.4RPM
+     */
+    static int64_t sample_at_loop_rate = 0;
+    static double wheel_position = 0.0;
 
-    this->get_odometry_update(linear_velocity_x, angular_position_z);
+    double max_velocity_ms = 2.0;
+    double tire_radius = 0.05;
+    double tire_circumference_m = 2 * M_PI * tire_radius; // 0.314m
+    double max_rpm = (max_velocity_ms / tire_circumference_m);
 
-    std::cout << "x out " << linear_velocity_x << " z out " << angular_position_z << std::endl;
+    double cmd_vel_rpm = (linear_velocity_x / max_velocity_ms) * max_rpm;
+
+    // wheel_position = sin(double(sample_at_loop_rate) * period.toSec() * cmd_vel_rpm);
+    wheel_position += (linear_velocity_x / max_velocity_ms) * period.toSec();
+
+    std::cout << wheel_position << "," << cmd_vel_rpm << "," << period.toSec() << std::endl;
+
+    sample_at_loop_rate = (sample_at_loop_rate + 1);
 
     // TODO populate with real values
     joints_state.position[JOINT_INDEX_FRONT] = angular_position_z;
-    joints_state.position[JOINT_INDEX_REAR_LEFT] = linear_velocity_x;
-    joints_state.position[JOINT_INDEX_REAR_RIGHT] = linear_velocity_x;
+    joints_state.position[JOINT_INDEX_REAR_LEFT] = wheel_position;
+    joints_state.position[JOINT_INDEX_REAR_RIGHT] = wheel_position;
 
     // velocity state does not seem to update the visual transform. Unsure what else it may do.
-    //joints_state.velocity[JOINT_INDEX_REAR_LEFT] = linear_velocity_x;
-    //joints_state.velocity[JOINT_INDEX_REAR_RIGHT] = linear_velocity_x;
+    //joints_state.velocity[JOINT_INDEX_REAR_LEFT] = wheel_position;
+    //joints_state.velocity[JOINT_INDEX_REAR_RIGHT] = wheel_position;
     /* END DEBUG JOINT STATE */
 #endif
 
@@ -155,6 +188,41 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
             atan2(2.0*h*tan(front_steer_position),
                   2*h - w/2.0*tan(front_steer_position)
                   );
+
+#if 0
+    // region Publish odometry
+
+    // TODO figure out minimum time dt so that I don't mis-publish
+    // Compute and store orientation info
+
+    const geometry_msgs::Quaternion orientation(
+            tf::createQuaternionMsgFromYaw(_odometry.getHeading()));
+
+    if(_odom_publisher->trylock()) {
+
+        _odom_publisher->msg_.header.stamp = time;
+        _odom_publisher->msg_.pose.pose.position.x = _odometry.getX();
+        _odom_publisher->msg_.pose.pose.position.y = _odometry.getY();
+        _odom_publisher->msg_.pose.pose.orientation = orientation;
+        _odom_publisher->msg_.twist.twist.linear.x = _odometry.getLinear();
+        _odom_publisher->msg_.twist.twist.angular.z = _odometry.getAngular();
+
+        _odom_publisher->unlockAndPublish();
+    }
+#endif
+
+#if 0
+    // May not need the tf publisher. I think the controller hardware interface will take care of this...
+    if(_enable_odom_tf && _tf_odom_publisher->trylock()) {
+        geometry_msgs::TransformStamped& odom_frame = _tf_odom_publisher->msg_.transforms[0];
+        odom_frame.header.stamp = time;
+        odom_frame.transform.translation.x = _odometry.getX();
+        odom_frame.transform.translation.y = _odometry.getY();
+        odom_frame.transform.rotation = orientation;
+        _tf_odom_publisher->unlockAndPublish();
+    }
+#endif
+    // endregion
 }
 
 // take commands from ROS and send to hardware
@@ -164,5 +232,13 @@ void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration peri
     if(rear_wheel_velocity_cmd > 0.0) {
         std::cout << "rear vel cmd: " << rear_wheel_velocity_cmd << " steer cmd: " << front_steer_position_cmd << std::endl;
     }
+
+}
+
+void AdafruitServoHatHardwareInterface::brake() {
+
+    // TODO need to mutex this
+    rear_wheel_velocity_cmd = 0.0;
+    front_steer_position_cmd = 0.0;
 
 }

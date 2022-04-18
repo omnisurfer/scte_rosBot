@@ -183,27 +183,16 @@ int main(int argc, char* argv[]) {
         ros::Time now = adafruit_servo_hat->getTime();
         ros::Duration dt = adafruit_servo_hat->getPeriod();
 
-        /**/
         adafruit_servo_hat->read(now, dt);
         cm.update(now, dt);
         adafruit_servo_hat->write(now, dt);
-        /**/
 
-        if(debug_count % 100 == 0) {
-            std::cout << "ros now " << now.toSec() << " dt " << dt.toSec() << std::endl;
-            debug_count = 0;
-        }
-
-        debug_count++;
-
-        /**/
         bool shutdown = ros::isShuttingDown();
 
         if(shutdown) {
             std::cout << node_name + ": Shutting down ROS node" << std::endl;
             break;
         }
-        /**/
 
         loop_rate.sleep();
     }
