@@ -43,7 +43,7 @@ void AdaFruit10DoFImu::_data_capture_execute_management_worker() {
         lsm303dlhc_mag_execute_lock.unlock();
 
         // small sleep to keep from busy looping
-        std::this_thread::sleep_for(std::chrono::microseconds (1000 * 100 * 10));
+        std::this_thread::sleep_for(std::chrono::microseconds (1000 * 3));
 
         execute_management_lock.lock();
     }
