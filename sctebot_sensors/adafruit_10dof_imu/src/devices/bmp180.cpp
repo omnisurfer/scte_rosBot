@@ -88,7 +88,19 @@ void Bmp180Pressure::_data_capture_worker() {
                 );
 #endif
 
-        std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
+        /*
+         * TODO conditional variable will take the place of the update_period thread sleep so I can centrally
+         * control when each sensor accesses the i2c bus. Hopefully this will improve overall performance/efficiency
+         */
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << " waiting for go signal" << std::endl;
+
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.wait(execute_cycle_lock);
+        execute_cycle_lock.unlock();
+
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << " got go signal" << std::endl;
+
+        //std::this_thread::sleep_for(std::chrono::microseconds (this->_sensor_update_period_ms));
 
         data_thread_lock.lock();
     }
@@ -209,7 +221,7 @@ void Bmp180Pressure::_mock_device_emulation_worker() {
         send_i2c(&outbound_message, register_address);
 
         //wait 4.5ms
-        std::this_thread::sleep_for(std::chrono::microseconds(4500));
+        std::this_thread::sleep_for(std::chrono::microseconds(3500));
 
         //clear the measurement in progress bit
         measurement_command[0] &= ~Bmp180Pressure::BitMasks::ControlRegister::SCO_BIT;
@@ -223,13 +235,11 @@ void Bmp180Pressure::_mock_device_emulation_worker() {
         send_i2c(&outbound_message, register_address);
 #endif
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::microseconds(1000));
         mock_device_lock.lock();
     }
 
     BOOST_LOG_TRIVIAL(debug) << device_name << ": _mock_device_emulation_worker exiting";
-
-    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 void Bmp180Pressure::_request_temperature() {
@@ -408,7 +418,12 @@ int main(int argc, char* argv[]) {
 
     std::cout << "bmp180 debug" << std::endl;
 
-    std::unique_ptr<Bmp180Pressure> bmp180DeviceHandle(new Bmp180Pressure());
+    std::mutex bmp180_device_worker_execute_mutex;
+    std::condition_variable bmp180_device_worker_execute_conditional_variable;
+
+    std::unique_ptr<Bmp180Pressure> bmp180DeviceHandle(
+            new Bmp180Pressure(bmp180_device_worker_execute_mutex, bmp180_device_worker_execute_conditional_variable)
+            );
 
     int i2c_bus_number = 0;
     int i2c_device_address = 0x77;
@@ -417,7 +432,6 @@ int main(int argc, char* argv[]) {
     bmp180DeviceHandle->config_device(
             i2c_bus_number,
             i2c_device_address,
-            update_period_ms,
             "bmp180_pressure_debug",
             handle_bmp180_measurements
             );
@@ -432,7 +446,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     else {
-        bmp180DeviceHandle->init_device();
+        bmp180DeviceHandle->init_device(update_period_ms);
 
         std::cout << "enter any key to exit" << std::endl;
         std::cin.get();

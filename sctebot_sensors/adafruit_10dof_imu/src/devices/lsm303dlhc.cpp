@@ -263,7 +263,15 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
 
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << " waiting for go signal" << std::endl;
+
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.wait(execute_cycle_lock);
+        execute_cycle_lock.unlock();
+
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << " got go signal" << std::endl;
+
+        //std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
         data_worker_run_thread_lock.lock();
     }
@@ -817,7 +825,15 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
                     );
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << " waiting for go signal" << std::endl;
+
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.wait(execute_cycle_lock);
+        execute_cycle_lock.unlock();
+
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << " got go signal" << std::endl;
+
+        //std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
         data_run_thread_lock.lock();
     }
@@ -1144,8 +1160,21 @@ int main(int argc, char* argv[]) {
 
     std::cout << "lsm303dlhc accel/mag debug" << std::endl;
 
-    std::unique_ptr<Lsm303DlhcAccelerometer> lsm303dlhcAccelDeviceHandle(new Lsm303DlhcAccelerometer());
-    std::unique_ptr<Lsm303DlhcMagnetometer> lsm303dlhcMagDeviceHandle(new Lsm303DlhcMagnetometer());
+    std::mutex lsm303dlhc_accel_data_capture_worker_execute_cycle_mutex;
+    std::condition_variable lsm303dlhc_accel_data_capture_worker_execute_cycle_conditional_variable;
+
+    std::unique_ptr<Lsm303DlhcAccelerometer> lsm303dlhcAccelDeviceHandle(
+            new Lsm303DlhcAccelerometer(lsm303dlhc_accel_data_capture_worker_execute_cycle_mutex,
+                                        lsm303dlhc_accel_data_capture_worker_execute_cycle_conditional_variable)
+            );
+
+    std::mutex lsm303dlhc_mag_data_capture_worker_execute_cycle_mutex;
+    std::condition_variable lsm303dlhc_mag_data_capture_worker_execute_cycle_conditional_variable;
+
+    std::unique_ptr<Lsm303DlhcMagnetometer> lsm303dlhcMagDeviceHandle(
+            new Lsm303DlhcMagnetometer(lsm303dlhc_mag_data_capture_worker_execute_cycle_mutex,
+                                       lsm303dlhc_mag_data_capture_worker_execute_cycle_conditional_variable)
+            );
 
     int i2c_bus_number = 0;
 

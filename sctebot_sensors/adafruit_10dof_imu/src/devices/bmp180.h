@@ -118,6 +118,9 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
+    std::mutex& _data_capture_worker_execute_cycle_mutex;
+    std::condition_variable& _data_capture_worker_execute_cycle_conditional_variable;
+
     bool sensor_calibration_read = false;
 
     struct Bmp180CalibrationCoefficients_t {
@@ -518,7 +521,11 @@ public:
     constexpr static const double pressure_variance = relative_accuracy_pressure_hpa;
     constexpr static const double temperature_variance = absolute_accuracy_temperature;
 
-    Bmp180Pressure() = default;
+    //Bmp180Pressure() = default;
+    Bmp180Pressure(std::mutex& worker_execute_mutex, std::condition_variable& worker_execute_conditional_variable):
+            _data_capture_worker_execute_cycle_mutex(worker_execute_mutex),
+            _data_capture_worker_execute_cycle_conditional_variable(worker_execute_conditional_variable){
+    }
 
     ~Bmp180Pressure() {
 
@@ -530,13 +537,11 @@ public:
     int config_device(
             int bus_number,
             int device_address,
-            int update_period_ms,
             std::string device_name,
             host_callback_function function_pointer
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
-        _sensor_update_period_ms = update_period_ms;
         _device_name = std::move(device_name);
 
         _host_callback_function = function_pointer;
@@ -554,13 +559,20 @@ public:
         return status;
     }
 
-    int init_device() {
+    int init_device(int update_period_ms) {
+
+        _sensor_update_period_ms = update_period_ms;
+
         this->_init_device();
 
         return 1;
     }
 
     void _shutdown_device() {
+
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.notify_all();
+        execute_cycle_lock.unlock();
 
         bool data_capture_thread_was_running = false;
         std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
@@ -622,3 +634,4 @@ public:
 };
 
 #endif //BMP180_H
+

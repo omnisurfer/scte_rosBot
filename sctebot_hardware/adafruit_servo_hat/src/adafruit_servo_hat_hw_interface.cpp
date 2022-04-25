@@ -146,7 +146,7 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     // wheel_position = sin(double(sample_at_loop_rate) * period.toSec() * cmd_vel_rpm);
     wheel_position += (linear_velocity_x / max_velocity_ms) * period.toSec();
 
-    std::cout << wheel_position << "," << cmd_vel_rpm << "," << period.toSec() << std::endl;
+    std::cout << "wheel/vel/period" << wheel_position << "," << cmd_vel_rpm << "," << period.toSec() << std::endl;
 
     sample_at_loop_rate = (sample_at_loop_rate + 1);
 

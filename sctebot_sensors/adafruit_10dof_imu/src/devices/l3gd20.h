@@ -53,7 +53,7 @@ public:
         MAX_CUT_OFF
     } BandwidthCutOff;
 
-    std::map<int, int> data_rate_sample_rate{
+    std::map<int, float> data_rate_sample_rate{
             {L3gd20Gyro::OutputDataRates::ODR_12P5HZ, 12.5},
             {L3gd20Gyro::OutputDataRates::ODR_25P0HZ, 25.0},
             {L3gd20Gyro::OutputDataRates::ODR_50P0HZ, 50.0},
@@ -309,6 +309,9 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
+    std::mutex& _data_capture_worker_execute_cycle_mutex;
+    std::condition_variable& _data_capture_worker_execute_cycle_conditional_variable;
+
     int _init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff);
 
     int _connect_to_device() {
@@ -493,12 +496,14 @@ private:
 
 public:
 
-    L3gd20Gyro() = default;
+    L3gd20Gyro(std::mutex& worker_execute_mutex, std::condition_variable& worker_execute_conditional_variable):
+            _data_capture_worker_execute_cycle_mutex(worker_execute_mutex),
+            _data_capture_worker_execute_cycle_conditional_variable(worker_execute_conditional_variable){
+    }
 
     ~L3gd20Gyro() {
-        std::string device_name = this->_device_name;
 
-        BOOST_LOG_TRIVIAL(debug) << device_name << ": destructor running";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
         this->_shutdown_device();
 
@@ -532,11 +537,11 @@ public:
 
     int init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff) {
 
-        int data_rate = this->data_rate_sample_rate[output_data_rate];
+        float data_rate_hz = this->data_rate_sample_rate[output_data_rate];
 
-        float rate = (1.0f / float(data_rate)) * (1.0f / 4);
+        float rate_s = (1.0f / float(data_rate_hz));
 
-        this->_sensor_update_period_ms = int(rate * 1000);
+        this->_sensor_update_period_ms = int(rate_s * 1000);
 
         this->_init_device(output_data_rate, bandwidth_cutoff);
 
@@ -544,7 +549,10 @@ public:
     }
 
     void _shutdown_device() {
-        std::string device_name = this->_device_name;
+
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.notify_all();
+        execute_cycle_lock.unlock();
 
         bool data_capture_thread_was_running = false;
         std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
@@ -561,7 +569,7 @@ public:
             if(data_capture_thread.joinable()) {
                 data_capture_thread.join();
 
-                BOOST_LOG_TRIVIAL(debug) << device_name << ": data_capture_thread joined";
+                BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
             }
         }
 
@@ -580,7 +588,7 @@ public:
             if (mock_device_thread.joinable()) {
                 mock_device_thread.join();
 
-                BOOST_LOG_TRIVIAL(debug) << device_name << ": mock_device_thread joined";
+                BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
             }
         }
 

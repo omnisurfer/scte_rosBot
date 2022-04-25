@@ -405,6 +405,9 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
+    std::mutex& _data_capture_worker_execute_cycle_mutex;
+    std::condition_variable& _data_capture_worker_execute_cycle_conditional_variable;
+
     int _init_device(
             Lsm303DlhcAccelerometer::OutputDataRates_t,
             Lsm303DlhcAccelerometer::HighPassFilterCutoff_t,
@@ -515,12 +518,14 @@ private:
 
 public:
 
-    Lsm303DlhcAccelerometer() = default;
+    Lsm303DlhcAccelerometer(std::mutex& worker_execute_mutex, std::condition_variable& worker_execute_conditional_variable):
+            _data_capture_worker_execute_cycle_mutex(worker_execute_mutex),
+            _data_capture_worker_execute_cycle_conditional_variable(worker_execute_conditional_variable){
+    }
 
     ~Lsm303DlhcAccelerometer() {
-        std::string device_name = this->_device_name;
 
-        BOOST_LOG_TRIVIAL(debug) << device_name << ": destructor running";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
         this->_shutdown_device();
 
@@ -572,7 +577,10 @@ public:
     }
 
     void _shutdown_device() {
-        std::string device_name = this->_device_name;
+
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.notify_all();
+        execute_cycle_lock.unlock();
 
         bool data_capture_thread_was_running = false;
         std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
@@ -589,11 +597,11 @@ public:
             if(data_capture_thread.joinable()) {
                 data_capture_thread.join();
 
-                BOOST_LOG_TRIVIAL(debug) << device_name << ": data_capture_thread joined";
+                BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
             }
         }
 
-        BOOST_LOG_TRIVIAL(debug) << device_name << ": data_capture_thread joined";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
 
         bool mock_device_thread_was_running = false;
         std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
@@ -612,7 +620,7 @@ public:
             }
         }
 
-        BOOST_LOG_TRIVIAL(debug) << device_name << ": mock_device_thread joined";
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
 
         this->_close_device();
     }
@@ -833,6 +841,9 @@ private:
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
+    std::mutex& _data_capture_worker_execute_cycle_mutex;
+    std::condition_variable& _data_capture_worker_execute_cycle_conditional_variable;
+
     int _init_device(
             Lsm303DlhcMagnetometer::OutputDataRates_t,
             Lsm303DlhcMagnetometer::SensorMagnetometerFullScale_t
@@ -947,7 +958,10 @@ private:
 
 public:
 
-    Lsm303DlhcMagnetometer() = default;
+    Lsm303DlhcMagnetometer(std::mutex& worker_execute_mutex, std::condition_variable& worker_execute_conditional_variable):
+            _data_capture_worker_execute_cycle_mutex(worker_execute_mutex),
+            _data_capture_worker_execute_cycle_conditional_variable(worker_execute_conditional_variable){
+    }
 
     ~Lsm303DlhcMagnetometer() {
         BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
@@ -1000,6 +1014,10 @@ public:
     }
 
     void _shutdown_device() {
+
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.notify_all();
+        execute_cycle_lock.unlock();
 
         bool data_capture_thread_was_running = false;
         std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
