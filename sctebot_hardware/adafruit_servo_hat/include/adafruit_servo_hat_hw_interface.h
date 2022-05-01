@@ -282,6 +282,7 @@ private:
     // region Odometry
     ackermann_steering_controller::Odometry _odometry;
 #if 1
+    // TODO ROS noetic on raspberry pi does not support realtimePublisher!
     std::shared_ptr<realtime_tools::RealtimePublisher<nav_msgs::Odometry>> _odom_publisher;
     std::shared_ptr<realtime_tools::RealtimePublisher<tf::tfMessage> > _tf_odom_publisher;
 #endif

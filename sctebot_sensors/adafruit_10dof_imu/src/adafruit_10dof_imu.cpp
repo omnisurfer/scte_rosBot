@@ -17,7 +17,7 @@ void AdaFruit10DoFImu::_data_capture_execute_management_worker() {
     BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_execute_management_worker waiting";
     std::unique_lock<std::mutex> execute_management_lock(this->data_capture_execute_management_thread_run_mutex);
     this->data_capture_execute_management_thread_run_cv.wait(execute_management_lock);
-    is_running_data_capture_execute_management_thread = true;
+    this->is_running_data_capture_execute_management_thread = true;
     execute_management_lock.unlock();
 
     BOOST_LOG_TRIVIAL(debug) << device_name << ": _data_capture_worker running";

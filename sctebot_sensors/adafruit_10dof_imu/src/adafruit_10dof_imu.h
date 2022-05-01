@@ -70,8 +70,8 @@ private:
 
         std::unique_lock<std::mutex> execute_management_lock(this->data_capture_execute_management_thread_run_mutex);
         {
-            if (is_running_data_capture_execute_management_thread) {
-                data_capture_execute_management_thread_was_running = is_running_data_capture_execute_management_thread;
+            if (this->is_running_data_capture_execute_management_thread) {
+                data_capture_execute_management_thread_was_running = this->is_running_data_capture_execute_management_thread;
                 this->run_data_capture_execute_management_thread = false;
                 this->data_capture_execute_management_thread_run_cv.notify_one();
             }
@@ -79,6 +79,7 @@ private:
         }
 
         if(data_capture_execute_management_thread_was_running) {
+
             if(data_capture_execute_management_thread.joinable()) {
                 data_capture_execute_management_thread.join();
             }
@@ -227,7 +228,9 @@ public:
         }
 #endif
 
-        this->data_capture_execute_management_thread = std::thread(&AdaFruit10DoFImu::_data_capture_execute_management_worker, this);
+        if(init_ok) {
+            this->data_capture_execute_management_thread = std::thread(&AdaFruit10DoFImu::_data_capture_execute_management_worker, this);
+        }
 
         return init_ok;
     }
