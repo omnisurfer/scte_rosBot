@@ -238,13 +238,13 @@ void L3gd20Gyro::_data_capture_worker() {
             );
         }
 
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name << " waiting for go signal" << std::endl;
+        // BOOST_LOG_TRIVIAL(debug) << this->_device_name << " waiting for go signal" << std::endl;
 
         std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
         this->_data_capture_worker_execute_cycle_conditional_variable.wait(execute_cycle_lock);
         execute_cycle_lock.unlock();
 
-        BOOST_LOG_TRIVIAL(debug) << this->_device_name << " got go signal" << std::endl;
+        // BOOST_LOG_TRIVIAL(debug) << this->_device_name << " got go signal" << std::endl;
 
         //std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 

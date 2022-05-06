@@ -44,7 +44,7 @@ void AdaFruit10DoFImu::_data_capture_execute_management_worker() {
 
         // small sleep to keep from busy looping
         // std::this_thread::sleep_for(std::chrono::microseconds (1000 * 3));
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         execute_management_lock.lock();
     }
