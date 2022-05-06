@@ -5,13 +5,13 @@
 #ifndef ADAFRUIT_10DOF_IMU_H
 #define ADAFRUIT_10DOF_IMU_H
 
-#define ENABLE_BMP180_PRESSURE_DEVICE 0
+#define ENABLE_BMP180_PRESSURE_DEVICE 1
 #define ENABLE_L3GD20_GYRO_DEVICE 1
-#define ENABLE_LSM303DLHC_ACCEL_DEVICE 0
-#define ENABLE_LSM303DLHC_MAG_DEVICE 0
+#define ENABLE_LSM303DLHC_ACCEL_DEVICE 1
+#define ENABLE_LSM303DLHC_MAG_DEVICE 1
 
 #define ENABLE_MOCK_BMP180_DEVICE 0
-#define ENABLE_MOCK_L3GD20_DEVICE 1
+#define ENABLE_MOCK_L3GD20_DEVICE 0
 #define ENABLE_MOCK_LSM303DLHC_ACCEL_DEVICE 0
 #define ENABLE_MOCK_LSM303DLHC_MAG_DEVICE 0
 
@@ -254,7 +254,7 @@ public:
         #endif
 
         l3gd20GyroDeviceHandle->init_device(
-                L3gd20Gyro::OutputDataRates::ODR_12P5HZ, //ODR_50P0HZ, //ODR_12P5HZ_BM,
+                L3gd20Gyro::OutputDataRates::ODR_100P0HZ, //ODR_50P0HZ, //ODR_12P5HZ_BM,
                 L3gd20Gyro::BandwidthCutOff::MIN_CUT_OFF
         );
 #endif
@@ -266,7 +266,7 @@ public:
         #endif
 
         lsm303DlhcAccelDeviceHandle->init_device(
-                Lsm303DlhcAccelerometer::OutputDataRates::ODR_10P0HZ, //ODR_100P0HZ, //ODR_1P0HZ,
+                Lsm303DlhcAccelerometer::OutputDataRates::ODR_100P0HZ, //ODR_100P0HZ, //ODR_1P0HZ,
                 Lsm303DlhcAccelerometer::HighPassFilterCutoff::MIN_CUT_OFF,
                 Lsm303DlhcAccelerometer::SensorAccelerationFullScale::PN_2G
         );
@@ -279,7 +279,7 @@ public:
         #endif
 
         lsm303DlhcMagDeviceHandle->init_device(
-                Lsm303DlhcMagnetometer::OutputDataRates::ODR_7P5_HZ, // ODR_75P0_HZ, //ODR_1P5_HZ,
+                Lsm303DlhcMagnetometer::OutputDataRates::ODR_75P0_HZ, // ODR_75P0_HZ, //ODR_1P5_HZ,
                 Lsm303DlhcMagnetometer::SensorMagnetometerFullScale::PN_1P3G
         );
 #endif

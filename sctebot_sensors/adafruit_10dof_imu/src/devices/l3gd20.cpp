@@ -214,7 +214,7 @@ void L3gd20Gyro::_data_capture_worker() {
 
         if((gyro_status & L3gd20Gyro::BitMasks::StatusRegister::ZYX_DATA_AVAILABLE) == false) {
             // do nothing
-            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": l3gd no gryo zxy data available";
+            // BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": l3gd no gryo zxy data available";
         }
         else {
 
