@@ -113,6 +113,10 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     bool _open_loop_odom = true;
     bool _enable_odom_tf = true;
 
+    /*
+     * Look at https://github.com/CIR-KIT/steer_drive_ros/blob/kinetic-devel/steer_drive_controller/src/steer_drive_controller.cpp
+     * for reference
+     */
     if (_open_loop_odom) {
         _odometry.updateOpenLoop(linear_velocity_x, linear_velocity_x, time);
     }
