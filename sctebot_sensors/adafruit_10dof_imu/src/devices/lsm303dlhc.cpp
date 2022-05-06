@@ -243,7 +243,7 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
         // check if data is available and if so, read it. otherwise just pass until data may be available
         if ((accel_status & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE) == false) {
             // do nothing
-            //BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc no accel zxy data available";
+            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc no accel zxy data available";
         }
         else {
             this->_update_accelerometer_xyz_axis();
@@ -804,7 +804,7 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
 
         if((mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY) == false) {
             //do nothing
-            //BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc no mag xyz data available";
+            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc no mag xyz data available";
         }
         else {
             this->_update_temperature_axis();

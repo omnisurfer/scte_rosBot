@@ -200,7 +200,7 @@ void L3gd20Gyro::_data_capture_worker() {
 
         //BOOST_LOG_TRIVIAL(info) << "RUNNING THREAD";
 
-        // maybe make these structs and pass that? less calls?
+        // maybe make these structs and pass that? fewer calls?
         float temperature;
 
         float x_axis;
@@ -214,6 +214,7 @@ void L3gd20Gyro::_data_capture_worker() {
 
         if((gyro_status & L3gd20Gyro::BitMasks::StatusRegister::ZYX_DATA_AVAILABLE) == false) {
             // do nothing
+            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": l3gd no gryo zxy data available";
         }
         else {
 
