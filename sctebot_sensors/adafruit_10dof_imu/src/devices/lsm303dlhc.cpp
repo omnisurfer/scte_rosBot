@@ -459,7 +459,7 @@ uint8_t Lsm303DlhcAccelerometer::_update_accelerometer_status() {
 
         if (status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE) {
 
-            std::bitset<8> x(status_register);
+            //std::bitset<8> x(status_register);
 
 #if 0
             bool zyx_or_status = status_register & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_OVERRUN;
@@ -808,7 +808,7 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
                 && (mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK) != Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK
                 )
         {
-            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc mag xyz data AVAILABLE";
+            // BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc mag xyz data AVAILABLE";
             this->_update_temperature_axis();
             this->_update_magnetometer_xyz_axis();
 
