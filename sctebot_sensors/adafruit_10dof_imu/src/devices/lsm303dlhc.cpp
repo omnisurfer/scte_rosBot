@@ -582,7 +582,10 @@ int Lsm303DlhcMagnetometer::_init_device(
     };
 
     if(send_i2c(&outbound_message, register_address)) {
-        BOOST_LOG_TRIVIAL(info) << this->_device_name << ": CRA_REG_M configure OK";
+
+        std::bitset<8> x(control_reg);
+
+        BOOST_LOG_TRIVIAL(info) << this->_device_name << ": CRA_REG_M configure OK: " << x;
     }
     else {
         BOOST_LOG_TRIVIAL(error) << this->_device_name << ": CRA_REG_M configure failed";
@@ -802,11 +805,11 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
 
         mag_status = this->_update_magnetometer_status();
 
-        if((mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY) == false) {
-            //do nothing
-            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc mag xyz data NOT AVAILABLE";
-        }
-        else {
+        if(
+                (mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY) == Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY
+                && (mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK) != Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK
+                )
+        {
             BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc mag xyz data AVAILABLE";
             this->_update_temperature_axis();
             this->_update_magnetometer_xyz_axis();
@@ -824,6 +827,9 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
                     temperature_deg_c,
                     x_mag_axis, y_mag_axis, z_mag_axis
                     );
+
+            // brief sleep here to let the device clear the lock status bit.
+            std::this_thread::sleep_for(std::chrono::microseconds (500));
         }
 
         // BOOST_LOG_TRIVIAL(debug) << this->_device_name << " waiting for go signal" << std::endl;
@@ -1155,6 +1161,31 @@ void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_mag_axi
 }
 
 int main(int argc, char* argv[]) {
+
+    uint8_t mag_status = 3;
+
+    uint8_t data_lock = (1 << 1);
+    uint8_t data_ready = (1 << 0);
+
+    uint8_t temp = mag_status & data_lock;
+
+    if(temp) {
+        std::cout << temp << std::endl;
+    }
+
+    if((mag_status & data_ready) == false) {
+        std::cout << "false " << mag_status << std::endl;
+        return 0;
+    }
+    else {
+
+        if ((mag_status & data_lock) == data_lock) {
+            std::cout << "true " << mag_status << std::endl;
+            return 0;
+        }
+
+        return 0;
+    }
 
     ScteBotBoostLogger sctebot_boost_logger = ScteBotBoostLogger();
     sctebot_boost_logger.init_boost_logging();
