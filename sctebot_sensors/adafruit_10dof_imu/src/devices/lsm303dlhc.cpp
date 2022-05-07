@@ -804,9 +804,10 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
 
         if((mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY) == false) {
             //do nothing
-            // BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc no mag xyz data available";
+            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc mag xyz data NOT AVAILABLE";
         }
         else {
+            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc mag xyz data AVAILABLE";
             this->_update_temperature_axis();
             this->_update_magnetometer_xyz_axis();
 
