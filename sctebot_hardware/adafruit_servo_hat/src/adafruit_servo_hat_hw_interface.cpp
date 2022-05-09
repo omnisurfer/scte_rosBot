@@ -107,7 +107,6 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
 
     this->get_odometry_update(linear_velocity_x, angular_position_z);
 
-#if 0
     /* Odometry update */
 
     bool _open_loop_odom = true;
@@ -123,7 +122,6 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     else {
         // TODO read in real positions
     }
-#endif
 
 #if 1
     /* DEBUG JOINT STATE */
@@ -150,7 +148,7 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     // wheel_position = sin(double(sample_at_loop_rate) * period.toSec() * cmd_vel_rpm);
     wheel_position += (linear_velocity_x / max_velocity_ms) * period.toSec();
 
-    std::cout << "wheel/vel/period" << wheel_position << "," << cmd_vel_rpm << "," << period.toSec() << std::endl;
+    // std::cout << "wheel/vel/period" << wheel_position << "," << cmd_vel_rpm << "," << period.toSec() << std::endl;
 
     sample_at_loop_rate = (sample_at_loop_rate + 1);
 
@@ -193,7 +191,6 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
                   2*h - w/2.0*tan(front_steer_position)
                   );
 
-#if 0
     // region Publish odometry
 
     // TODO figure out minimum time dt so that I don't mis-publish
@@ -202,28 +199,57 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     const geometry_msgs::Quaternion orientation(
             tf::createQuaternionMsgFromYaw(_odometry.getHeading()));
 
-    if(_odom_publisher->trylock()) {
+#if ENABLE_REALTIME_PUBLISHERS
 
-        _odom_publisher->msg_.header.stamp = time;
-        _odom_publisher->msg_.pose.pose.position.x = _odometry.getX();
-        _odom_publisher->msg_.pose.pose.position.y = _odometry.getY();
-        _odom_publisher->msg_.pose.pose.orientation = orientation;
-        _odom_publisher->msg_.twist.twist.linear.x = _odometry.getLinear();
-        _odom_publisher->msg_.twist.twist.angular.z = _odometry.getAngular();
+    if(_odom_realtime_publisher->trylock()) {
 
-        _odom_publisher->unlockAndPublish();
+        _odom_realtime_publisher->msg_.header.stamp = time;
+        _odom_realtime_publisher->msg_.pose.pose.position.x = _odometry.getX();
+        _odom_realtime_publisher->msg_.pose.pose.position.y = _odometry.getY();
+        _odom_realtime_publisher->msg_.pose.pose.orientation = orientation;
+        _odom_realtime_publisher->msg_.twist.twist.linear.x = _odometry.getLinear();
+        _odom_realtime_publisher->msg_.twist.twist.angular.z = _odometry.getAngular();
+
+        _odom_realtime_publisher->unlockAndPublish();
     }
+#else
+    nav_msgs::Odometry _odom_msg;
+
+    _odom_msg.header.stamp = time;
+    _odom_msg.pose.pose.position.x = _odometry.getX();
+    _odom_msg.pose.pose.position.y = _odometry.getY();
+    _odom_msg.pose.pose.orientation = orientation;
+
+    _odom_msg.twist.twist.linear.x = _odometry.getLinear();
+    _odom_msg.twist.twist.angular.z = _odometry.getAngular();
+
+    _odom_publisher.publish(_odom_msg);
+
 #endif
 
-#if 0
+#if ENABLE_REALTIME_PUBLISHERS
     // May not need the tf publisher. I think the controller hardware interface will take care of this...
-    if(_enable_odom_tf && _tf_odom_publisher->trylock()) {
-        geometry_msgs::TransformStamped& odom_frame = _tf_odom_publisher->msg_.transforms[0];
+    if(_enable_odom_tf && _tf_odom_realtime_publisher->trylock()) {
+        geometry_msgs::TransformStamped& odom_frame = _tf_odom_realtime_publisher->msg_.transforms[0];
         odom_frame.header.stamp = time;
         odom_frame.transform.translation.x = _odometry.getX();
         odom_frame.transform.translation.y = _odometry.getY();
         odom_frame.transform.rotation = orientation;
-        _tf_odom_publisher->unlockAndPublish();
+        _tf_odom_realtime_publisher->unlockAndPublish();
+    }
+#else
+    if(_enable_odom_tf) {
+
+        tf::Transform _transform;
+        tf::Quaternion _q_rot;
+
+        _transform.setOrigin(tf::Vector3(_odometry.getX(), _odometry.getY(), 0.0));
+        _q_rot.setRPY(0.0, 0.0, _odometry.getHeading());
+
+        _transform.setRotation(_q_rot);
+        _tf_odom_broadcaster.sendTransform(
+                tf::StampedTransform(_transform, ros::Time::now(), "world", _robot_namespace)
+                );
     }
 #endif
     // endregion

@@ -10,6 +10,8 @@
 #ifndef ADAFRUIT_SERVO_HAT_ADAFRUIT_SERVO_HAT_HW_INTERFACE_H
 #define ADAFRUIT_SERVO_HAT_ADAFRUIT_SERVO_HAT_HW_INTERFACE_H
 
+#define ENABLE_REALTIME_PUBLISHERS 0
+
 #define ENABLE_PCA9685_LED_DEVICE 1
 #define PCA9685_RPI_ADDRESS 0x40
 
@@ -58,8 +60,84 @@ enum VIRTUAL_JOINT_IND {
 #define JOINT_INDEX_REAR_RIGHT 0
 #define JOINT_INDEX_REAR_LEFT 1
 
-
 class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
+
+private:
+
+    ros::NodeHandle _node_handle;
+    std::string _robot_namespace;
+
+    int _i2c_bus_number;
+    int _i2c_device_address = 0;
+
+    double _max_linear_x_speed_m_s;
+    double _max_angular_z_rad_s;
+
+    // Using these for debug. If needed, should probably put a mutex around them
+    std::mutex _debug_current_command_mutex;
+    double _debug_current_commanded_linear_x_velocity;
+    double _debug_current_commanded_angular_z_position;
+
+    std::unique_ptr<Pca9685LEDController> pca9685DeviceHandle;
+
+    void publishSteer(double angle_cmd);
+
+    void brake();
+
+    // region Joint Variables
+
+    void registerVirtualJointState(
+            std::vector<double> &virtual_wheel_positions,
+            std::vector<double> &virtual_wheel_velocities,
+            std::vector<double> &virtual_wheel_efforts,
+            std::vector<std::string> &virtual_wheels_names
+    );
+
+    hardware_interface::PositionJointInterface front_steer_joint_position_cmd_interface;
+    double front_steer_position{};
+    double front_steer_velocity{};
+    double front_steer_effort{};
+    double front_steer_position_cmd{};
+
+    hardware_interface::VelocityJointInterface rear_wheel_joint_velocity_cmd_interface;
+    double rear_wheel_position{};
+    double rear_wheel_velocity{};
+    double rear_wheel_effort{};
+    double rear_wheel_velocity_cmd{};
+
+    hardware_interface::JointStateInterface joint_state_interface;
+    std::vector<double> virtual_wheels_position;
+    std::vector<double> virtual_wheels_velocities;
+    std::vector<double> virtual_wheels_effort;
+
+    ros::Publisher steer_cmd_publisher;
+
+    // endregion
+
+    // region Odometry
+    ackermann_steering_controller::Odometry _odometry;
+
+#if ENABLE_REALTIME_PUBLISHERS
+    // TODO ROS noetic on raspberry pi does not support realtimePublisher!
+    std::shared_ptr<realtime_tools::RealtimePublisher<nav_msgs::Odometry>> _odom_realtime_publisher;
+    std::shared_ptr<realtime_tools::RealtimePublisher<tf::tfMessage> > _tf_odom_realtime_publisher;
+#else
+    ros::Publisher _odom_publisher;
+    tf::TransformBroadcaster _tf_odom_broadcaster;
+#endif
+
+    /// Wheel separation, wrt the midpoint of the wheel width:
+    double wheel_separation_h_ = 1.0;
+
+    /// Wheel radius (assuming it's the same for the left and right wheels):
+    double wheel_radius_ = 0.5;
+
+    /// Wheel separation and radius calibration multipliers:
+    double wheel_separation_h_multiplier_ = 0.1;
+    double wheel_radius_multiplier_ = 0.1;
+    double steer_pos_multiplier_ = 0.1;
+
+    // endregion
 
 public:
 
@@ -91,7 +169,10 @@ public:
         _i2c_bus_number = i2c_bus_number;
 
 
+
 #if ENABLE_PCA9685_LED_DEVICE
+        // region ENABLE_PCA9685_LED_DEVICE
+
         _i2c_device_address = PCA9685_RPI_ADDRESS;
 
         pca9685DeviceHandle->config_device(
@@ -107,6 +188,8 @@ public:
         if(!pca9685DeviceHandle->connect_to_device()) {
             init_ok = false;
         }
+
+        // endregion
 #endif
 
         // region Odometry
@@ -119,31 +202,63 @@ public:
 
         _odometry.setWheelParams(wheel_separation_height,wheel_radius);
 
+        std::string frame_id = "world";
+        std::string child_frame_id = "base_frame";
+        double pose_position_z = 0.0;
+
+        boost::array<double, 36> pose_covariance = {
+                0.01, 0., 0., 0., 0., 0.,
+                0., 0.01, 0., 0., 0., 0.,
+                0., 0., 0.01, 0., 0., 0.,
+                0., 0., 0., 0.01, 0., 0.,
+                0., 0., 0., 0., 0.01, 0.,
+                0., 0., 0., 0., 0., 0.01 };
+
+        double twist_linear_y = 0.0;
+        double twist_linear_z = 0.0;
+        double twist_angular_x = 0.0;
+        double twist_angular_y = 0.0;
+
+        boost::array<double, 36> twist_covariance = {
+                0.01, 0., 0., 0., 0., 0.,
+                0., 0.01, 0., 0., 0., 0.,
+                0., 0., 0.01, 0., 0., 0.,
+                0., 0., 0., 0.01, 0., 0.,
+                0., 0., 0., 0., 0.01, 0.,
+                0., 0., 0., 0., 0., 0.01 };
+
         // TODO need real covariance and other configs
-        _odom_publisher.reset(
+#if ENABLE_REALTIME_PUBLISHERS
+        _odom_realtime_publisher.reset(
                 new realtime_tools::RealtimePublisher<nav_msgs::Odometry>(this->_node_handle, "odom", 100)
-                );
-        _odom_publisher->msg_.header.frame_id = "world";
-        _odom_publisher->msg_.child_frame_id = "base_frame";
-        _odom_publisher->msg_.pose.pose.position.z = 0;
-        _odom_publisher->msg_.pose.covariance = {
-                0.01, 0., 0., 0., 0., 0.,
-                0., 0.01, 0., 0., 0., 0.,
-                0., 0., 0.01, 0., 0., 0.,
-                0., 0., 0., 0.01, 0., 0.,
-                0., 0., 0., 0., 0.01, 0.,
-                0., 0., 0., 0., 0., 0.01 };
-        _odom_publisher->msg_.twist.twist.linear.y = 0;
-        _odom_publisher->msg_.twist.twist.linear.z = 0;
-        _odom_publisher->msg_.twist.twist.angular.x = 0;
-        _odom_publisher->msg_.twist.twist.angular.y = 0;
-        _odom_publisher->msg_.twist.covariance = {
-                0.01, 0., 0., 0., 0., 0.,
-                0., 0.01, 0., 0., 0., 0.,
-                0., 0., 0.01, 0., 0., 0.,
-                0., 0., 0., 0.01, 0., 0.,
-                0., 0., 0., 0., 0.01, 0.,
-                0., 0., 0., 0., 0., 0.01 };
+        );
+
+        _odom_realtime_publisher->msg_.header.frame_id = frame_id;
+        _odom_realtime_publisher->msg_.child_frame_id = child_frame_id;
+        _odom_realtime_publisher->msg_.pose.pose.position.z = pose_position_z;
+        _odom_realtime_publisher->msg_.pose.covariance = pose_covariance;
+
+        _odom_realtime_publisher->msg_.twist.twist.linear.y = twist_linear_y;
+        _odom_realtime_publisher->msg_.twist.twist.linear.z = twist_linear_z;
+        _odom_realtime_publisher->msg_.twist.twist.angular.x = twist_angular_x;
+        _odom_realtime_publisher->msg_.twist.twist.angular.y = twist_angular_y;
+        _odom_realtime_publisher->msg_.twist.covariance = twist_covariance;
+#else
+        _odom_publisher = _node_handle.advertise<nav_msgs::Odometry>("odom", 100);
+
+        nav_msgs::Odometry _odom_msg;
+        _odom_msg.header.frame_id = frame_id;
+        _odom_msg.child_frame_id = child_frame_id;
+        _odom_msg.pose.pose.position.z = pose_position_z;
+        _odom_msg.pose.covariance = pose_covariance;
+
+        _odom_msg.twist.twist.linear.y = twist_linear_y;
+        _odom_msg.twist.twist.linear.z = twist_linear_z;
+        _odom_msg.twist.twist.angular.x = twist_angular_x;
+        _odom_msg.twist.twist.angular.y = twist_angular_y;
+        _odom_msg.twist.covariance = twist_covariance;
+#endif
+
         // endregion
 
         return init_ok;
@@ -226,79 +341,6 @@ public:
 
         //std::cout << "get_odometry_update x " << linear_x_velocity << " z " << angular_z_position << std::endl;
     }
-
-private:
-
-    ros::NodeHandle _node_handle;
-    std::string _robot_namespace;
-
-    int _i2c_bus_number;
-    int _i2c_device_address = 0;
-
-    double _max_linear_x_speed_m_s;
-    double _max_angular_z_rad_s;
-
-    // Using these for debug. If needed, should probably put a mutex around them
-    std::mutex _debug_current_command_mutex;
-    double _debug_current_commanded_linear_x_velocity;
-    double _debug_current_commanded_angular_z_position;
-
-    std::unique_ptr<Pca9685LEDController> pca9685DeviceHandle;
-
-    void publishSteer(double angle_cmd);
-
-    void brake();
-
-    // region Joint Variables
-
-    void registerVirtualJointState(
-            std::vector<double> &virtual_wheel_positions,
-            std::vector<double> &virtual_wheel_velocities,
-            std::vector<double> &virtual_wheel_efforts,
-            std::vector<std::string> &virtual_wheels_names
-            );
-
-    hardware_interface::PositionJointInterface front_steer_joint_position_cmd_interface;
-    double front_steer_position{};
-    double front_steer_velocity{};
-    double front_steer_effort{};
-    double front_steer_position_cmd{};
-
-    hardware_interface::VelocityJointInterface rear_wheel_joint_velocity_cmd_interface;
-    double rear_wheel_position{};
-    double rear_wheel_velocity{};
-    double rear_wheel_effort{};
-    double rear_wheel_velocity_cmd{};
-
-    hardware_interface::JointStateInterface joint_state_interface;
-    std::vector<double> virtual_wheels_position;
-    std::vector<double> virtual_wheels_velocities;
-    std::vector<double> virtual_wheels_effort;
-
-    ros::Publisher steer_cmd_publisher;
-
-    // endregion
-
-    // region Odometry
-    ackermann_steering_controller::Odometry _odometry;
-#if 1
-    // TODO ROS noetic on raspberry pi does not support realtimePublisher!
-    std::shared_ptr<realtime_tools::RealtimePublisher<nav_msgs::Odometry>> _odom_publisher;
-    std::shared_ptr<realtime_tools::RealtimePublisher<tf::tfMessage> > _tf_odom_publisher;
-#endif
-
-    /// Wheel separation, wrt the midpoint of the wheel width:
-    double wheel_separation_h_ = 1.0;
-
-    /// Wheel radius (assuming it's the same for the left and right wheels):
-    double wheel_radius_ = 0.5;
-
-    /// Wheel separation and radius calibration multipliers:
-    double wheel_separation_h_multiplier_ = 0.1;
-    double wheel_radius_multiplier_ = 0.1;
-    double steer_pos_multiplier_ = 0.1;
-
-    // endregion
 };
 
 #endif //ADAFRUIT_SERVO_HAT_ADAFRUIT_SERVO_HAT_HW_INTERFACE_H
