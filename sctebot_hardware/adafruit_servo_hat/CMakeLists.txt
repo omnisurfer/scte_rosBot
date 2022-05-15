@@ -19,11 +19,11 @@ find_package(catkin REQUIRED COMPONENTS
         nav_msgs
         sensor_msgs
         tf
-        realtime_tools
         hardware_interface
         controller_manager
         ackermann_steering_controller
         )
+# realtime_tools
 
 find_package(Boost 1.69.0 COMPONENTS log REQUIRED)
 
@@ -37,11 +37,11 @@ catkin_package(
         nav_msgs
         sensor_msgs
         tf
-        realtime_tools
         hardware_interface
         controller_manager
         ackermann_steering_controller
 )
+# realtime_tools
 
 include_directories(
         include

@@ -244,6 +244,10 @@ public:
         _odom_realtime_publisher->msg_.twist.twist.angular.y = twist_angular_y;
         _odom_realtime_publisher->msg_.twist.covariance = twist_covariance;
 #else
+        /*
+         * This odom publisher may compliment the ackermann steering controller odom which may be based
+         * purely on dead reckoning.
+         */
         _odom_publisher = _node_handle.advertise<nav_msgs::Odometry>("odom", 100);
 
         nav_msgs::Odometry _odom_msg;

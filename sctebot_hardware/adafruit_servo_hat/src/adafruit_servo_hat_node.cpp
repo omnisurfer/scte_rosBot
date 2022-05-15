@@ -118,13 +118,16 @@ int main(int argc, char* argv[]) {
     cmd_vel_topic = robot_namespace + cmd_vel_topic;
     // endregion
 
-    ros::Publisher odometry_publisher;
+    /*
+     * ackermann steering controller publishes odom. Not sure if this odoms is needed...
+     */
+    // ros::Publisher odometry_publisher;
     ros::Publisher steering_publisher;
     tf::TransformBroadcaster odometry_tf_broadcaster;
 
     ros::Subscriber command_twist_ros_subscriber;
 
-    odometry_publisher = ros_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
+    // odometry_publisher = ros_node_handle.advertise<nav_msgs::Odometry>("/odom", 1);
     steering_publisher = ros_node_handle.advertise<geometry_msgs::Twist>("/steer_ctrl", 1);
 
     ros::Time current_ros_time, last_ros_time;

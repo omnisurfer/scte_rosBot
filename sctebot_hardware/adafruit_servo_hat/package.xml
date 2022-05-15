@@ -24,7 +24,7 @@
   <depend>i2c_linux</depend>
   <depend>controller_manager</depend>
   <depend>hardware_interface</depend>
-  <depend>realtime_tools</depend>
+  <!--depend>realtime_tools</depend-->
   <depend>ackermann_steering_controller</depend>
 
 </package>
