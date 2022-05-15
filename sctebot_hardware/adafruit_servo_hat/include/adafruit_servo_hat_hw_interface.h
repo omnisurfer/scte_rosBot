@@ -10,6 +10,10 @@
 #ifndef ADAFRUIT_SERVO_HAT_ADAFRUIT_SERVO_HAT_HW_INTERFACE_H
 #define ADAFRUIT_SERVO_HAT_ADAFRUIT_SERVO_HAT_HW_INTERFACE_H
 
+/*
+ * Enabling realtime causes seg faults on the raspberry pi.
+ * Not sure why.
+ */
 #define ENABLE_REALTIME_PUBLISHERS 0
 
 #define ENABLE_PCA9685_LED_DEVICE 1
