@@ -1,0 +1,22 @@
+<launch>
+
+    <!-- region Sensors -->
+    <include file="$(find adafruit_10dof_imu)/launch/adafruit_10dof_imu.launch">
+
+    </include>
+
+    <!--
+    <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
+        <arg name="gps_name" default="primary_gps"/>
+        <arg name="node_name" default="local"/>
+    </include>
+    -->
+    <!-- endregion -->
+
+    <!-- region Locomotion -->
+    <include file="$(find adafruit_servo_hat)/launch/adafruit_servo_hat.launch">
+
+    </include>
+    <!-- endregion -->
+
+</launch>

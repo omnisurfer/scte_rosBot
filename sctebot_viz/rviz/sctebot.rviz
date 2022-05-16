@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: LaserScan
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -293,6 +293,10 @@ Visualization Manager:
           Value: true
         laser_frame:
           Value: true
+        map:
+          Value: true
+        odom:
+          Value: true
         passenger_side_camera_base:
           Value: true
         passenger_side_camera_body:
@@ -313,6 +317,8 @@ Visualization Manager:
           Value: true
         stereo_fwd_link:
           Value: true
+        utm:
+          Value: true
       Marker Alpha: 1
       Marker Scale: 0.4000000059604645
       Name: TF
@@ -320,51 +326,55 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        base_footprint:
-          base_link:
-            computer_enclosure:
-              base_laser:
-                laser_frame:
-                  {}
-              camera_rig_support:
-                camera_rig_bar:
-                  driver_side_camera_body:
-                    driver_side_camera_base:
-                      driver_side_camera_optical:
-                        {}
-                  passenger_side_camera_body:
-                    passenger_side_camera_base:
-                      passenger_side_camera_optical:
-                        {}
-                  stereo_fwd_bottom_screw_frame:
-                    stereo_fwd_link:
+        map:
+          odom:
+            base_footprint:
+              base_link:
+                computer_enclosure:
+                  base_laser:
+                    laser_frame:
                       {}
-              gps_link:
-                {}
-              imu_link:
-                {}
-            front_bumper_skid_plate:
-              front_bumper:
-                {}
-            front_left_steer_link:
-              front_left_wheel_link:
-                {}
-            front_right_steer_link:
-              front_right_wheel_link:
-                {}
-            front_steer_link:
-              {}
-            inertial_link:
-              {}
-            rear_bumper_mount:
-              rear_bumper:
-                {}
-            rear_left_wheel_link:
-              {}
-            rear_right_wheel_link:
-              {}
-            rear_wheel_link:
-              {}
+                  camera_rig_support:
+                    camera_rig_bar:
+                      driver_side_camera_body:
+                        driver_side_camera_base:
+                          driver_side_camera_optical:
+                            {}
+                      passenger_side_camera_body:
+                        passenger_side_camera_base:
+                          passenger_side_camera_optical:
+                            {}
+                      stereo_fwd_bottom_screw_frame:
+                        stereo_fwd_link:
+                          {}
+                  gps_link:
+                    {}
+                  imu_link:
+                    {}
+                front_bumper_skid_plate:
+                  front_bumper:
+                    {}
+                front_left_steer_link:
+                  front_left_wheel_link:
+                    {}
+                front_right_steer_link:
+                  front_right_wheel_link:
+                    {}
+                front_steer_link:
+                  {}
+                inertial_link:
+                  {}
+                rear_bumper_mount:
+                  rear_bumper:
+                    {}
+                rear_left_wheel_link:
+                  {}
+                rear_right_wheel_link:
+                  {}
+                rear_wheel_link:
+                  {}
+          utm:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -575,7 +585,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: false
-      Enabled: false
+      Enabled: true
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -592,7 +602,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /sctebot/odometry/filtered
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: map
@@ -736,14 +746,14 @@ Visualization Manager:
       Enabled: true
       Name: AerialMapDisplay
       Object URI: https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png
-      Topic: /sctebot/primary_gps/gps/fix
+      Topic: /sctebot/gps/filtered
       Value: true
-      Zoom: 16
+      Zoom: 18
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: base_link
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
@@ -776,7 +786,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 682.2328491210938
+      Scale: 14.263616561889648
       Target Frame: base_link
       X: 0
       Y: 0
@@ -803,5 +813,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1884
-  X: 1917
+  X: 1293
   Y: 27

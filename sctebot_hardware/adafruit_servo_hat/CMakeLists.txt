@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
         nav_msgs
         sensor_msgs
         tf
+        realtime_tools
         hardware_interface
         controller_manager
         ackermann_steering_controller
@@ -37,6 +38,7 @@ catkin_package(
         nav_msgs
         sensor_msgs
         tf
+        realtime_tools
         hardware_interface
         controller_manager
         ackermann_steering_controller

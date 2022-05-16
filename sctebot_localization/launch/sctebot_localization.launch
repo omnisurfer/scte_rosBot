@@ -5,7 +5,8 @@
     <arg name="enable_ekf_odom_map" default="true"/>
     <arg name="enable_navsat_odom" default="true"/>
 
-    <arg name="navsat_gps_device" default="primary_gps"/>
+    <arg name="primary_navsat_gps_device" default="primary_gps"/>
+    <arg name="primary_navmgs_imu_device" default="primary_imu"/>
 
     <!--
     Path planning
@@ -47,29 +48,48 @@
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
 
             <!-- ekf map -->
-            <!---->
             <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
                 <remap from="odometry/filtered" to="odometry/filtered_map"/>
             </node>
-            <!---->
 
         </group>
 
-        <!-- Nav Sat -->
+        <!-- region NavSat -->
         <group if="$(eval enable_navsat_odom == true)">
             <rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam>
 
-            <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true">
+            <!-- region Gazebo -->
+            <node pkg="robot_localization" type="navsat_transform_node" name="gazebo_navsat_transform" clear_params="true">
                 <param name="magnetic_declination_radians" value="0"/>
 
                 <param name="yaw_offset" value="0"/>
 
+                <!-- Outputs -->
+                <remap from="odometry/gps" to="gazebo/odometry/gps" />
+
+                <!-- Inputs -->
                 <remap from="odometry/filtered" to="odometry/filtered_map" />
-                <remap from="gps/fix" to="$(arg navsat_gps_device)/gps/fix"/>
-                <remap from="imu/data" to="imu"/>
+                <remap from="gps/fix" to="gazebo/gps/fix"/>
+                <remap from="imu/data" to="gazebo/imu"/>
             </node>
+            <!-- endregion -->
+
+            <node pkg="robot_localization" type="navsat_transform_node" name="ultimate_gps_navsat_transform" clear_params="true">
+                <param name="magnetic_declination_radians" value="0"/>
+
+                <param name="yaw_offset" value="0"/>
+
+                <!-- Outputs -->
+                <remap from="odometry/gps" to="adafruit_ultimate_gps/odometry/gps" />
+
+                <!-- Inputs -->
+                <remap from="odometry/filtered" to="odometry/filtered_map" />
+                <remap from="gps/fix" to="adafruit_ultimate_gps/gps/fix"/>
+                <remap from="imu/data" to="adafruit_10dof_imu/imu"/>
+            </node>
+
         </group>
-        <!---->
+        <!-- endregion -->
 
     </group>
 

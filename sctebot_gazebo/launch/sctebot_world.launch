@@ -5,32 +5,10 @@
 
     <arg name="robot_namespace" default="/sctebot" />
 
-    <!-- Description -->
-    <arg name="x" default="0"/>
-    <arg name="y" default="0"/>
-    <arg name="z" default="1"/>
-    <arg name="yaw" default="0.0"/>
-
-    <arg name="latitude_ref" default="0"/>
-    <arg name="longitude_ref" default="0"/>
-    <arg name="altitude_ref" default="0"/>
-
     <arg name="gui" default="true"/>
     <arg name="paused" default="false"/>
     <arg name="set_timeout" default="false"/>
     <arg name="timeout" default="0.0"/>
-
-    <include file="$(find sctebot_description)/launch/upload_sctebot.launch">
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-        <arg name="x" value="$(arg x)"/>
-        <arg name="y" value="$(arg y)"/>
-        <arg name="z" value="$(arg z)"/>
-        <arg name="yaw" value="$(arg yaw)"/>
-
-        <arg name="latitude_ref" value="$(arg latitude_ref)"/>
-        <arg name="longitude_ref" value="$(arg longitude_ref)"/>
-        <arg name="altitude_ref" value="$(arg altitude_ref)"/>
-    </include>
 
     <group ns="$(arg robot_namespace)">
 
