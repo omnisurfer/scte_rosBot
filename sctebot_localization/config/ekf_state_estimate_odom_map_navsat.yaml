@@ -31,19 +31,6 @@ ekf_se_odom:
   # vr, vp, vy
   # ax, ay, az
 
-  #odomN: demo_odom/odomX
-  #odomN_config: [false,  false,  false,
-  #               false, false, true,
-  #               true, false, true,
-  #               false, false, true,
-  #               false, false, false]
-  #odomN_queue_size: 2
-  #odomN_nodelay: false
-  #odomN_differential: false
-  #odomN_relative: false
-  #odomN_pose_rejection_threshold: 5
-  #odomN_twist_rejection_threshold: 1
-
   odom0: ackermann_steering_controller/odom
   odom0_config: [false,  false,  false,
                  false, false, false,
@@ -70,19 +57,12 @@ ekf_se_odom:
   odom1_twist_rejection_threshold: 3 # 0.2
   odom1_nodelay: false
 
-  imu0: gazebo/imu
-  imu0_config: [false, false, false,
-                false, false, true,
+  imu0: adafruit_10dof_imu/imu
+  imu0_config: [true, true, true,
+                true, true, true,
                 false, false, false,
-                false, false, true,
-                true, true, false]
-
-  #imu0_config: [ true, true, true,
-  #               true, true, true,
-  #               false, false, false,
-  #               false, false, false,
-  #               false, false, false ]
-
+                false, false, false,
+                false, false, false]
   imu0_nodelay: false
   imu0_differential: false
   imu0_relative: false
@@ -98,13 +78,6 @@ ekf_se_odom:
                 false, false, false,
                 false, false, false,
                 false, false, false]
-
-  #imu1_config: [ false, false, false,
-  #               false, false, true,
-  #               false, false, false,
-  #               false, false, true,
-  #               true, false, false ]
-
   imu1_nodelay: false
   imu1_differential: false
   imu1_relative: false
@@ -113,6 +86,21 @@ ekf_se_odom:
   imu1_twist_rejection_threshold: 0.8                #
   imu1_linear_acceleration_rejection_threshold: 0.8  #
   imu1_remove_gravitational_acceleration: false
+
+  imu2: gazebo/imu
+  imu2_config: [ false, false, false,
+                 false, false, true,
+                 false, false, false,
+                 false, false, true,
+                 true, true, false ]
+  imu2_nodelay: false
+  imu2_differential: false
+  imu2_relative: false
+  imu2_queue_size: 10
+  imu2_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
+  imu2_twist_rejection_threshold: 0.8                #
+  imu2_linear_acceleration_rejection_threshold: 0.8  #
+  imu2_remove_gravitational_acceleration: false
 
   # [ADVANCED] Some IMUs automatically remove acceleration due to gravity, and others don't. If yours doesn't, please set
   # this to true, and *make sure* your data conforms to REP-103, specifically, that the data is in ENU frame.
@@ -186,47 +174,56 @@ ekf_se_map:
   # vr, vp, vy
   # ax, ay, az
 
-  odom0: gazebo/odometry/gps
-  odom0_config: [ true,  true,  false,
-                   false, false, false,
-                   false, false, false,
-                   false, false, false,
-                   false, false, false ]
-  odom0_queue_size: 10
-  odom0_nodelay: true
-  odom0_differential: false
-  odom0_relative: false
-
-  odom1: ackermann_steering_controller/odom
-  odom1_config: [ false,  false,  false,
+  # ODOMs
+  odom0: ackermann_steering_controller/odom
+  odom0_config: [ false,  false,  false,
                   false, false, false,
                   true, true, false,
                   false, false, true,
                   false, false, false ]
+  odom0_differential: false
+  odom0_relative: false
+  odom0_queue_size: 10
+  odom0_pose_rejection_threshold: 15 # 2
+  odom0_twist_rejection_threshold: 2 # 0.2
+  odom0_nodelay: false
+
+  odom1: adafruit_ultimate_gps/odometry/gps
+  odom1_config: [ true,  true,  false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, false ]
+  odom1_queue_size: 10
+  odom1_nodelay: true
   odom1_differential: false
   odom1_relative: false
-  odom1_queue_size: 10
-  odom1_pose_rejection_threshold: 15 # 2
-  odom1_twist_rejection_threshold: 2 # 0.2
-  odom1_nodelay: false
 
-  imu0: gazebo/imu
+  odom2: gazebo/odometry/gps
+  odom2_config: [ true,  true,  false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, false ]
+  odom2_queue_size: 10
+  odom2_nodelay: true
+  odom2_differential: false
+  odom2_relative: false
+
+  # IMUs
+  imu0: adafruit_10dof_imu/imu/data
   imu0_config: [ false, false, false,
-                 false, false, true,
+                 false, false, false,
                  false, false, false,
                  false, false, true,
-                 true, false, false ]
-
-  #imu0_config: [ true, true, true,
-  #               true, true, true,
-  #               false, false, false,
-  #               false, false, false,
-  #               false, false, false ]
-
+                 true, true, false ]
   imu0_nodelay: false
   imu0_differential: false
   imu0_relative: false
   imu0_queue_size: 10
+  imu0_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
+  imu0_twist_rejection_threshold: 0.8                #
+  imu0_linear_acceleration_rejection_threshold: 0.8  #
   imu0_remove_gravitational_acceleration: false
 
   imu1: stereo_fwd/imu/data
@@ -235,13 +232,6 @@ ekf_se_map:
                  false, false, false,
                  false, false, true,
                  true, true, false ]
-
-  #imu1_config: [ false, false, false,
-  #               false, false, true,
-  #               false, false, false,
-  #               false, false, true,
-  #               true, false, false ]
-
   imu1_nodelay: false
   imu1_differential: false
   imu1_relative: false
@@ -250,6 +240,18 @@ ekf_se_map:
   imu1_twist_rejection_threshold: 0.8                #
   imu1_linear_acceleration_rejection_threshold: 0.8  #
   imu1_remove_gravitational_acceleration: false
+
+  imu2: gazebo/imu
+  imu2_config: [ false, false, false,
+                 false, false, true,
+                 false, false, false,
+                 false, false, true,
+                 true, true, false ]
+  imu2_nodelay: false
+  imu2_differential: false
+  imu2_relative: false
+  imu2_queue_size: 10
+  imu2_remove_gravitational_acceleration: false
 
   use_control: false
 
@@ -297,6 +299,17 @@ gazebo_navsat_transform:
   wait_for_datum: false
 
 ultimate_gps_navsat_transform:
+  frequency: 30
+  delay: 3.0
+  magnetic_declination_radians: 0.0429351  # For lat/long 55.944831, -3.186998
+  yaw_offset: 1.570796327  # IMU reads 0 facing magnetic north, not east
+  zero_altitude: false
+  broadcast_cartesian_transform: true
+  publish_filtered_gps: true
+  use_odometry_yaw: false
+  wait_for_datum: false
+
+gpsd_navsat_transform:
   frequency: 30
   delay: 3.0
   magnetic_declination_radians: 0.0429351  # For lat/long 55.944831, -3.186998
