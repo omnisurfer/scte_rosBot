@@ -97,10 +97,10 @@ int main(int argc, char* argv[]) {
     }
 
     if(ros_node_handle.getParam(node_name + "/cmd_vel_topic", cmd_vel_topic)) {
-        ROS_INFO("%s: cmd_vel_topic %s", node_name.c_str(), (robot_namespace + cmd_vel_topic).c_str());
+        ROS_INFO("%s: cmd_vel_topic %s", node_name.c_str(), (robot_namespace + '/' + cmd_vel_topic).c_str());
     } else {
-        cmd_vel_topic = "/ackermann_steering_controller/cmd_vel";
-        ROS_WARN("%s: cmd_vel_topic not found, using default %s", node_name.c_str(), (robot_namespace + cmd_vel_topic).c_str());
+        cmd_vel_topic = "ackermann_steering_controller/cmd_vel";
+        ROS_WARN("%s: cmd_vel_topic not found, using default %s", node_name.c_str(), (robot_namespace + '/' + cmd_vel_topic).c_str());
     }
 
     if(ros_node_handle.getParam(node_name + "/max_linear_speed_m_s", max_linear_speed_m_s)) {
@@ -114,8 +114,6 @@ int main(int argc, char* argv[]) {
     } else {
         ROS_WARN("%s: max_angular_rad_s, using default %f", node_name.c_str(), max_angular_rad_s);
     }
-
-    cmd_vel_topic = robot_namespace + cmd_vel_topic;
     // endregion
 
     /*
