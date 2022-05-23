@@ -8,8 +8,6 @@ AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::
 
     this->_robot_namespace = robot_namespace + "/steer_bot_hardware_gazebo/";
 
-    std::cout << "AdafruitServoHatHardwareInterface: " << this->_robot_namespace << std::endl;
-
     ros::NodeHandle n("~");
     std::string front_steer_joint_names("front_steer_joint");
     std::string rear_wheel_joint_names("rear_wheel_joint");
