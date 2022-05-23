@@ -584,19 +584,19 @@ int main(int argc, char* argv[]) {
                         logging::trivial::severity >= logging::trivial::debug
                 );
 
-        ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu/data_raw", 1000);
+        ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>(node_name + "/imu/data_raw", 1000);
         ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>(
-                "ada10dof/mag/data_raw", 1000);
+                node_name + "/mag/data_raw", 1000);
 
         ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
-                "ada10dof/atm_pressure/data_raw", 100);
+                node_name + "/atm_pressure/data_raw", 100);
         ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
-                "ada10dof/sea_lvl_pressure/data_raw", 100);
+                node_name + "/sea_lvl_pressure/data_raw", 100);
 
         ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>(
-                "ada10dof/atm_temperature/data_raw", 100);
+                node_name + "/atm_temperature/data_raw", 100);
         ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>(
-                "ada10dof/atm_altitude/data_raw", 100);
+                node_name + "/atm_altitude/data_raw", 100);
 
         ros_press_temp_range_publisher_thread = std::thread(
                 ros_pressure_temperature_and_range_publisher_worker,

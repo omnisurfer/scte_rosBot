@@ -11,7 +11,7 @@
             <param name="i2c_bus_number" value="$(arg i2c_bus_number)"/>
         </node>
 
-        <node pkg="imu_filter_madgwick" type="imu_filter_node" name="$(arg node_name)_imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
+        <node pkg="imu_filter_madgwick" type="imu_filter_node" name="$(arg node_name)_filter_madgwick" output="screen" clear_params="true" respawn="false">
             <remap from="imu/data_raw" to="$(arg node_name)/imu/data_raw"/>
             <remap from="imu/data" to="$(arg node_name)/imu/data"/>
             <param name="fixed_frame" value="pal_odom" />
