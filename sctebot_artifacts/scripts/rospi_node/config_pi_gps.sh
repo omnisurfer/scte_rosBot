@@ -1,4 +1,6 @@
 #!/bin/bash
+# https://www.digikey.com/htmldatasheets/production/1801407/0/0/1/pmtk-command-packet.html
+
 systemctl status gpsd & wait
 systemctl stop gpsd & wait
 systemctl stop gpsd.socket & wait

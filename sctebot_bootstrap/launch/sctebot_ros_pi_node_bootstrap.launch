@@ -14,11 +14,18 @@
     </include>
     <!---->
 
-    <!---->
+    <!-- GPSD GPS -->
     <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
-        <arg name="gps_name" default="primary_gps"/>
-        <arg name="node_name" default="ros-pi-node"/>
+        <arg name="gps_name" value="primary_gps"/>
     </include>
+    <!---->
+
+    <!-- NavSat GPS -->
+    <!--
+    <include file="$(find navsat_serial_gps)/launch/bu353s4_navsat_gps.launch">
+        <arg name="gps_name" value="bu353s4_gps"/>
+    </include>
+    -->
     <!---->
     <!-- endregion -->
 
