@@ -72,7 +72,7 @@ ekf_se_odom:
   imu0_linear_acceleration_rejection_threshold: 0.8  #
   imu0_remove_gravitational_acceleration: false
 
-  imu1: stereo_fwd/imu/data
+  imu1: realsense_d435i/imu/data
   imu1_config: [true, true, true,
                 true, true, true,
                 false, false, false,
@@ -226,7 +226,7 @@ ekf_se_map:
   imu0_linear_acceleration_rejection_threshold: 0.8  #
   imu0_remove_gravitational_acceleration: false
 
-  imu1: stereo_fwd/imu/data
+  imu1: realsense_d435i/imu/data
   imu1_config: [ false, false, false,
                  false, false, false,
                  false, false, false,
