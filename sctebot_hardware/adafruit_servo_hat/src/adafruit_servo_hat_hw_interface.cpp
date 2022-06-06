@@ -259,7 +259,7 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
 void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration period) {
     // TODO write out the desired steer and velocity command to the servo hat here
 
-    if(rear_wheel_velocity_cmd > 0.0) {
+    if(rear_wheel_velocity_cmd > 0.0 && false) {
         std::cout << "rear vel cmd: " << rear_wheel_velocity_cmd << " steer cmd: " << front_steer_position_cmd << std::endl;
     }
 

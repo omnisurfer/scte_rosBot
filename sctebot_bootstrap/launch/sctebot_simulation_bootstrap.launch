@@ -17,7 +17,11 @@
     <arg name="longitude_ref" default="0"/>
     <arg name="altitude_ref" default="0"/>
 
-    <include file="sctebot_upload.launch">
+    <include file="$(find sctebot_control)/launch/sctebot_control.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+
+    <include file="$(find sctebot_description)/launch/sctebot_upload.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
         <arg name="x" value="$(arg x)"/>
         <arg name="y" value="$(arg y)"/>
