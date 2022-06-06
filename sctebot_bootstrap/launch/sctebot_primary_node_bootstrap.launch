@@ -14,14 +14,7 @@
 
     <include file="$(find sctebot_description)/launch/upload_sctebot.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-        <arg name="x" value="$(arg x)"/>
-        <arg name="y" value="$(arg y)"/>
-        <arg name="z" value="$(arg z)"/>
-        <arg name="yaw" value="$(arg yaw)"/>
-
-        <arg name="latitude_ref" value="$(arg latitude_ref)"/>
-        <arg name="longitude_ref" value="$(arg longitude_ref)"/>
-        <arg name="altitude_ref" value="$(arg altitude_ref)"/>
+        <arg name="spawn_gazebo" value="false"/>
     </include>
     <!-- endregion -->
 
@@ -44,12 +37,12 @@
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
     </include>
 
-    <!--
+    <!---->
     <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
         <arg name="gps_name" default="primary_gps"/>
         <arg name="node_name" default="local"/>
     </include>
-    -->
+    <!---->
     <!-- endregion -->
 
     <!-- region Localization -->

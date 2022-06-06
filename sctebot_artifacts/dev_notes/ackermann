@@ -15,4 +15,4 @@ https://medium.com/@waleedmansoor/how-i-built-ros-odometry-for-differential-driv
 Example ackermann implementation under external_src/ros_controllers/ackermann_steering_controller/test/common/
 
 Network note, the ackerman_steering_controller seems to ignore the ROS_MASTER_URI setting and instead uses the URI/hostname
-of the master itself that is set outside of hosts.
+of the master itself that is set outside of hosts. Modify etc/hosts with the URI set to the hostname.

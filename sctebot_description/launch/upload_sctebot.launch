@@ -7,6 +7,7 @@
     <env name="SVGA_VGPU10" value="0"/>
 
     <arg name="model" default="$(find sctebot_description)/urdf/sctebot_chassis.xacro"/>
+    <arg name="spawn_gazebo" default="true"/>
     <arg name="robot_namespace" default="/sctebot" />
     <arg name="cmd_timeout" default="0.5"/>
 
@@ -49,28 +50,30 @@
               output="screen" respawn="false" />
         <!-- ackermann_steering_controller-->
 
-        <!-- Spawn robot in Gazebo -->
-        <group if="$(arg use_geodetic)">
-            <node name="spawn_vehicle" pkg="gazebo_ros" type="spawn_model"
-                  args="-urdf -param robot_description -model sctebot
-                -gazebo_namespace /$(arg robot_namespace)/gazebo
-                -latitude $(arg latitude)
-                -longitude $(arg longitude)
-                -depth $(arg depth)
-                -latitude_ref $(arg latitude_ref)
-                -longitude_ref $(arg longitude_ref)
-                -altitude_ref $(arg altitude_ref)
-                -x $(arg x) -y $(arg y) -z $(arg z)
-                -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
-                  respawn="false" output="screen"/>
-        </group>
-        <group unless="$(arg use_geodetic)">
-            <node name="spawn_vehicle" pkg="gazebo_ros" type="spawn_model"
-                  args="-urdf -param robot_description -model sctebot
-                -gazebo_namespace /$(arg robot_namespace)/gazebo
-                -x $(arg x) -y $(arg y) -z $(arg z)
-                -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
-                  respawn="false" output="screen"/>
+        <group if="$(arg spawn_gazebo)">
+            <!-- Spawn robot in Gazebo -->
+            <group if="$(arg use_geodetic)">
+                <node name="spawn_vehicle" pkg="gazebo_ros" type="spawn_model"
+                      args="-urdf -param robot_description -model sctebot
+                    -gazebo_namespace /$(arg robot_namespace)/gazebo
+                    -latitude $(arg latitude)
+                    -longitude $(arg longitude)
+                    -depth $(arg depth)
+                    -latitude_ref $(arg latitude_ref)
+                    -longitude_ref $(arg longitude_ref)
+                    -altitude_ref $(arg altitude_ref)
+                    -x $(arg x) -y $(arg y) -z $(arg z)
+                    -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
+                      respawn="false" output="screen"/>
+            </group>
+            <group unless="$(arg use_geodetic)">
+                <node name="spawn_vehicle" pkg="gazebo_ros" type="spawn_model"
+                      args="-urdf -param robot_description -model sctebot
+                    -gazebo_namespace /$(arg robot_namespace)/gazebo
+                    -x $(arg x) -y $(arg y) -z $(arg z)
+                    -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
+                      respawn="false" output="screen"/>
+            </group>
         </group>
 
     </group>
