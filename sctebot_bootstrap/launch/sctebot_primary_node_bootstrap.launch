@@ -37,12 +37,11 @@
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
     </include>
 
-    <!---->
+    <!--
     <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
         <arg name="gps_name" default="primary_gps"/>
-        <arg name="node_name" default="local"/>
     </include>
-    <!---->
+    -->
     <!-- endregion -->
 
     <!-- region Localization -->
