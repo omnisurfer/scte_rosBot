@@ -34,21 +34,26 @@
         <param name="robot_namespace" value="$(arg robot_namespace)"/>
 
         <!-- Launch  the robot state publisher -->
+        <!--
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" ns="$(arg robot_namespace)">
             <param name="publish_frequency" value="10.0"/>
         </node>
+        -->
 
         <!-- Load ros_controllers configuration parameters -->
+        <!--
         <rosparam command="load" file="$(find sctebot_control)/config/scte_ackermann_controller.yaml" ns="$(arg robot_namespace)"/>
         <rosparam command="load" file="$(find sctebot_control)/config/scte_steer_bot_gains.yaml" ns="$(arg robot_namespace)"/>
         <rosparam command="load" file="$(find sctebot_control)/config/scte_joint_state_publisher.yaml" ns="$(arg robot_namespace)"/>
         <rosparam command="load" file="$(find sctebot_control)/config/scte_steer_bot_hardware_gazebo.yaml" ns="$(arg robot_namespace)"/>
+        -->
 
         <!-- Spawn the sctebot_gazebo_plugins -->
+        <!--
         <node pkg="controller_manager" type="spawner" name="controller_spawner"
               args="joint_state_publisher ackermann_steering_controller"
               output="screen" respawn="false" />
-        <!-- ackermann_steering_controller-->
+        -->
 
         <group if="$(arg spawn_gazebo)">
             <!-- Spawn robot in Gazebo -->

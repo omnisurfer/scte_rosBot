@@ -12,10 +12,16 @@
     <arg name="longitude_ref" default="0"/>
     <arg name="altitude_ref" default="0"/>
 
-    <include file="$(find sctebot_description)/launch/upload_sctebot.launch">
+    <include file="$(find sctebot_description)/launch/sctebot_upload.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
         <arg name="spawn_gazebo" value="false"/>
     </include>
+
+    <!---->
+    <include file="$(find sctebot_control)/launch/sctebot_control.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+    <!---->
     <!-- endregion -->
 
     <!-- region Sensors -->

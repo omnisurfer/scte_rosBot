@@ -12,19 +12,23 @@
 
     <!-- load ackermann controller config -->
     <group ns="$(arg robot_namespace)">
+
         <rosparam command="load" file="$(find sctebot_control)/config/scte_ackermann_controller.yaml"/>
         <rosparam  command="load" file="$(find sctebot_control)/config/scte_steer_bot_gains.yaml"/>
         <rosparam command="load" file="$(find sctebot_control)/config/scte_joint_state_publisher.yaml"/>
         <rosparam  command="load" file="$(find sctebot_control)/config/scte_steer_bot_hardware_gazebo.yaml"/>
 
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" ns="$(arg robot_namespace)">
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
             <param name="publish_frequency" value="10.0"/>
         </node>
 
         <!-- Start sctebot_gazebo_plugins -->
-        <node pkg="controller_manager" type="spawner" name="controller_spawner" ns="$(arg robot_namespace)"
+        <node pkg="controller_manager"
+              type="spawner"
+              name="controller_spawner"
               args="joint_state_publisher ackermann_steering_controller"
-              output="screen" respawn="false" />
+              output="screen"
+              respawn="false" />
 
         <!--
         <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"
