@@ -5,49 +5,43 @@
     https://github.com/husky/husky/blob/melodic-devel/husky_control/launch/control.launch
     -->
 
-    <arg name="robot_namespace" default=""/>
+    <arg name="robot_namespace" default="/sctebot"/>
     <arg name="pub_tf" default="false"/>
     <arg name="simulation_on" default="false"/>
     <arg name="tf_freq" default="100.0"/>
 
     <!-- load ackermann controller config -->
-    <rosparam command="load" file="$(find sctebot_control)/config/scte_ackermann_controller.yaml" ns="$(arg robot_namespace)"/>
-    <rosparam  command="load" file="$(find sctebot_control)/config/scte_steer_bot_gains.yaml" ns="$(arg robot_namespace)"/>
-    <rosparam command="load" file="$(find sctebot_control)/config/scte_joint_state_publisher.yaml" ns="$(arg robot_namespace)"/>
-    <rosparam  command="load" file="$(find sctebot_control)/config/scte_steer_bot_hardware_gazebo.yaml" ns="$(arg robot_namespace)"/>
+    <group ns="$(arg robot_namespace)">
 
-    <!--
-    Start sctebot_gazebo_plugins
-    -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg robot_namespace)"
-          args="joint_state_publisher ackermann_steering_controller"/>
+        <rosparam command="load" file="$(find sctebot_control)/config/scte_ackermann_controller.yaml"/>
+        <rosparam  command="load" file="$(find sctebot_control)/config/scte_steer_bot_gains.yaml"/>
+        <rosparam command="load" file="$(find sctebot_control)/config/scte_joint_state_publisher.yaml"/>
+        <rosparam  command="load" file="$(find sctebot_control)/config/scte_steer_bot_hardware_gazebo.yaml"/>
 
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"
-          respawn="false" output="screen" ns="$(arg robot_namespace)">
-        <param name="publish_frequency" type="double" value="$(arg tf_freq)"/>
-    </node>
-    <!---->
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+            <param name="publish_frequency" value="10.0"/>
+        </node>
 
-    <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
-        <param name="default_topic" value="$(arg robot_namespace)/ackermann_steering_controller/cmd_vel"/>
-    </node>
+        <!-- Start sctebot_gazebo_plugins -->
+        <node pkg="controller_manager"
+              type="spawner"
+              name="controller_spawner"
+              args="joint_state_publisher ackermann_steering_controller"
+              output="screen"
+              respawn="false" />
 
-    <!--
-    Load the DEBUG DefaultHWSim sctebot_gazebo_plugins
-    The sctebot_gazebo_plugins and config file below work to move the joints in the model. They are the basic build in sctebot_gazebo_plugins
-    that gazebo offers.
-    -->
-    <!--
-    <rosparam command="load" file="$(find sctebot_control)/config/scte_joint_control.yaml"/>
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="$(arg robot_namespace)"
-            args="joint_state_controller
-            front_left_wheel_position_controller
-            front_right_wheel_position_controller
-            rear_left_wheel_position_controller
-            rear_right_wheel_position_controller
-            front_left_steer_position_controller
-            front_right_steer_position_controller
-            rear_wheel_position_controller
-            "/>
-    -->
+        <!--
+        <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"
+              respawn="false" output="screen">
+            <param name="publish_frequency" type="double" value="$(arg tf_freq)"/>
+        </node>
+        -->
+
+        <!--
+        <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" >
+            <param name="default_topic" value="/ackermann_steering_controller/cmd_vel"/>
+        </node>
+        -->
+    </group>
+
 </launch>

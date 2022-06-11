@@ -6,7 +6,11 @@
 
 // The Linux Kernel:
 // https://01.org/linuxgraphics/gfx-docs/drm/driver-api/i2c.html
-
+// https://www.kernel.org/doc/Documentation/i2c/dev-interface
+// https://stackoverflow.com/questions/18874962/linux-device-driver-file-operations-it-is-possible-to-have-race-conditions
+// https://stackoverflow.com/questions/16467729/i2c-concurrent-access-on-linux-mutex
+// https://stackoverflow.com/questions/16728587/i2c-driver-in-linux
+// https://www.kernel.org/doc/html/latest/i2c/dev-interface.html
 
 #ifdef __cplusplus
 extern "C"

@@ -1,0 +1,62 @@
+<launch>
+
+    <arg name="robot_namespace" default="sctebot" />
+
+    <!-- region Model -->
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="1"/>
+    <arg name="yaw" default="0.0"/>
+
+    <arg name="latitude_ref" default="0"/>
+    <arg name="longitude_ref" default="0"/>
+    <arg name="altitude_ref" default="0"/>
+
+    <include file="$(find sctebot_description)/launch/sctebot_upload.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+        <arg name="spawn_gazebo" value="false"/>
+    </include>
+
+    <!---->
+    <include file="$(find sctebot_control)/launch/sctebot_control.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+    <!---->
+    <!-- endregion -->
+
+    <!-- region Sensors -->
+    <arg name="camera_name" default="realsense_d435i"/>
+
+    <include file="$(find sctebot_sensors)/launch/sctebot_realsense.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+        <arg name="camera" value="$(arg camera_name)"/>
+        <arg name="enable_pointcloud" value="true"/>
+        <arg name="enable_depth" value="true"/>
+        <arg name="enable_infra1" value="true"/>
+        <arg name="enable_infra2" value="true"/>
+        <arg name="enable_color" value="true"/>
+        <arg name="enable_gyro" value="true"/>
+        <arg name="enable_accel" value="true"/>
+    </include>
+
+    <include file="$(find sctebot_sensors)/launch/sctebot_ydlidar_g2.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+
+    <!--
+    <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
+        <arg name="gps_name" default="primary_gps"/>
+    </include>
+    -->
+    <!-- endregion -->
+
+    <!-- region Localization -->
+    <include file="$(find sctebot_localization)/launch/sctebot_localization.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+
+    <!-- SLAM & GMAPP -->
+
+    <!-- endregion -->
+
+</launch>

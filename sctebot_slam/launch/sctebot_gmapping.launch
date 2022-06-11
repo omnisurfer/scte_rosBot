@@ -4,15 +4,17 @@
   <arg name="configuration_basename" default="sctebot_lds_2d.lua"/>
   <!--arg name="set_base_frame" default="base_footprint"/-->
   <arg name="set_base_frame" default="base_footprint"/>
-  <arg name="set_odom_frame" default="odom"/>
+  <arg name="set_odom_frame" default="pal_odom"/>
   <arg name="set_map_frame"  default="map"/>
 
   <!-- Gmapping -->
-  <node pkg="gmapping" type="slam_gmapping" name="sctebot_slam_gmapping" output="screen">
-    <param name="base_frame" value="$(arg set_base_frame)"/>
-    <param name="odom_frame" value="$(arg set_odom_frame)"/>
-    <param name="map_frame"  value="$(arg set_map_frame)"/>
-    <rosparam command="load" file="$(find sctebot_slam)/config/gmapping_params.yaml" />
-  </node>
+  <group ns="$(arg robot_namespace)">
+    <node pkg="gmapping" type="slam_gmapping" name="sctebot_slam_gmapping" output="screen">
+      <param name="base_frame" value="$(arg set_base_frame)"/>
+      <param name="odom_frame" value="$(arg set_odom_frame)"/>
+      <param name="map_frame"  value="$(arg set_map_frame)"/>
+      <rosparam command="load" file="$(find sctebot_slam)/config/gmapping_params.yaml" />
+    </node>
+  </group>
 
 </launch>

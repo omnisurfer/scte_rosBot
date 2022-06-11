@@ -2,8 +2,8 @@
 // Created by user on 6/26/21.
 //
 
-#ifndef ADAFRUIT_9D0F_IMU_SHARED_UTIL_H
-#define ADAFRUIT_9D0F_IMU_SHARED_UTIL_H
+#ifndef REGISTER_UTILS_H
+#define REGISTER_UTILS_H
 
 #define ENABLE_REGISTER_DISPLAY 0
 
@@ -27,4 +27,4 @@ void display_register_16bits(const std::string& reg_a_name, uint16_t reg_a, cons
 
 }
 
-#endif //ADAFRUIT_9D0F_IMU_SHARED_UTIL_H
+#endif //REGISTER_UTILS_H

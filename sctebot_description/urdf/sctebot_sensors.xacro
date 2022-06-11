@@ -9,7 +9,7 @@
         <always_on>true</always_on>
         <update_rate>100</update_rate>
         <visualize>true</visualize>
-        <topic>__default_topic__</topic>
+        <!--topic>__default_topic__</topic-->
         <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
           <robotNamespace>$(arg robot_namespace)</robotNamespace>
           <topicName>gazebo/imu</topicName>
@@ -32,8 +32,8 @@
       <robotNamespace>$(arg robot_namespace)</robotNamespace>
       <bodyName>base_link</bodyName>
       <frameId>gps_link</frameId>
-      <topicName>primary_gps/gps/fix</topicName>
-      <velocityTopicName>primary_gps/gps/fix_velocity</velocityTopicName>
+      <topicName>gazebo/gps/fix</topicName>
+      <velocityTopicName>gazebo/gps/fix_velocity</velocityTopicName>
       <referenceLatitude>32.76428904214641</referenceLatitude>
       <referenceLongitude>-117.22632586042305</referenceLongitude>
       <referenceHeading>0.0</referenceHeading>

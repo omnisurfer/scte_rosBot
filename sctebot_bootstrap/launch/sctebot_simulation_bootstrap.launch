@@ -1,0 +1,67 @@
+<launch>
+
+    <arg name="robot_namespace" default="/sctebot" />
+
+    <arg name="gui" default="true"/>
+    <arg name="paused" default="false"/>
+    <arg name="set_timeout" default="false"/>
+    <arg name="timeout" default="0.0"/>
+
+    <!-- region Model -->
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="1"/>
+    <arg name="yaw" default="0.0"/>
+
+    <arg name="latitude_ref" default="0"/>
+    <arg name="longitude_ref" default="0"/>
+    <arg name="altitude_ref" default="0"/>
+
+    <include file="$(find sctebot_control)/launch/sctebot_control.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+
+    <include file="$(find sctebot_description)/launch/sctebot_upload.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+        <arg name="x" value="$(arg x)"/>
+        <arg name="y" value="$(arg y)"/>
+        <arg name="z" value="$(arg z)"/>
+        <arg name="yaw" value="$(arg yaw)"/>
+
+        <arg name="latitude_ref" value="$(arg latitude_ref)"/>
+        <arg name="longitude_ref" value="$(arg longitude_ref)"/>
+        <arg name="altitude_ref" value="$(arg altitude_ref)"/>
+    </include>
+    <!-- endregion -->
+
+    <!-- region Gazebo -->
+    <include file="$(find sctebot_gazebo)/launch/sctebot_world.launch">
+
+    </include>
+    <!-- endregion -->
+
+    <!-- region Sensors -->
+    <!-- endregion -->
+
+    <!-- region Localization -->
+    <include file="$(find sctebot_localization)/launch/sctebot_localization.launch">
+
+    </include>
+    <!-- endregion -->
+
+    <!-- region Hardware -->
+    <!-- endregion -->
+
+    <!-- region Control -->
+    <include file="$(find sctebot_control)/launch/sctebot_teleop_joy.launch">
+
+    </include>
+    <!-- endregion -->
+
+    <!-- region Visualization -->
+    <include file="$(find sctebot_viz)/launch/sctebot_rviz.launch">
+
+    </include>
+    <!-- endregion -->
+
+</launch>

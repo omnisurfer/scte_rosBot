@@ -3,7 +3,7 @@ implement than trying to open up the 2947 port on the machine hosting the GPS.
 https://stackoverflow.com/questions/42240757/access-gpsd-port-2947-over-network
 
 - gpsd will not work with /dev/pps0 unless it is recompiled to hold onto its root privileges. You can run the binary from
-the command line to allow it to work with the 1pps signal.
+the command line to allow it to work with the 1pps signal. Tried to recompile, no luck. Maybe did it wrong...
 https://bugs.archlinux.org/task/53651
 
 - run config_pi_gps.sh to configure the adafruit ultimate gps to run at 115200 and to output a PPS signal.
@@ -14,4 +14,7 @@ gpsd (/etc/default/gpsd):
 DEVICES="/dev/ttyAMA0 /dev/pps0"
 
 # Other options you want to pass to gpsd
+# -r to accept gps time without fix
 GPSD_OPTIONS="-G -b -s 115200"
+
+https://bugs.launchpad.net/ubuntu/+source/gpsd/+bug/1872175

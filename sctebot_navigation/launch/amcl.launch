@@ -1,6 +1,6 @@
 <launch>
   <!-- Arguments -->
-  <arg name="model"          default="sctebot"/>
+  <arg name="model"          default="/sctebot"/>
   <arg name="scan_topic"     default="scan"/>
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
@@ -41,7 +41,7 @@
     <param name="odom_alpha2"               value="0.1"/>
     <param name="odom_alpha3"               value="0.1"/>
     <param name="odom_alpha4"               value="0.1"/>
-    <param name="odom_frame_id"             value="odom"/>
+    <param name="odom_frame_id"             value="pal_odom"/>
     <param name="base_frame_id"             value="base_footprint"/>
 
   </node>

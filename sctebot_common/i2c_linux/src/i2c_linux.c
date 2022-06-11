@@ -21,7 +21,7 @@
  *
  * @param   [in]        context device context
  * @param   [in/out]    message: message contains buffer with information on
- *                      how to store or retreive information.
+ *                      how to store or retrieve information.
  *                      If message->write is true, data will be stored, otherwise read
  *
  * @returns             1 on success, otherwise 0
@@ -86,16 +86,16 @@ int i2c_dev_open(context_t *context, int device_number, int slave_address) {
     sprintf(filename, "/dev/i2c-%d", device_number);
 
     if((context->device = open(filename, O_RDWR)) < 0) {
-        printf("Failed to open /dev/i2c-%d: %s\n", device_number, strerror(errno));
+        //printf("Failed to open /dev/i2c-%d: %s\n", device_number, strerror(errno));
         return 0;
     }
 
     if(ioctl(context->device, I2C_SLAVE, slave_address) < 0) {
-        printf("Failed to acquire bus access at %d", slave_address);
+        //printf("Failed to acquire bus access at %d", slave_address);
         return 0;
     }
 
-    printf("/dev/i2c-%d opened\r\n", device_number);
+    //printf("/dev/i2c-%d opened\r\n", device_number);
 
     return 1;
 }
@@ -123,12 +123,11 @@ int i2c_is_connected(context_t *context) {
 }
 
 void i2c_dev_close(context_t *context, int device_number) {
-    printf("/dev/i2c-%d closed\r\n", device_number);
+    //printf("/dev/i2c-%d closed\r\n", device_number);
 
     close(context->device);
     context->device = 0;
 }
-
 
 int main(int argc, char* argv[]) {
     printf("i2c_linux\n");
@@ -151,7 +150,6 @@ int main(int argc, char* argv[]) {
     if(!is_connected) {
         printf("is_connected failed\n");
     }
-
 
     buffer_t inputMessage = {
             .bytes = inputBuffer,

@@ -6,7 +6,7 @@
     <!--arg name="model" default="$(env SCTEBOT_MODEL)" doc="model type [sctebot, sctebot_a]"/-->
     <arg name="model" default="sctebot"/>
     <arg name="cmd_vel_topic" default="cmd_vel" />
-    <arg name="odom_topic" default="odom" />
+    <arg name="odom_topic" default="pal_odom" />
     <arg name="move_forward_only" default="false"/>
 
     <arg name="base_global_planner" default="navfn/NavfnROS"/>
@@ -25,7 +25,7 @@
         <rosparam file="$(find sctebot_navigation)/param/move_base_params.yaml" command="load" />
         <rosparam file="$(find sctebot_navigation)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />
         <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
-        <remap from="odom" to="$(arg odom_topic)"/>
+        <remap from="pal_odom" to="$(arg odom_topic)"/>
         <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
 
     </node>

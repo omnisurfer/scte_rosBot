@@ -14,13 +14,9 @@
 #include <thread>
 #include <condition_variable>
 
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-
-namespace logging = boost::log;
-
 #include "i2c_linux/i2c_linux.h"
+#include "utils/boost_logging.h"
+#include "utils/register_utils.h"
 
 class Bmp180Pressure {
 
@@ -89,6 +85,7 @@ private:
         } ControlRegister;
     };
 
+    std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
     int _sensor_update_period_ms{};
@@ -104,6 +101,7 @@ private:
     uint8_t  _short_uncompensated_pressure_xlsb{};
 
     bool run_data_capture_thread = false;
+    bool is_running_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
     std::mutex data_capture_thread_run_mutex;
     std::thread data_capture_thread;
@@ -115,9 +113,13 @@ private:
     host_callback_function _host_callback_function{};
 
     bool run_mock_device_thread = false;
+    bool is_running_mock_device_thread = false;
     std::condition_variable mock_device_thread_run_cv;
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
+
+    std::mutex& _data_capture_worker_execute_cycle_mutex;
+    std::condition_variable& _data_capture_worker_execute_cycle_conditional_variable;
 
     bool sensor_calibration_read = false;
 
@@ -187,16 +189,14 @@ private:
 
     int _connect_to_device() {
 
-        /*
-         * setup the i2c context and connect
-         */
+        // set up the i2c context and connect
         _i2c_device_context = {0};
-        if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
+        if(!open_i2c_dev(_i2c_bus_number, _i2c_device_address)) {
             BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open device";
             return 0;
         }
 
-        if(!i2c_is_connected(&_i2c_device_context)) {
+        if(!is_i2c_dev_connected()) {
             BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect to device";
             return 0;
         }
@@ -214,7 +214,7 @@ private:
 
         uint8_t register_address;
         register_address = Bmp180Pressure::Addresses::DataRegisters::CHIP_ID;
-        i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        receive_i2c(&inbound_message, register_address);
 
         if(chip_id[0] != Bmp180Pressure::MagicNumbers::ChipId::CHIP_ID) {
             BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device chip id";
@@ -228,10 +228,16 @@ private:
 
     int _close_device() {
 
-        i2c_dev_close(&_i2c_device_context, _i2c_bus_number);
+        close_i2c_dev(_i2c_bus_number);
 
         return 0;
     }
+
+    int receive_i2c(buffer_t *data, uint8_t register_address);
+    int send_i2c(buffer_t *data, uint8_t register_address);
+    int open_i2c_dev(int device_number, int slave_address);
+    int is_i2c_dev_connected();
+    void close_i2c_dev(int bus_number);
 
     int _mock_load_calibration_data() {
 
@@ -312,7 +318,7 @@ private:
 
         int8_t register_address = 0x00;
 
-        if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
+        if (send_i2c(&outbound_message, register_address)) {
             BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": sent mock calibration data to device OK";
             return 0;
         }
@@ -515,47 +521,27 @@ public:
     constexpr static const double pressure_variance = relative_accuracy_pressure_hpa;
     constexpr static const double temperature_variance = absolute_accuracy_temperature;
 
-    Bmp180Pressure() = default;
+    //Bmp180Pressure() = default;
+    Bmp180Pressure(std::mutex& worker_execute_mutex, std::condition_variable& worker_execute_conditional_variable):
+            _data_capture_worker_execute_cycle_mutex(worker_execute_mutex),
+            _data_capture_worker_execute_cycle_conditional_variable(worker_execute_conditional_variable){
+    }
 
     ~Bmp180Pressure() {
+
         BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
-        this->_close_device();
-
-        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-        this->run_data_capture_thread = false;
-        this->data_capture_thread_run_cv.notify_one();
-        data_lock.unlock();
-
-        std::unique_lock<std::mutex> mock_device_lock(this->mock_device_thread_run_mutex);
-        this->run_mock_device_thread = false;
-        this->mock_device_thread_run_cv.notify_one();
-        mock_device_lock.unlock();
-
-        if(data_capture_thread.joinable()) {
-            data_capture_thread.join();
-
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
-        }
-
-        if(mock_device_thread.joinable()) {
-            mock_device_thread.join();
-
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
-        }
+        this->_shutdown_device();
     }
 
     int config_device(
             int bus_number,
             int device_address,
-            int update_period_ms,
             std::string device_name,
-            host_callback_function
-            function_pointer
+            host_callback_function function_pointer
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
-        _sensor_update_period_ms = update_period_ms;
         _device_name = std::move(device_name);
 
         _host_callback_function = function_pointer;
@@ -573,10 +559,60 @@ public:
         return status;
     }
 
-    int init_device() {
+    int init_device(int update_period_ms) {
+
+        _sensor_update_period_ms = update_period_ms;
+
         this->_init_device();
 
         return 1;
+    }
+
+    void _shutdown_device() {
+
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.notify_all();
+        execute_cycle_lock.unlock();
+
+        bool data_capture_thread_was_running = false;
+        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+        {
+            if(is_running_data_capture_thread) {
+                data_capture_thread_was_running = is_running_data_capture_thread;
+                this->run_data_capture_thread = false;
+                this->data_capture_thread_run_cv.notify_one();
+            }
+            data_lock.unlock();
+        }
+
+        if(data_capture_thread_was_running) {
+            if (data_capture_thread.joinable()) {
+                data_capture_thread.join();
+            }
+        }
+
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+
+        bool mock_device_thread_was_running = false;
+        std::unique_lock<std::mutex> mock_device_lock(this->mock_device_thread_run_mutex);
+        {
+            if(is_running_mock_device_thread) {
+                mock_device_thread_was_running = is_running_mock_device_thread;
+                this->run_mock_device_thread = false;
+                this->mock_device_thread_run_cv.notify_one();
+            }
+            mock_device_lock.unlock();
+        }
+
+        if(mock_device_thread_was_running) {
+            if (mock_device_thread.joinable()) {
+                mock_device_thread.join();
+            }
+        }
+
+        BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
+
+        this->_close_device();
     }
 
     void enable_load_mock_data();
@@ -585,12 +621,12 @@ public:
 
         mock_device_thread = std::thread(&Bmp180Pressure::_mock_device_emulation_worker, this);
 
-        // wait a little bit for the thread to get started
+        // wait a little for the thread to get started
         std::this_thread::sleep_for(std::chrono::milliseconds (10));
 
         std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-        this->mock_device_thread_run_cv.notify_one();
         this->run_mock_device_thread = true;
+        this->mock_device_thread_run_cv.notify_one();
         device_lock.unlock();
 
         return 1;
@@ -598,3 +634,4 @@ public:
 };
 
 #endif //BMP180_H
+

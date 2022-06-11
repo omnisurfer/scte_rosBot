@@ -10,22 +10,14 @@
 #include <cstring>
 #include <thread>
 #include <condition_variable>
-#include <math.h>
+#include <cmath>
 
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-
-namespace logging = boost::log;
+#include "i2c_linux/i2c_linux.h"
+#include "utils/boost_logging.h"
+#include "utils/register_utils.h"
 
 #define DEG_TO_RAD (M_PI/180.0)
 
-#include "i2c_linux/i2c_linux.h"
-
-/*
- * TODO CONVERT DRIVER TO L3GD20H! I WAS READING THE DATA SHEET FOR THE NON-H DEVICE TYPE.
- * THIS EXPLAINS THE D7 WHO_AM_I INSTEAD OF D4
- */
 class L3gd20Gyro {
 
     // 1101 0101 0xD5 (Read address)
@@ -61,7 +53,7 @@ public:
         MAX_CUT_OFF
     } BandwidthCutOff;
 
-    std::map<int, int> data_rate_sample_rate{
+    std::map<int, float> data_rate_sample_rate{
             {L3gd20Gyro::OutputDataRates::ODR_12P5HZ, 12.5},
             {L3gd20Gyro::OutputDataRates::ODR_25P0HZ, 25.0},
             {L3gd20Gyro::OutputDataRates::ODR_50P0HZ, 50.0},
@@ -267,11 +259,11 @@ private:
         } Int1Duration;
     };
 
+    std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
     int _sensor_update_period_ms{};
     std::string _device_name;
-    //std::string* _device_name = nullptr;
 
     context_t _i2c_device_context{};
 
@@ -300,36 +292,42 @@ private:
     float _range_sensitivity = 0.0;
 
     bool run_data_capture_thread = false;
+    bool is_running_data_capture_thread = false;
     std::condition_variable data_capture_thread_run_cv;
     std::mutex data_capture_thread_run_mutex;
     std::thread data_capture_thread;
 
     typedef void (*host_callback_function)(
-            float temperature,
-            float x_axis, float y_axis, float z_axis
+            const float temperature,
+            const float x_axis, const float y_axis, const float z_axis
             );
     host_callback_function _host_callback_function{};
 
     bool mock_run_device_thread = false;
+    bool is_running_mock_device_thread = false;
     std::condition_variable mock_device_thread_run_cv;
     std::mutex mock_device_thread_run_mutex;
     std::thread mock_device_thread;
 
+    std::mutex& _data_capture_worker_execute_cycle_mutex;
+    std::condition_variable& _data_capture_worker_execute_cycle_conditional_variable;
+
     int _init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff);
 
     int _connect_to_device() {
+        std::string device_name = this->_device_name;
 
         /*
          * setup the i2c context and connect
          */
         _i2c_device_context = {0};
-        if(!i2c_dev_open(&_i2c_device_context, _i2c_bus_number, _i2c_device_address)) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to open";
+        if(!open_i2c_dev(_i2c_bus_number, _i2c_device_address)) {
+            BOOST_LOG_TRIVIAL(error) << device_name << ": failed to open";
             return 0;
         }
 
-        if(!i2c_is_connected(&_i2c_device_context)) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to connect";
+        if(!is_i2c_dev_connected()) {
+            BOOST_LOG_TRIVIAL(error) << device_name << ": failed to connect";
             return 0;
         }
 
@@ -346,10 +344,10 @@ private:
 
         uint8_t register_address;
         register_address = L3gd20Gyro::Addresses::Registers::WHO_AM_I;
-        i2c_recv(&_i2c_device_context, &inbound_message, register_address);
+        receive_i2c(&inbound_message, register_address);
 
         if(chip_id[0] != L3gd20Gyro::MagicNumbers::WhoAmI::WHO_AM_I) {
-            BOOST_LOG_TRIVIAL(error) << this->_device_name << ": failed to read device WHO_AM_I register";
+            BOOST_LOG_TRIVIAL(error) << device_name << ": failed to read device WHO_AM_I register";
             return 0;
         }
         return 1;
@@ -357,12 +355,19 @@ private:
 
     int _close_device() {
 
-        i2c_dev_close(&_i2c_device_context, _i2c_bus_number);
+        close_i2c_dev(_i2c_bus_number);
 
         return 0;
     }
 
+    int receive_i2c(buffer_t *data, uint8_t register_address);
+    int send_i2c(buffer_t *data, uint8_t register_address);
+    int open_i2c_dev(int device_number, int slave_address);
+    int is_i2c_dev_connected();
+    void close_i2c_dev(int bus_number);
+
     int _mock_load_data() {
+        std::string device_name = this->_device_name;
         /*
          * @77 bmp180 (?)
          * @6b l3gd20 (?)
@@ -453,12 +458,12 @@ private:
 
         int8_t register_address = 0x00;
 
-        if (i2c_send(&_i2c_device_context, &outbound_message, register_address)) {
-            BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": loaded mock data for device OK";
+        if (send_i2c(&outbound_message, register_address)) {
+            BOOST_LOG_TRIVIAL(debug) << device_name << ": loaded mock data for device OK";
             return 0;
         }
         else {
-            BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": loaded mock data for device FAILED";
+            BOOST_LOG_TRIVIAL(debug) <<  device_name << ": loaded mock data for device FAILED";
             return -1;
         }
     }
@@ -491,33 +496,16 @@ private:
 
 public:
 
-    L3gd20Gyro() = default;
+    L3gd20Gyro(std::mutex& worker_execute_mutex, std::condition_variable& worker_execute_conditional_variable):
+            _data_capture_worker_execute_cycle_mutex(worker_execute_mutex),
+            _data_capture_worker_execute_cycle_conditional_variable(worker_execute_conditional_variable){
+    }
 
     ~L3gd20Gyro() {
 
         BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": destructor running";
 
-        this->_close_device();
-
-        this->run_data_capture_thread = false;
-
-        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
-        this->data_capture_thread_run_cv.notify_one();
-        data_lock.unlock();
-
-        if(data_capture_thread.joinable()) {
-            data_capture_thread.join();
-        }
-
-        this->mock_run_device_thread = false;
-
-        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
-        this->mock_device_thread_run_cv.notify_one();
-        device_lock.unlock();
-
-        if(mock_device_thread.joinable()) {
-            mock_device_thread.join();
-        }
+        this->_shutdown_device();
 
     }
 
@@ -525,8 +513,7 @@ public:
             int bus_number,
             int device_address,
             std::string device_name,
-            host_callback_function
-            function_pointer
+            host_callback_function function_pointer
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
@@ -550,15 +537,62 @@ public:
 
     int init_device(L3gd20Gyro::OutputDataRates_t output_data_rate, L3gd20Gyro::BandwidthCutOff_t bandwidth_cutoff) {
 
-        int data_rate = this->data_rate_sample_rate[output_data_rate];
+        float data_rate_hz = this->data_rate_sample_rate[output_data_rate];
 
-        float rate = (1.0f / float(data_rate)) * (1.0f / 4);
+        float rate_s = (1.0f / float(data_rate_hz));
 
-        this->_sensor_update_period_ms = int(rate * 1000);
+        this->_sensor_update_period_ms = int(rate_s * 1000);
 
         this->_init_device(output_data_rate, bandwidth_cutoff);
 
         return 1;
+    }
+
+    void _shutdown_device() {
+
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.notify_all();
+        execute_cycle_lock.unlock();
+
+        bool data_capture_thread_was_running = false;
+        std::unique_lock<std::mutex> data_lock(this->data_capture_thread_run_mutex);
+        {
+            if(is_running_data_capture_thread) {
+                data_capture_thread_was_running = is_running_data_capture_thread;
+                this->run_data_capture_thread = false;
+                this->data_capture_thread_run_cv.notify_one();
+            }
+            data_lock.unlock();
+        }
+
+        if(data_capture_thread_was_running) {
+            if(data_capture_thread.joinable()) {
+                data_capture_thread.join();
+
+                BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": data_capture_thread joined";
+            }
+        }
+
+        bool mock_device_thread_was_running = false;
+        std::unique_lock<std::mutex> device_lock(this->mock_device_thread_run_mutex);
+        {
+            if(is_running_mock_device_thread) {
+                mock_device_thread_was_running = is_running_mock_device_thread;
+                this->mock_run_device_thread = false;
+                this->mock_device_thread_run_cv.notify_one();
+            }
+            device_lock.unlock();
+        }
+
+        if(mock_device_thread_was_running) {
+            if (mock_device_thread.joinable()) {
+                mock_device_thread.join();
+
+                BOOST_LOG_TRIVIAL(debug) << this->_device_name << ": mock_device_thread joined";
+            }
+        }
+
+        this->_close_device();
     }
 
     void enable_load_mock_data();

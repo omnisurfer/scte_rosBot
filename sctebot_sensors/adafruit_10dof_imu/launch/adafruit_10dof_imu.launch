@@ -1,0 +1,26 @@
+<launch>
+    <arg name="node_name" default="adafruit_10dof_imu"/>
+    <arg name="robot_namespace" default="sctebot"/>
+    <arg name="update_rate" value="30.0"/>
+    <arg name="i2c_bus_number" default="0"/>
+
+    <group ns="$(arg robot_namespace)">
+
+        <node pkg="adafruit_10dof_imu" type="adafruit_10dof_imu_node" name="$(arg node_name)" output="screen">
+            <param name="update_rate" value="$(arg update_rate)"/>
+            <param name="i2c_bus_number" value="$(arg i2c_bus_number)"/>
+        </node>
+
+        <node pkg="imu_filter_madgwick" type="imu_filter_node" name="$(arg node_name)_filter_madgwick" output="screen" clear_params="true" respawn="false">
+            <remap from="imu/data_raw" to="$(arg node_name)/imu/data_raw"/>
+            <remap from="imu/data" to="$(arg node_name)/imu/data"/>
+            <param name="fixed_frame" value="pal_odom" />
+            <param name="world_frame" value="enu" />
+            <param name="publish_tf" value="false" />
+            <param name="orientation_stddev" value="0.05" />
+            <param name="use_mag" value="false" />
+            <param name="use_magnetic_field_msg" value="false" />
+        </node>
+
+    </group>
+</launch>

@@ -1,39 +1,17 @@
 <launch>
 
-    <arg name="robot_namespace" default="/sctebot"/>
-    <arg name="gps_name" default="primary_gps"/>
+    <arg name="robot_namespace" default="sctebot"/>
+    <arg name="gps_name" default="gpsd_gps"/>
     <arg name="host_ip" default="localhost"/>
     <arg name="host_port" default="2947"/>
-    <arg name="node_name" default="local"/>
 
     <group ns="$(arg robot_namespace)">
-        <!--
-        address must match the hostname EXACTLY and/or be all lower case. Otherwise get known_hosts error.
-        -->
-        <group if="$(eval node_name == 'local')">
-            <node name="$(arg gps_name)" pkg="gpsd_client" type="gpsd_client" output="screen">
-                <param name="_host" value="$(arg host_ip)"/>
-                <param name="_port" value="$(arg host_port)"/>
-                <remap from="fix" to="$(arg gps_name)/gps/fix"/>
-                <remap from="extended_fix" to="$(arg gps_name)/gps/extended_fix"/>
-            </node>
-        </group>
-        <group unless="$(eval node_name == 'local')">
-            <group if="$(eval node_name == 'ros-pi-node')">
-                <machine name="$(arg node_name)" user="user" address="ros-pi-node" default="never" env-loader="/opt/ros/noetic/env.sh" timeout="10"/>
-            </group>
-            <group if="$(eval node_name == 'ros-vm-node')">
-                <machine name="$(arg node_name)" user="user" address="ros-vm-node" default="never" env-loader="/opt/ros/noetic/env.sh" timeout="10"/>
-            </group>
-
-            <node name="$(arg gps_name)" pkg="gpsd_client" type="gpsd_client" output="screen" machine="$(arg node_name)">
-                <param name="_host" value="$(arg host_ip)"/>
-                <param name="_port" value="$(arg host_port)"/>
-                <remap from="fix" to="$(arg gps_name)/gps/fix"/>
-                <remap from="extended_fix" to="$(arg gps_name)/gps/extended_fix"/>
-            </node>
-        </group>
-
+        <node name="$(arg gps_name)" pkg="gpsd_client" type="gpsd_client" output="screen">
+            <param name="_host" value="$(arg host_ip)"/>
+            <param name="_port" value="$(arg host_port)"/>
+            <remap from="fix" to="$(arg gps_name)/gps/fix"/>
+            <remap from="extended_fix" to="$(arg gps_name)/gps/extended_fix"/>
+        </node>
     </group>
 
 </launch>

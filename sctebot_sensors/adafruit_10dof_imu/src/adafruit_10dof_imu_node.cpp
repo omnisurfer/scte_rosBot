@@ -86,6 +86,7 @@ std::condition_variable ros_press_temp_range_publisher_worker_publish_cv;
 std::mutex ros_press_temp_range_publisher_worker_publish_cv_mutex;
 
 bool run_ros_press_temp_range_publisher_worker = true;
+bool is_running_ros_press_temp_range_publisher_worker = false;
 std::mutex run_ros_press_temp_range_publisher_worker_mutex;
 std::thread ros_press_temp_range_publisher_thread;
 
@@ -94,6 +95,7 @@ std::condition_variable ros_imu_publisher_worker_publish_cv;
 std::mutex ros_imu_publisher_worker_publish_cv_mutex;
 
 bool run_ros_imu_publisher_worker = true;
+bool is_running_ros_imu_publisher_worker = false;
 std::mutex run_ros_imu_publisher_worker_mutex;
 std::thread ros_imu_publisher_thread;
 
@@ -102,6 +104,7 @@ std::condition_variable ros_magnetometer_publisher_worker_publish_cv;
 std::mutex ros_magnetometer_publisher_worker_publish_cv_mutex;
 
 bool run_ros_magnetometer_publisher_worker = true;
+bool is_running_ros_magnetometer_publisher_worker = false;
 std::mutex run_ros_magnetometer_publisher_worker_mutex;
 std::thread ros_magnetometer_publisher_thread;
 
@@ -139,19 +142,25 @@ void handle_bmp180_pressure_measurements(float temperature, float pressure) {
 
 #endif
 
-    std::lock_guard<std::mutex> pressure_guard(pressure_data_mutex);
+    std::unique_lock<std::mutex> pressure_guard(pressure_data_mutex);
     pressure_data.fluid_absolute_pressure_pascals = pressure;
     pressure_data.fluid_sea_level_pressure_pascals = sea_level_pressure;
     pressure_data.variance = 0.0;
+    pressure_guard.unlock();
 
-    std::lock_guard<std::mutex> temperature_guard(temperature_data_mutex);
+    std::unique_lock<std::mutex> temperature_guard(temperature_data_mutex);
     temperature_data.temperature = temperature;
     temperature_data.variance = 0.0;
+    temperature_guard.unlock();
 
-    std::lock_guard<std::mutex> range_guard(altitude_range_mutex);
+    std::unique_lock<std::mutex> range_guard(altitude_range_mutex);
     altitude_range_data.range = float(absolute_altitude);
+    range_guard.unlock();
 
-    ros_press_temp_range_publisher_worker_publish_cv.notify_all();
+    std::unique_lock<std::mutex> ros_press_temp_pub_lock(ros_press_temp_range_publisher_worker_publish_cv_mutex);
+    ros_press_temp_range_publisher_worker_publish_cv.notify_one();
+    ros_press_temp_pub_lock.unlock();
+
 }
 
 void handle_l3gd20_gyro_measurements(float temperature, float r_x, float r_y, float r_z) {
@@ -176,7 +185,7 @@ void handle_l3gd20_gyro_measurements(float temperature, float r_x, float r_y, fl
 
     // note, publish occurs on the accel update which hopefully will also include the gyro info
     // since its update occurs before the accel
-    ros_imu_publisher_worker_publish_cv.notify_all();
+    ros_imu_publisher_worker_publish_cv.notify_one();
 }
 
 void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
@@ -200,7 +209,7 @@ void handle_lsm303dlhc_accel_measurements(float x_gs, float y_gs, float z_gs) {
 
     // note, publish occurs on the accel update which hopefully will also include the gyro info
     // since its update occurs before the accel
-    // ros_imu_publisher_worker_publish_cv.notify_all();
+    // ros_imu_publisher_worker_publish_cv.notify_one();
 }
 
 void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_ga, float y_ga, float z_ga) {
@@ -223,7 +232,7 @@ void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_ga, flo
     magnetometer_data.magnetic_field_tesla.z = z_ga;
     magnetometer_guard.unlock();
 
-    ros_magnetometer_publisher_worker_publish_cv.notify_all();
+    ros_magnetometer_publisher_worker_publish_cv.notify_one();
 }
 
 // endregion
@@ -239,6 +248,7 @@ void ros_pressure_temperature_and_range_publisher_worker(const ros::Publisher& a
     BOOST_LOG_TRIVIAL(debug) << "ros_pressure_temperature_and_range_publisher_worker starting...";
 
     std::unique_lock<std::mutex> run_lock(run_ros_press_temp_range_publisher_worker_mutex);
+    is_running_ros_press_temp_range_publisher_worker = true;
     while(run_ros_press_temp_range_publisher_worker) {
         run_lock.unlock();
 
@@ -315,6 +325,7 @@ void ros_imu_publisher_worker(const ros::Publisher& imu_publisher) {
     BOOST_LOG_TRIVIAL(debug) << "ros_imu_data_publisher_worker starting...";
 
     std::unique_lock<std::mutex> run_lock(run_ros_imu_publisher_worker_mutex);
+    is_running_ros_imu_publisher_worker = true;
     while(run_ros_imu_publisher_worker) {
         run_lock.unlock();
 
@@ -421,6 +432,7 @@ void ros_magnetometer_publisher_worker(const ros::Publisher& magnetometer_publis
     BOOST_LOG_TRIVIAL(debug) << "ros_magnetometer_publisher_worker starting...";
 
     std::unique_lock<std::mutex> run_lock(run_ros_magnetometer_publisher_worker_mutex);
+    is_running_ros_magnetometer_publisher_worker = true;
     while(run_ros_magnetometer_publisher_worker) {
         run_lock.unlock();
 
@@ -485,24 +497,53 @@ void signal_handler(int sig) {
 
 int main(int argc, char* argv[]) {
 
+    signal(SIGINT | SIGTERM | SIGABRT | SIGKILL, signal_handler);
+
     std::string node_name = "adafruit_10dof_imu_node";
+
+    int i2c_bus_number = 0;
+
+    // lame way to do this but good enough for debug
+    if(argv[1]) {
+        if (!memcmp("-d", argv[1], 2)) {
+
+            char* p_end;
+            i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
+
+            if (*p_end) {
+                //not sure what to do in this case
+            }
+        }
+    }
+
     ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
 
     ros::NodeHandle ros_node_handle;
-    signal(SIGINT | SIGTERM | SIGABRT | SIGKILL, signal_handler);
 
-    ros::Rate loop_rate(1);
+    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+
+    ROS_INFO("%s: initializing node", node_name.c_str());
 
     //region ROS Params
     std::string robot_namespace;
 
-    if (ros_node_handle.getParam("/robot_namespace", robot_namespace)) {
+    node_name = ros::this_node::getName();
+
+    if (ros_node_handle.getParam("robot_namespace", robot_namespace)) {
         ROS_INFO("%s: robot_namespace %s", node_name.c_str(), robot_namespace.c_str());
     } else {
-        robot_namespace = "sctebot_debug";
+        robot_namespace = "sctebot";
         ROS_WARN("%s: robot_namespace not found, using default %s", node_name.c_str(), robot_namespace.c_str());
     }
+
+    if(ros_node_handle.getParam(node_name + "/i2c_bus_number", i2c_bus_number)) {
+        ROS_INFO("%s: i2c_bus_number %i", node_name.c_str(), i2c_bus_number);
+    } else {
+        ROS_WARN("%s: i2c_bus_number not found, using default %i", node_name.c_str(), i2c_bus_number);
+    }
     //endregion
+
+    ros::Rate loop_rate(1);
 
     bool run_ros_publisher = true;
     bool run_i2c_code = true;
@@ -512,27 +553,12 @@ int main(int argc, char* argv[]) {
 
     if(run_i2c_code) {
 
-        int i2c_bus_number = 0;
-
-        // lame way to do this but good enough for debug
-        if(argv[1]) {
-            if (!memcmp("-d", argv[1], 2)) {
-
-                char* p_end;
-                i2c_bus_number = (int)std::strtol(argv[2], &p_end, 10);
-
-                if (*p_end) {
-                    //not sure what to do in this case
-                }
-            }
-        }
-
-        if(i2c_bus_number > 1) {
-            ROS_WARN("%s: WARNING! I2C Bus number is %i", node_name.c_str(), i2c_bus_number);
-        }
+        ROS_INFO("%s: Connecting to I2C Bus number is %i", node_name.c_str(), i2c_bus_number);
 
         // TODO change this to an exception?
-        bool init_ok = adaFruit10DoFImu->init_device(
+        bool init_ok = true;
+
+        init_ok = adaFruit10DoFImu->init_device(
                 i2c_bus_number,
                 handle_bmp180_pressure_measurements,
                 handle_l3gd20_gyro_measurements,
@@ -546,6 +572,7 @@ int main(int argc, char* argv[]) {
         }
         else {
             ROS_WARN("%s: IMU initialization failed", node_name.c_str());
+
             return 0;
         }
     }
@@ -557,19 +584,19 @@ int main(int argc, char* argv[]) {
                         logging::trivial::severity >= logging::trivial::debug
                 );
 
-        ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>("ada10dof/imu/data_raw", 1000);
+        ros::Publisher imu_publisher = ros_node_handle.advertise<sensor_msgs::Imu>(node_name + "/imu/data_raw", 1000);
         ros::Publisher magnetometer_publisher = ros_node_handle.advertise<sensor_msgs::MagneticField>(
-                "ada10dof/mag/data_raw", 1000);
+                node_name + "/mag/data_raw", 1000);
 
         ros::Publisher atm_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
-                "ada10dof/atm_pressure/data_raw", 100);
+                node_name + "/atm_pressure/data_raw", 100);
         ros::Publisher sea_lvl_pressure_publisher = ros_node_handle.advertise<sensor_msgs::FluidPressure>(
-                "ada10dof/sea_lvl_pressure/data_raw", 100);
+                node_name + "/sea_lvl_pressure/data_raw", 100);
 
         ros::Publisher atm_temperature_publisher = ros_node_handle.advertise<sensor_msgs::Temperature>(
-                "ada10dof/atm_temperature/data_raw", 100);
+                node_name + "/atm_temperature/data_raw", 100);
         ros::Publisher atm_altitude_publisher = ros_node_handle.advertise<sensor_msgs::Range>(
-                "ada10dof/atm_altitude/data_raw", 100);
+                node_name + "/atm_altitude/data_raw", 100);
 
         ros_press_temp_range_publisher_thread = std::thread(
                 ros_pressure_temperature_and_range_publisher_worker,
@@ -607,29 +634,41 @@ int main(int argc, char* argv[]) {
     if(run_ros_publisher) {
         // pressure publisher
         std::unique_lock<std::mutex> run_ros_pressure_publisher_worker_lock(run_ros_press_temp_range_publisher_worker_mutex);
-        run_ros_press_temp_range_publisher_worker = false;
-        run_ros_pressure_publisher_worker_lock.unlock();
-        ros_press_temp_range_publisher_worker_publish_cv.notify_all();
+        {
+            if(is_running_ros_press_temp_range_publisher_worker) {
+                run_ros_press_temp_range_publisher_worker = false;
+                ros_press_temp_range_publisher_worker_publish_cv.notify_one();
+            }
+            run_ros_pressure_publisher_worker_lock.unlock();
+        }
+
+        // imu publisher
+        std::unique_lock<std::mutex> run_ros_imu_publisher_worker_lock(run_ros_imu_publisher_worker_mutex);
+        {
+            if(is_running_ros_imu_publisher_worker) {
+                run_ros_imu_publisher_worker = false;
+                ros_imu_publisher_worker_publish_cv.notify_one();
+            }
+            run_ros_imu_publisher_worker_lock.unlock();
+        }
+
+        // magnetometer publisher
+        std::unique_lock<std::mutex> run_ros_magnetometer_publisher_worker_lock(run_ros_magnetometer_publisher_worker_mutex);
+        {
+            if(is_running_ros_magnetometer_publisher_worker) {
+                run_ros_magnetometer_publisher_worker = false;
+                ros_magnetometer_publisher_worker_publish_cv.notify_one();
+            }
+            run_ros_magnetometer_publisher_worker_lock.unlock();
+        }
 
         if(ros_press_temp_range_publisher_thread.joinable()) {
             ros_press_temp_range_publisher_thread.join();
         }
 
-        // imu publisher
-        std::unique_lock<std::mutex> run_ros_imu_publisher_worker_lock(run_ros_imu_publisher_worker_mutex);
-        run_ros_imu_publisher_worker = false;
-        run_ros_imu_publisher_worker_lock.unlock();
-        ros_imu_publisher_worker_publish_cv.notify_all();
-
         if(ros_imu_publisher_thread.joinable()) {
             ros_imu_publisher_thread.join();
         }
-
-        // magnetometer publisher
-        std::unique_lock<std::mutex> run_ros_magnetometer_publisher_worker_lock(run_ros_magnetometer_publisher_worker_mutex);
-        run_ros_magnetometer_publisher_worker = false;
-        run_ros_magnetometer_publisher_worker_lock.unlock();
-        ros_magnetometer_publisher_worker_publish_cv.notify_all();
 
         if(ros_magnetometer_publisher_thread.joinable()) {
             ros_magnetometer_publisher_thread.join();

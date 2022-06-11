@@ -1,0 +1,40 @@
+<launch>
+
+    <arg name="node_name" default="ros-pi-node"/>
+
+    <!--
+    Using ros remote launch does not work. The launched nodes can't access the i2c devices regardless of permission settings.
+    <machine name="$(arg node_name)" user="user" address="ros-pi-node" default="never" env-loader="/opt/ros/noetic/env.sh" timeout="10"/>
+    -->
+
+    <!-- region Localization -->
+    <!---->
+    <include file="$(find adafruit_10dof_imu)/launch/adafruit_10dof_imu.launch">
+        <arg name="i2c_bus_number" value="4"/>
+    </include>
+    <!---->
+
+    <!-- GPSD GPS -->
+    <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
+        <arg name="gps_name" value="primary_gps"/>
+    </include>
+    <!---->
+
+    <!-- NavSat GPS -->
+    <!--
+    <include file="$(find navsat_serial_gps)/launch/bu353s4_navsat_gps.launch">
+        <arg name="gps_name" value="bu353s4_gps"/>
+    </include>
+    -->
+    <!---->
+    <!-- endregion -->
+
+    <!-- region Locomotion -->
+    <!---->
+    <include file="$(find adafruit_servo_hat)/launch/adafruit_servo_hat.launch">
+        <arg name="i2c_bus_number" value="1"/>
+    </include>
+    <!---->
+    <!-- endregion -->
+
+</launch>
