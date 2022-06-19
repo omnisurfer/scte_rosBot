@@ -314,7 +314,7 @@ public:
         cmd_linear_pwm = (cmd_linear_x_velocity / this->_max_linear_x_speed_m_s) * 0.5 + 0.5;
 
         // TODO these calls will go into the write command
-        this->command_pwm(Pca9685LEDController::LED0, float(cmd_linear_pwm));
+        this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm));
     }
 
     void command_angular_z_velocity(double cmd_angular_z_velocity) {
@@ -329,7 +329,7 @@ public:
         cmd_angular_pwm = (cmd_angular_z_velocity / this->_max_angular_z_rad_s) * 0.5 + 0.5;
 
         // TODO these calls will go into the write command
-        this->command_pwm(Pca9685LEDController::LED1, float(cmd_angular_pwm));
+        this->command_pwm(Pca9685LEDController::LED0, float(cmd_angular_pwm));
     }
 
     void command_pwm(Pca9685LEDController::LEDn led_n, float pwm_on_percent) {
