@@ -9,6 +9,7 @@
         <node pkg="adafruit_10dof_imu" type="adafruit_10dof_imu_node" name="$(arg node_name)" output="screen">
             <param name="update_rate" value="$(arg update_rate)"/>
             <param name="i2c_bus_number" value="$(arg i2c_bus_number)"/>
+            <param name="adafruit_frame_id" value="base_link"/>
         </node>
 
         <node pkg="imu_filter_madgwick" type="imu_filter_node" name="$(arg node_name)_filter_madgwick" output="screen" clear_params="true" respawn="false">

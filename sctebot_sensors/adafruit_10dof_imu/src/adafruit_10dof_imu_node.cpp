@@ -281,28 +281,28 @@ void ros_pressure_temperature_and_range_publisher_worker(const ros::Publisher& a
         ros::Time message_time = ros::Time::now();
 
         sensor_msgs::FluidPressure atm_pressure_msg = sensor_msgs::FluidPressure();
-        atm_pressure_msg.header.frame_id = "atm_frame";
+        atm_pressure_msg.header.frame_id = adafruit_frame_id + "/atm_frame";
         atm_pressure_msg.header.seq = 0;
         atm_pressure_msg.header.stamp = message_time;
         atm_pressure_msg.fluid_pressure = pressure;
         atm_pressure_msg.variance = Bmp180Pressure::pressure_variance;
 
         sensor_msgs::FluidPressure sea_lvl_pressure_msg = sensor_msgs::FluidPressure();
-        sea_lvl_pressure_msg.header.frame_id = "sea_lvl_frame";
+        sea_lvl_pressure_msg.header.frame_id = adafruit_frame_id + "/sea_lvl_frame";
         sea_lvl_pressure_msg.header.seq = 0;
         sea_lvl_pressure_msg.header.stamp = message_time;
         sea_lvl_pressure_msg.fluid_pressure = sea_level_pressure;
         sea_lvl_pressure_msg.variance = Bmp180Pressure::pressure_variance;
 
         sensor_msgs::Temperature atm_temperature_msg = sensor_msgs::Temperature();
-        atm_temperature_msg.header.frame_id = "temperature_frame";
+        atm_temperature_msg.header.frame_id = adafruit_frame_id + "/temperature_frame";
         atm_temperature_msg.header.seq = 0;
         atm_temperature_msg.header.stamp = message_time;
         atm_temperature_msg.temperature = temperature;
         atm_temperature_msg.variance = Bmp180Pressure::temperature_variance;
 
         sensor_msgs::Range atm_altitude_msg = sensor_msgs::Range();
-        atm_altitude_msg.header.frame_id = "atm_altitude_msg";
+        atm_altitude_msg.header.frame_id = adafruit_frame_id + "/atm_altitude_msg";
         atm_altitude_msg.header.seq = 0;
         atm_altitude_msg.header.stamp = message_time;
         atm_altitude_msg.range = altitude_range;
@@ -357,7 +357,7 @@ void ros_imu_publisher_worker(const ros::Publisher& imu_publisher) {
         }
 
         sensor_msgs::Imu imu_msg = sensor_msgs::Imu();
-        imu_msg.header.frame_id = "imu_frame";
+        imu_msg.header.frame_id = adafruit_frame_id + "/imu_frame";
         imu_msg.header.seq = 0;
         imu_msg.header.stamp = ros::Time::now();
 
@@ -526,6 +526,7 @@ int main(int argc, char* argv[]) {
 
     //region ROS Params
     std::string robot_namespace;
+    std::string adafruit_frame_id = "ada_10dof_link";
 
     node_name = ros::this_node::getName();
 
@@ -540,6 +541,12 @@ int main(int argc, char* argv[]) {
         ROS_INFO("%s: i2c_bus_number %i", node_name.c_str(), i2c_bus_number);
     } else {
         ROS_WARN("%s: i2c_bus_number not found, using default %i", node_name.c_str(), i2c_bus_number);
+    }
+
+    if(ros_node_handle.getParam(node_name + "/adafruit_frame_id", adafruit_frame_id)) {
+        ROS_INFO("%s: adafruit_frame_id %i", node_name.c_str(), adafruit_frame_id);
+    } else {
+        ROS_WARN("%s: adafruit_frame_id not found, using default %i", node_name.c_str(), adafruit_frame_id);
     }
     //endregion
 
