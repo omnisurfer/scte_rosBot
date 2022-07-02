@@ -544,7 +544,7 @@ int main(int argc, char* argv[]) {
     }
 
     if(ros_node_handle.getParam(node_name + "/adafruit_frame_id", adafruit_frame_id)) {
-        ROS_INFO("%s: adafruit_frame_id %i", node_name.c_str(), adafruit_frame_id);
+        ROS_INFO("%s: adafruit_frame_id %s", node_name.c_str(), adafruit_frame_id.c_str());
     } else {
         ROS_WARN("%s: adafruit_frame_id not found, using default %s", node_name.c_str(), adafruit_frame_id.c_str());
     }
