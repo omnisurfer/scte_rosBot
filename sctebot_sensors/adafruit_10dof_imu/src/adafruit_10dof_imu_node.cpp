@@ -282,28 +282,28 @@ void ros_pressure_temperature_and_range_publisher_worker(const ros::Publisher& a
         ros::Time message_time = ros::Time::now();
 
         sensor_msgs::FluidPressure atm_pressure_msg = sensor_msgs::FluidPressure();
-        atm_pressure_msg.header.frame_id = frame_id + "/atm_frame";
+        atm_pressure_msg.header.frame_id = frame_id; // + "/atm_frame";
         atm_pressure_msg.header.seq = 0;
         atm_pressure_msg.header.stamp = message_time;
         atm_pressure_msg.fluid_pressure = pressure;
         atm_pressure_msg.variance = Bmp180Pressure::pressure_variance;
 
         sensor_msgs::FluidPressure sea_lvl_pressure_msg = sensor_msgs::FluidPressure();
-        sea_lvl_pressure_msg.header.frame_id = frame_id + "/sea_lvl_frame";
+        sea_lvl_pressure_msg.header.frame_id = frame_id; // + "/sea_lvl_frame";
         sea_lvl_pressure_msg.header.seq = 0;
         sea_lvl_pressure_msg.header.stamp = message_time;
         sea_lvl_pressure_msg.fluid_pressure = sea_level_pressure;
         sea_lvl_pressure_msg.variance = Bmp180Pressure::pressure_variance;
 
         sensor_msgs::Temperature atm_temperature_msg = sensor_msgs::Temperature();
-        atm_temperature_msg.header.frame_id = frame_id + "/temperature_frame";
+        atm_temperature_msg.header.frame_id = frame_id; // + "/temperature_frame";
         atm_temperature_msg.header.seq = 0;
         atm_temperature_msg.header.stamp = message_time;
         atm_temperature_msg.temperature = temperature;
         atm_temperature_msg.variance = Bmp180Pressure::temperature_variance;
 
         sensor_msgs::Range atm_altitude_msg = sensor_msgs::Range();
-        atm_altitude_msg.header.frame_id = frame_id + "/atm_altitude_msg";
+        atm_altitude_msg.header.frame_id = frame_id; // + "/atm_altitude_msg";
         atm_altitude_msg.header.seq = 0;
         atm_altitude_msg.header.stamp = message_time;
         atm_altitude_msg.range = altitude_range;
@@ -358,7 +358,7 @@ void ros_imu_publisher_worker(const ros::Publisher& imu_publisher, const std::st
         }
 
         sensor_msgs::Imu imu_msg = sensor_msgs::Imu();
-        imu_msg.header.frame_id = frame_id + "/imu_frame";
+        imu_msg.header.frame_id = frame_id; // + "/imu_frame";
         imu_msg.header.seq = 0;
         imu_msg.header.stamp = ros::Time::now();
 
@@ -428,7 +428,7 @@ void ros_imu_publisher_worker(const ros::Publisher& imu_publisher, const std::st
     BOOST_LOG_TRIVIAL(debug) << "ros_imu_data_publisher_worker exiting...";
 }
 
-void ros_magnetometer_publisher_worker(const ros::Publisher& magnetometer_publisher) {
+void ros_magnetometer_publisher_worker(const ros::Publisher& magnetometer_publisher, const std::string frame_id) {
 
     BOOST_LOG_TRIVIAL(debug) << "ros_magnetometer_publisher_worker starting...";
 
@@ -460,7 +460,7 @@ void ros_magnetometer_publisher_worker(const ros::Publisher& magnetometer_publis
         magnetic_field_tesla.z *= 10000;
 
         sensor_msgs::MagneticField mag_msg = sensor_msgs::MagneticField();
-        mag_msg.header.frame_id = "mag_frame";
+        mag_msg.header.frame_id = frame_id; // "/mag_frame";
         mag_msg.header.seq = 0;
         mag_msg.header.stamp = ros::Time::now();
         geometry_msgs::Vector3 tesla_to_gauss;
@@ -623,7 +623,8 @@ int main(int argc, char* argv[]) {
 
         ros_magnetometer_publisher_thread = std::thread(
                 ros_magnetometer_publisher_worker,
-                magnetometer_publisher
+                magnetometer_publisher,
+                adafruit_frame_id
         );
     }
 
