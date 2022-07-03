@@ -62,7 +62,7 @@
     <node pkg="topic_tools"
           type="throttle"
           name="$(arg camera_name)_points2_throttle"
-          output="scree"
+          output="screen"
           respawn="false"
           args="messages /$(arg robot_namespace)/$(arg camera_name)/points2 5 /$(arg robot_namespace)/$(arg camera_name)/points2_throttle"
     />
