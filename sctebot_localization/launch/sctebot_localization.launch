@@ -83,7 +83,7 @@
                 <remap from="odometry/gps" to="adafruit_ultimate_gps/odometry/gps" />
 
                 <!-- Inputs -->
-                <remap from="odometry/filtered" to="odometry/filtered_map" />
+                <!--remap from="odometry/filtered" to="odometry/filtered_map" /-->
                 <remap from="gps/fix" to="adafruit_ultimate_gps/gps/fix"/>
                 <remap from="imu/data" to="adafruit_10dof_imu/imu/data"/>
             </node>

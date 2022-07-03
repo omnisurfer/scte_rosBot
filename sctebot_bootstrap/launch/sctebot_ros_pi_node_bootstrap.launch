@@ -16,7 +16,7 @@
 
     <!-- GPSD GPS -->
     <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
-        <arg name="gps_name" value="primary_gps"/>
+        <arg name="gps_name" value="adafruit_ultimate_gps"/>
     </include>
     <!---->
 
