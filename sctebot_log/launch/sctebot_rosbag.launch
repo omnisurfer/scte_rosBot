@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="namespace" default="sctebot"/>
+    <arg name="username" default="daniel"/>
+
+    <arg name="bag_name" default="sctebot"/>
+    <arg name="topics_to_record" default="
+        /$(arg namespace)/gazebo/gps/fix
+        /$(arg namespace)/gazebo/imu
+        /$(arg namespace)/stereo_fwd/color/image_raw/compressed
+        /$(arg namespace)/stereo_fwd/color/camera_info
+        /$(arg namespace)/stereo_fwd/left/image_raw/compressed
+        /$(arg namespace)/stereo_fwd/left/camera_info
+        /$(arg namespace)/stereo_fwd/right/image_raw/compressed
+        /$(arg namespace)/stereo_fwd/right/camera_info
+        /$(arg namespace)/stereo_fwd/points2_throttle
+
+        /$(arg namespace)/gps/filtered
+        /$(arg namespace)/odometry/filtered
+
+        /$(arg namespace)/scan
+
+        /$(arg namespace)/realsense_d435i/color/compressed
+        /$(arg namespace)/realsense_d435i/color/camera_info
+        /$(arg namespace)/realsense_d435i/left/compressed
+        /$(arg namespace)/realsense_d435i/left/camera_info
+        /$(arg namespace)/realsense_d435i/right/compressed
+        /$(arg namespace)/realsense_d435i/right/camera_info
+        /$(arg namespace)/realsense_d435i/points2_throttle
+
+        /$(arg namespace)/adafruit_10dof_imu/imu/data_raw
+        /$(arg namespace)/adafruit_10dof_imu/mag/data_raw
+        /$(arg namespace)/adafruit_10dof_imu/atm_pressure/data_raw
+        /$(arg namespace)/adafruit_10dof_imu/sea_lvl_pressure/data_raw
+        /$(arg namespace)/adafruit_10dof_imu/atm_temperature/data_raw
+        /$(arg namespace)/adafruit_10dof_imu/atm_altitude/data_raw
+
+        /$(arg namespace)/gpsd_gps/gps/fix
+        /$(arg namespace)/gpsd_gps/gps/extended_fix
+
+        /$(arg namespace)/ackermann_steering_controller/cmd_vel
+        /$(arg namespace)/ackermann_steering_controller/odom
+
+        /tf
+        /tf_static
+    "/>
+
+    <!-- region Topic Tools -->
+    <node
+            name="$(arg namespace)_topic_tools"
+            pkg="topic_tools"
+            type="throttle"
+            args="messages /$(arg namespace)/stereo_fwd/points2 3.0 /$(arg namespace)/realsense_d435i/points2 3.0"
+    />
+    <!-- endregion -->
+
+    <!-- launch rosbag-->
+    <node
+        name="$(arg namespace)_rosbag_record"
+        pkg="rosbag"
+        type="record"
+        args="record -o /home/$(arg username)/sctebot_rosbags/$(arg namespace) --split --duration 10m $(arg topics_to_record)"
+    />
+
+</launch>
