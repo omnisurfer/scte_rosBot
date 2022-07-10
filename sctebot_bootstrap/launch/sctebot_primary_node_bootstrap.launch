@@ -28,6 +28,7 @@
     <arg name="camera_name" default="realsense_d435i"/>
 
     <include file="$(find sctebot_sensors)/launch/sctebot_realsense.launch">
+        <arg name="camera_name" value="$(arg camera_name)"/>
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
         <arg name="camera" value="$(arg camera_name)"/>
         <arg name="enable_pointcloud" value="true"/>
@@ -55,8 +56,16 @@
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
     </include>
 
-    <!-- SLAM & GMAPP -->
+    <!-- region SLAM & GMAPP -->
 
     <!-- endregion -->
+    <node pkg="topic_tools"
+          type="throttle"
+          name="$(arg camera_name)_points2_throttle"
+          output="screen"
+          respawn="false"
+          args="messages /$(arg robot_namespace)/$(arg camera_name)/points2 5 /$(arg robot_namespace)/$(arg camera_name)/points2_throttle"
+    />
+    <!-- region Throttle -->
 
 </launch>
