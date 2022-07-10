@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!--gazebo reference is the link the sensor is attached to it seems-->
-  <!---->
+  <!-- region IMU -->
   <gazebo reference="imu_link">
     <gravity>true</gravity>
       <sensor name="imu_sensor" type="imu">
@@ -24,8 +24,9 @@
         <pose>0 0 0 0 0 0</pose>
       </sensor>
   </gazebo>
-  <!---->
-  
+  <!-- endregion -->
+
+  <!-- region GPS -->
   <gazebo>
     <plugin name="hector_gps" filename="libhector_gazebo_ros_gps.so">
       <updateRate>10.0</updateRate>
@@ -49,7 +50,9 @@
       <velocityGaussianNoise>0.1 0.1 0.1</velocityGaussianNoise>
     </plugin>
   </gazebo>
+  <!-- endregion -->
 
+  <!-- region Right and Left Cameras -->
   <!--
   - Noise is sampled independently per pixel on each frame.
   That pixel's noise value is added to each of its color
@@ -58,8 +61,8 @@
   - ROS and gazebo use different camera axis conventions,
   this may cause the virtual camera to point in the wrong direction
   -->
-  <!--
-  <gazebo reference="driver_side_camera_base">
+  <!---->
+  <gazebo reference="logitech_driver_side_camera_base">
     <sensor type="camera" name="driver_camera">
       <visualize>true</visualize>
       <update_rate>30.0</update_rate>
@@ -83,10 +86,10 @@
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>10.0</updateRate>
-        <cameraName>stereo_fwd/camera/left</cameraName>
+        <cameraName>logitech_stereo_rear/camera/left</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>/driver_side_camera_optical</frameName>
+        <frameName>logitech_driver_side_camera_optical</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
@@ -96,10 +99,10 @@
       </plugin>
     </sensor>
   </gazebo>
-  -->
+  <!---->
 
-  <!--
-  <gazebo reference="passenger_side_camera_base">
+  <!---->
+  <gazebo reference="logitech_passenger_side_camera_base">
     <sensor type="camera" name="passenger_camera">
       <visualize>true</visualize>
       <update_rate>30.0</update_rate>
@@ -123,10 +126,10 @@
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>10.0</updateRate>
-        <cameraName>stereo_fwd/camera/right</cameraName>
+        <cameraName>logitech_stereo_rear/camera/right</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>/passenger_side_camera_optical</frameName>
+        <frameName>logitech_passenger_side_camera_optical</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
@@ -136,19 +139,23 @@
       </plugin>
     </sensor>
   </gazebo>
-  -->
+  <!---->
+  <!-- endregion -->
 
-  <!--
-  Stereo camera plugin
-  -->
-  <gazebo reference="driver_side_camera_base">
+  <!-- region "Realsense" Stereo Camera -->
+  <xacro:property name="gazebo_stereo_camera_name" default="gazebo_stereo_camera"/>
+
+  <gazebo reference="${gazebo_stereo_camera_name}_body">
+    <!-- stereo section -->
     <sensor type="multicamera" name="stereo_camera">
       <update_rate>30.0</update_rate>
       <camera name="left">
-        <horizontal_fov>1.3962634</horizontal_fov>
+        <pose>0 0.0475 0 0 0 0</pose>
+        <horizontal_fov>1.13446</horizontal_fov>
+        <vertical_fov>1.01229</vertical_fov>
         <image>
-          <width>800</width>
-          <height>800</height>
+          <width>1280</width>
+          <height>720</height>
           <format>R8G8B8</format>
         </image>
         <clip>
@@ -162,11 +169,12 @@
         </noise>
       </camera>
       <camera name="right">
-        <pose>0 -0.07 0 0 0 0</pose>
-        <horizontal_fov>1.3962634</horizontal_fov>
+        <pose>0 -0.0475 0 0 0 0</pose>
+        <horizontal_fov>1.13446</horizontal_fov>
+        <vertical_fov>1.01229</vertical_fov>
         <image>
-          <width>800</width>
-          <height>800</height>
+          <width>1280</width>
+          <height>720</height>
           <format>R8G8B8</format>
         </image>
         <clip>
@@ -185,8 +193,46 @@
         <cameraName>stereo_fwd</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>/driver_side_camera_optical</frameName>
-        <!--<rightFrameName>right_camera_optical_frame</rightFrameName>-->
+        <frameName>gazebo_stereo_camera_optical_frame</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+
+    <!-- mono section -->
+    <sensor type="camera" name="mono_color_camera">
+      <visualize>true</visualize>
+      <update_rate>30.0</update_rate>
+      <camera name="mono_color">
+        <pose>0 0 0 0 0 0</pose>
+        <horizontal_fov>1.20428</horizontal_fov>
+        <vertical_fov>0.733038</vertical_fov>
+        <image>
+          <width>1920</width>
+          <height>1080</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>10.0</updateRate>
+        <cameraName>stereo_fwd/color</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>gazebo_stereo_camera_optical_frame</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
@@ -196,8 +242,10 @@
       </plugin>
     </sensor>
   </gazebo>
-  <!-- /sctebot/multisense_sl/camera/left/image_raw -->
 
+  <!-- endregion -->
+
+  <!-- region LIDAR -->
   <!-- hokuyo
   Noise parameters based on published spec for Hokuyo laser
   achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
@@ -238,7 +286,9 @@
     </sensor>
   </gazebo>
   -->
+  <!-- endregion -->
 
+  <!-- region 1D LIDAR -->
   <gazebo reference="laser_frame">
     <material>Gazebo/FlatBlack</material>
     <sensor type="ray" name="lds_lfcd_sensor">
@@ -291,5 +341,6 @@
       </plugin>
     </sensor>
   </gazebo>
+  <!-- endregion -->
 
 </robot>

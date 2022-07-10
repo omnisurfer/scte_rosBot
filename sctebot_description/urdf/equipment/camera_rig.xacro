@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:macro name="camera_rig" params="link_name parent_link
-    camera_rig_origin
-    camera_rig_rpy
+    <xacro:macro
+            name="camera_rig"
+            params="link_name parent_link camera_rig_origin camera_rig_rpy
     ">
 
         <link name="${link_name}_support">

@@ -5,7 +5,7 @@
 
     <arg name="robot_namespace" default="/sctebot" />
 
-    <arg name="gui" default="true"/>
+    <arg name="gui" default="false"/>
     <arg name="paused" default="false"/>
     <arg name="set_timeout" default="false"/>
     <arg name="timeout" default="0.0"/>

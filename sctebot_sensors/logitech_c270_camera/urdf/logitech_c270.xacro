@@ -56,7 +56,7 @@
             </collision>
         </link>
         <joint name="${camera_link}_base_TO_${camera_link}_body" type="fixed">
-            <origin xyz="0.03 0.015 0.0" rpy="0 0 0"/> <!-- ${M_PI/-2} 0 ${M_PI/-2} -->
+            <origin xyz="0.03 0.015 0.0" rpy="0 0 0"/>
             <parent link="${camera_link}_body"/>
             <child link="${camera_link}_base"/>
         </joint>
@@ -68,4 +68,5 @@
             <child link="${camera_link}_optical"/>
         </joint>
     </xacro:macro>
+
 </robot>

@@ -14,7 +14,7 @@ https://cse.sc.edu/~jokane/agitr/
             <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
                 <param name="approximate_sync" value="true"/>
                 <param name="queue_size" value="10"/>
-                <param name="frameId" value="driver_side_camera_optical"/>
+                <param name="frameId" value="gazebo_stereo_camera_optical"/>
             </node>
             <!---->
 
