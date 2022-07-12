@@ -2,7 +2,7 @@ https://medium.com/@rajitha.mail48/how-to-build-a-tile-server-manually-52330ae9c
 
 # Import
 sudo docker run \
-    -v /home/daniel/Downloads/california-latest.osm.pbf:/data/region.osm,pbf \
+    -v /home/daniel/Downloads/california-latest.osm.pbf:/data/region.osm.pbf \
     -v osm-data:/data/database/ \
     overv/openstreetmap-tile-server \
     import
