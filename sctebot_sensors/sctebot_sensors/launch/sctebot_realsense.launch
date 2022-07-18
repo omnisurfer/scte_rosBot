@@ -19,21 +19,21 @@
     <arg name="external_manager"    default="false"/>
     <arg name="manager"             default="realsense2_camera_manager"/>
 
-    <arg name="fisheye_width"       default="$(var width_resolution)"/>
-    <arg name="fisheye_height"      default="$(var height_resolution)"/>
+    <arg name="fisheye_width"       default="$(arg width_resolution)"/>
+    <arg name="fisheye_height"      default="$(arg height_resolution)"/>
     <arg name="enable_fisheye"      default="false"/>
 
-    <arg name="depth_width"         default="$(var width_resolution)"/>
-    <arg name="depth_height"        default="$(var height_resolution)"/>
+    <arg name="depth_width"         default="$(arg width_resolution)"/>
+    <arg name="depth_height"        default="$(arg height_resolution)"/>
     <arg name="enable_depth"        default="true"/>
 
-    <arg name="infra_width"        default="$(var width_resolution)"/>
-    <arg name="infra_height"       default="$(var height_resolution)"/>
+    <arg name="infra_width"        default="$(arg width_resolution)"/>
+    <arg name="infra_height"       default="$(arg height_resolution)"/>
     <arg name="enable_infra1"       default="true"/>
     <arg name="enable_infra2"       default="true"/>
 
-    <arg name="color_width"         default="$(var width_resolution)"/>
-    <arg name="color_height"        default="(var height_resolution)"/>
+    <arg name="color_width"         default="$(arg width_resolution)"/>
+    <arg name="color_height"        default="(arg height_resolution)"/>
     <arg name="enable_color"        default="true"/>
 
     <arg name="fisheye_fps"         default="$(arg frame_rate)"/>
