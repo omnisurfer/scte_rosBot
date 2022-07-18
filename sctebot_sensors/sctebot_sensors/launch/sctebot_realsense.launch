@@ -33,7 +33,7 @@
     <arg name="enable_infra2"       default="true"/>
 
     <arg name="color_width"         default="$(arg width_resolution)"/>
-    <arg name="color_height"        default="(arg height_resolution)"/>
+    <arg name="color_height"        default="$(arg height_resolution)"/>
     <arg name="enable_color"        default="true"/>
 
     <arg name="fisheye_fps"         default="$(arg frame_rate)"/>
