@@ -78,9 +78,9 @@ private:
     double _max_angular_z_rad_s;
 
     // Using these for debug. If needed, should probably put a mutex around them
-    std::mutex _debug_current_command_mutex;
-    double _debug_current_commanded_linear_x_velocity;
-    double _debug_current_commanded_angular_z_position;
+    std::mutex _current_command_mutex;
+    double _current_commanded_linear_x_velocity;
+    double _current_commanded_angular_z_position;
 
     std::unique_ptr<Pca9685LEDController> pca9685DeviceHandle;
 
@@ -171,8 +171,6 @@ public:
         _max_angular_z_rad_s = max_angular_rad_s;
 
         _i2c_bus_number = i2c_bus_number;
-
-
 
 #if ENABLE_PCA9685_LED_DEVICE
         // region ENABLE_PCA9685_LED_DEVICE
@@ -269,6 +267,9 @@ public:
 
         // endregion
 
+        // set commands to zero
+        this->brake();
+
         return init_ok;
     }
 
@@ -304,11 +305,11 @@ public:
 
     void command_liner_x_velocity(double cmd_linear_x_velocity) {
 
-        this->_debug_current_command_mutex.lock();
+        this->_current_command_mutex.lock();
         {
-            this->_debug_current_commanded_linear_x_velocity = cmd_linear_x_velocity;
+            this->_current_commanded_linear_x_velocity = cmd_linear_x_velocity;
         }
-        this->_debug_current_command_mutex.unlock();
+        this->_current_command_mutex.unlock();
 
         double cmd_linear_pwm;
         cmd_linear_pwm = (cmd_linear_x_velocity / this->_max_linear_x_speed_m_s) * 0.5 + 0.5;
@@ -319,11 +320,11 @@ public:
 
     void command_angular_z_velocity(double cmd_angular_z_velocity) {
 
-        this->_debug_current_command_mutex.lock();
+        this->_current_command_mutex.lock();
         {
-            this->_debug_current_commanded_angular_z_position = cmd_angular_z_velocity;
+            this->_current_commanded_angular_z_position = cmd_angular_z_velocity;
         }
-        this->_debug_current_command_mutex.unlock();
+        this->_current_command_mutex.unlock();
 
         double cmd_angular_pwm;
         cmd_angular_pwm = (cmd_angular_z_velocity / this->_max_angular_z_rad_s) * 0.5 + 0.5;
@@ -340,12 +341,12 @@ public:
 
     void get_odometry_update(double& linear_x_velocity, double& angular_z_position) {
 
-        this->_debug_current_command_mutex.lock();
+        this->_current_command_mutex.lock();
         {
-            linear_x_velocity = this->_debug_current_commanded_linear_x_velocity;
-            angular_z_position = this->_debug_current_commanded_angular_z_position;
+            linear_x_velocity = this->_current_commanded_linear_x_velocity;
+            angular_z_position = this->_current_commanded_angular_z_position;
         }
-        this->_debug_current_command_mutex.unlock();
+        this->_current_command_mutex.unlock();
 
         //std::cout << "get_odometry_update x " << linear_x_velocity << " z " << angular_z_position << std::endl;
     }

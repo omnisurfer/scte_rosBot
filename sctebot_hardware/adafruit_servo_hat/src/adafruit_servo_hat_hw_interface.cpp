@@ -271,4 +271,7 @@ void AdafruitServoHatHardwareInterface::brake() {
     rear_wheel_velocity_cmd = 0.0;
     front_steer_position_cmd = 0.0;
 
+    this->command_liner_x_velocity(0.0);
+    this->command_angular_z_velocity(0.0);
+
 }
