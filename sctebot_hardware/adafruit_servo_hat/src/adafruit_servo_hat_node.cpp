@@ -35,7 +35,7 @@ void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
     adafruit_servo_hat->command_liner_x_velocity(linear_x_velocity);
     adafruit_servo_hat->command_angular_z_velocity(angular_z_velocity);
 
-    ROS_INFO("Twist msg l_x [%f] m/s, a_z [%f] rad/s", msg->linear.x, msg->angular.z);
+    // ROS_INFO("Twist msg l_x [%f] m/s, a_z [%f] rad/s", msg->linear.x, msg->angular.z);
 }
 
 int main(int argc, char* argv[]) {
