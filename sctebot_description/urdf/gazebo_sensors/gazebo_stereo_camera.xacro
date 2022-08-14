@@ -42,7 +42,8 @@
         </link>
         <joint name="${camera_link}_base_TO_${camera_link}_body" type="fixed">
             <!-- TODO fix the orientation so that the point cloud matches the actual frame -->
-            <origin xyz="0.03 0.015 0.0" rpy="0 1 0"/>
+            <origin xyz="0.01 0.0 0.0" rpy="${(7 * pi) / 2} 0 ${(3 * pi) / 2}"/>
+            <!--origin xyz="0.03 0.015 0.0" rpy="${(7 * pi) / 2} 0 ${(3 * pi) / 2}"/-->
             <parent link="${camera_link}_body"/>
             <child link="${camera_link}_base"/>
         </joint>

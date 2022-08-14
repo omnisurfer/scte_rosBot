@@ -13,6 +13,8 @@ ekf_se_odom:
   transform_time_offset: 0.0
   transform_timeout: 0.0
 
+  predict_to_current_time: true
+
   print_diagnostics: true
   debug: false
   debug_out_file: /path/to/debug/file.txt
@@ -155,6 +157,7 @@ ekf_se_map:
 
   transform_time_offset: 0.0
   transform_timeout: 0.0
+  predict_to_current_time: true
 
   print_diagnostics: true
   debug: false

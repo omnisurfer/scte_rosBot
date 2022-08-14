@@ -1,0 +1,6 @@
+# export ROS_MASTER_URI=http://ros-node:11311
+# export ROS_MASTER_URI=http://ros-intel-node:11311
+# export ROS_MASTER_URI=http://ros-amd-node:11311
+export ROS_MASTER_URI=http://verthandi-ubuntu:11311
+# export ROS_MASTER_URI=http://ros-pi-node:11311
+# export ROS_MASTER_URI=http://ros-vm-node:11311
