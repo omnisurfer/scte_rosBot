@@ -35,7 +35,7 @@ void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
     adafruit_servo_hat->command_liner_x_velocity(linear_x_velocity);
     adafruit_servo_hat->command_angular_z_velocity(angular_z_velocity);
 
-    //ROS_INFO("Twist msg l_x [%f] m/s, a_z [%f] rad/s", msg->linear.x, msg->angular.z);
+    ROS_INFO("Twist msg l_x [%f] m/s, a_z [%f] rad/s", msg->linear.x, msg->angular.z);
 }
 
 int main(int argc, char* argv[]) {
@@ -74,6 +74,11 @@ int main(int argc, char* argv[]) {
 
     double max_linear_speed_m_s = 2.0;
     double max_angular_rad_s = 1.5;
+
+    double tire_radius_m = 0.05;
+
+    double wheel_separation_h = 0.75;
+    double wheel_separation_w = 0.28;
 
     node_name = ros::this_node::getName();
 
@@ -114,6 +119,24 @@ int main(int argc, char* argv[]) {
     } else {
         ROS_WARN("%s: max_angular_rad_s, using default %f", node_name.c_str(), max_angular_rad_s);
     }
+
+    if(ros_node_handle.getParam(node_name + "/tire_radius_m", tire_radius_m)) {
+        ROS_INFO("%s: tire_radius_m %f", node_name.c_str(), tire_radius_m);
+    } else {
+        ROS_WARN("%s: tire_radius_m, using default %f", node_name.c_str(), tire_radius_m);
+    }
+
+    if(ros_node_handle.getParam(node_name + "/wheel_separation_h", wheel_separation_h)) {
+        ROS_INFO("%s: wheel_separation_h %f", node_name.c_str(), wheel_separation_h);
+    } else {
+        ROS_WARN("%s: wheel_separation_h, using default %f", node_name.c_str(), wheel_separation_h);
+    }
+
+    if(ros_node_handle.getParam(node_name + "/wheel_separation_w", wheel_separation_w)) {
+        ROS_INFO("%s: wheel_separation_w %f", node_name.c_str(), wheel_separation_w);
+    } else {
+        ROS_WARN("%s: wheel_separation_w, using default %f", node_name.c_str(), wheel_separation_w);
+    }
     // endregion
 
     /*
@@ -146,6 +169,9 @@ int main(int argc, char* argv[]) {
                 i2c_bus_number,
                 max_linear_speed_m_s,
                 max_angular_rad_s,
+                tire_radius_m,
+                wheel_separation_h,
+                wheel_separation_w,
                 handle_servo_callback
                 );
 

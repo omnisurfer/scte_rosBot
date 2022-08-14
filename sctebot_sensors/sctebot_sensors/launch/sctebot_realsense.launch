@@ -3,8 +3,8 @@
     <arg name="robot_namespace" default="sctebot"/>
     <arg name="camera_name" default="realsense_d435i"/>
 
-    <arg name="width_resolution" default="320"/>
-    <arg name="height_resolution" default="240"/>
+    <arg name="width_resolution" default="640"/>
+    <arg name="height_resolution" default="480"/>
     <arg name="frame_rate" default="30"/>
 
     <!--
@@ -29,8 +29,8 @@
 
     <arg name="infra_width"        default="$(arg width_resolution)"/>
     <arg name="infra_height"       default="$(arg height_resolution)"/>
-    <arg name="enable_infra1"       default="true"/>
-    <arg name="enable_infra2"       default="true"/>
+    <arg name="enable_infra1"       default="false"/>
+    <arg name="enable_infra2"       default="false"/>
 
     <arg name="color_width"         default="$(arg width_resolution)"/>
     <arg name="color_height"        default="$(arg height_resolution)"/>
@@ -42,14 +42,14 @@
     <arg name="color_fps"           default="$(arg frame_rate)"/>
     <arg name="gyro_fps"            default="200"/> <!--400, 200-->
     <arg name="accel_fps"           default="63"/> <!--250, 63-->
-    <arg name="enable_gyro"         default="true"/>
-    <arg name="enable_accel"        default="true"/>
+    <arg name="enable_gyro"         default="false"/>
+    <arg name="enable_accel"        default="false"/>
 
     <arg name="enable_pointcloud"         default="true"/>
     <arg name="pointcloud_texture_stream" default="RS2_STREAM_COLOR"/>
     <arg name="pointcloud_texture_index"  default="0"/>
 
-    <arg name="enable_sync"               default="false"/>
+    <arg name="enable_sync"               default="true"/>
     <arg name="align_depth"               default="true"/>
 
     <arg name="filters"                   default="pointcloud"/>

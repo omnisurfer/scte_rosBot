@@ -5,6 +5,10 @@
     <arg name="i2c_bus_number" default="0"/>
     <arg name="max_linear_speed_m_s" default="2.0"/>
     <arg name="max_angular_speed_rad_s" default="1.5"/>
+    <arg name="tire_radius_m" default="0.05"/>
+    <arg name="wheel_separation_h" default="0.75"/>
+    <arg name="wheel_separation_w" default="0.28"/>
+
 
     <arg name="cmd_vel_topic" default="ackermann_steering_controller/cmd_vel"/>
 
@@ -16,8 +20,11 @@
             <param name="update_rate" value="$(arg update_rate)"/>
             <param name="i2c_bus_number" value="$(arg i2c_bus_number)"/>
             <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
-            <param name="max_linear_speed_m_s" value="2.0"/>
-            <param name="max_angular_speed_rad_s" value="1.5"/>
+            <param name="max_linear_speed_m_s" value="$(arg max_linear_speed_m_s)"/>
+            <param name="max_angular_speed_rad_s" value="$(arg max_angular_speed_rad_s)"/>
+            <param name="tire_radius_m" value="$(arg tire_radius_m)"/>
+            <param name="wheel_separation_h" value="$(arg wheel_separation_h)"/>
+            <param name="wheel_separation_w" value="$(arg wheel_separation_w)"/>
         </node>
 
     </group>

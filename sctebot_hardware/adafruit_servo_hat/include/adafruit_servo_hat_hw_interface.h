@@ -76,6 +76,10 @@ private:
 
     double _max_linear_x_speed_m_s;
     double _max_angular_z_rad_s;
+    double _tire_radius_m;
+
+    double _wheel_separation_h;
+    double _wheel_separation_w;
 
     // Using these for debug. If needed, should probably put a mutex around them
     std::mutex _current_command_mutex;
@@ -160,24 +164,28 @@ public:
             int i2c_bus_number,
             double max_linear_speed_m_s,
             double max_angular_rad_s,
+            double tire_radius_m,
+            double wheel_separation_h,
+            double wheel_separation_w,
             void (*handle_pca9685_status)(int x, int y)
     ) {
 
         bool init_ok = true;
 
-        pca9685DeviceHandle.reset(new Pca9685LEDController());
+        this->pca9685DeviceHandle.reset(new Pca9685LEDController());
 
-        _max_linear_x_speed_m_s = max_linear_speed_m_s;
-        _max_angular_z_rad_s = max_angular_rad_s;
+        this->_max_linear_x_speed_m_s = max_linear_speed_m_s;
+        this->_max_angular_z_rad_s = max_angular_rad_s;
+        this->_tire_radius_m = tire_radius_m;
 
-        _i2c_bus_number = i2c_bus_number;
+        this->_i2c_bus_number = i2c_bus_number;
 
 #if ENABLE_PCA9685_LED_DEVICE
         // region ENABLE_PCA9685_LED_DEVICE
 
         _i2c_device_address = PCA9685_RPI_ADDRESS;
 
-        pca9685DeviceHandle->config_device(
+        this->pca9685DeviceHandle->config_device(
                 _i2c_bus_number,
                 _i2c_device_address,
                 10,
@@ -187,7 +195,7 @@ public:
 
         std::cout << "connecting to " << _i2c_bus_number << " at " << _i2c_device_address << std::endl;
 
-        if(!pca9685DeviceHandle->connect_to_device()) {
+        if(!this->pca9685DeviceHandle->connect_to_device()) {
             init_ok = false;
         }
 
@@ -285,7 +293,7 @@ public:
         float op_pwm_max_operating_duty_cycle = 0.125;
         float op_pwm_on_delay = 0.0;
 
-        pca9685DeviceHandle->init_device(
+        this->pca9685DeviceHandle->init_device(
                 op_pwm_max_count_cycle,
                 op_pwm_on_delay,
                 op_pwm_min_limit_duty_cycle,
@@ -335,7 +343,7 @@ public:
 
     void command_pwm(Pca9685LEDController::LEDn led_n, float pwm_on_percent) {
 
-        pca9685DeviceHandle->set_pwm(led_n, pwm_on_percent);
+        this->pca9685DeviceHandle->set_pwm(led_n, pwm_on_percent);
 
     }
 

@@ -138,9 +138,9 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     static int64_t sample_at_loop_rate = 0;
     static double wheel_position = 0.0;
 
-    double max_velocity_ms = 2.0;
-    double tire_radius = 0.05;
-    double tire_circumference_m = 2 * M_PI * tire_radius; // 0.314m
+    double max_velocity_ms = this->_max_linear_x_speed_m_s;
+    double tire_radius_m = this->_tire_radius_m;
+    double tire_circumference_m = 2 * M_PI * tire_radius_m; // 0.314m
     double max_rpm = (max_velocity_ms / tire_circumference_m);
 
     double cmd_vel_rpm = (linear_velocity_x / max_velocity_ms) * max_rpm;
@@ -169,8 +169,8 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     rear_wheel_velocity =
             (joints_state.velocity[JOINT_INDEX_REAR_RIGHT] + joints_state.velocity[JOINT_INDEX_REAR_LEFT]) / 2.0;
 
-    const double h = 0.75;
-    const double w = 0.28;
+    const double wheel_separation_h = this->_wheel_separation_h;
+    const double wheel_separation_w = this->_wheel_separation_w;
 
     virtual_wheels_velocities[VIRTUAL_JOINT_IND_RIGHT_REAR] = joints_state.velocity[JOINT_INDEX_REAR_RIGHT];
     virtual_wheels_position[VIRTUAL_JOINT_IND_RIGHT_REAR] = joints_state.position[JOINT_INDEX_REAR_RIGHT];
@@ -183,12 +183,12 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     virtual_wheels_position[VIRTUAL_JOINT_IND_LEFT_FRONT] = virtual_wheels_position[VIRTUAL_JOINT_IND_LEFT_REAR];
 
     virtual_wheels_position[VIRTUAL_JOINT_IND_RIGHT_FRONT_STEER] =
-            atan2(2.0*h*tan(front_steer_position),
-            2*h + w/2.0*tan(front_steer_position)
+            atan2(2.0 * wheel_separation_h * tan(front_steer_position),
+                  2 * wheel_separation_h + wheel_separation_w / 2.0 * tan(front_steer_position)
             );
     virtual_wheels_position[VIRTUAL_JOINT_IND_LEFT_FRONT_STEER]  =
-            atan2(2.0*h*tan(front_steer_position),
-                  2*h - w/2.0*tan(front_steer_position)
+            atan2(2.0 * wheel_separation_h * tan(front_steer_position),
+                  2 * wheel_separation_h - wheel_separation_w / 2.0 * tan(front_steer_position)
                   );
 
     // region Publish odometry
