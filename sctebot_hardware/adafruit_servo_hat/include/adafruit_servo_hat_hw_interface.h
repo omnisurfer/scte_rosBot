@@ -178,22 +178,25 @@ public:
         this->_max_angular_z_rad_s = max_angular_rad_s;
         this->_tire_radius_m = tire_radius_m;
 
+        this->_wheel_separation_h = wheel_separation_h;
+        this->_wheel_separation_w = wheel_separation_w;
+
         this->_i2c_bus_number = i2c_bus_number;
 
 #if ENABLE_PCA9685_LED_DEVICE
         // region ENABLE_PCA9685_LED_DEVICE
 
-        _i2c_device_address = PCA9685_RPI_ADDRESS;
+        this->_i2c_device_address = PCA9685_RPI_ADDRESS;
 
         this->pca9685DeviceHandle->config_device(
-                _i2c_bus_number,
-                _i2c_device_address,
+                this->_i2c_bus_number,
+                this->_i2c_device_address,
                 10,
                 "pca9685_led_pwm",
                 handle_pca9685_status
         );
 
-        std::cout << "connecting to " << _i2c_bus_number << " at " << _i2c_device_address << std::endl;
+        std::cout << "connecting to " << this->_i2c_bus_number << " at " << this->_i2c_device_address << std::endl;
 
         if(!this->pca9685DeviceHandle->connect_to_device()) {
             init_ok = false;
