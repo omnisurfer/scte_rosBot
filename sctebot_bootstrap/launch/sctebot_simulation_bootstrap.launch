@@ -53,9 +53,9 @@
     <!-- endregion -->
 
     <!-- region Control -->
-    <include file="$(find sctebot_control)/launch/sctebot_teleop_joy.launch">
+    <!--include file="$(find sctebot_control)/launch/sctebot_teleop_joy.launch">
 
-    </include>
+    </include-->
     <!-- endregion -->
 
     <!-- region Visualization -->

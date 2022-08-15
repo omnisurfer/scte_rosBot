@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
     <!-- VMWare env variable workaround to keep gazebo from crashing due to OpenGL issues-->
-    <env name="SVGA_VGPU10" value="0"/>
+    <env name="SVGA_VGPU10" value="1"/>
 
     <arg name="robot_namespace" default="/sctebot" />
 
