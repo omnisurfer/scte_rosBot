@@ -56,7 +56,19 @@
 
         <!-- region NavSat -->
         <group if="$(eval enable_navsat_odom == true)">
+            <!-- Sea World
+            <arg name="reference_Latitude" value="32.76428904214641"/>
+            <arg name="reference_Longitude"> value="-117.22632586042305"/>
             <rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam>
+            -->
+
+            <!-- Yosemite parking lot
+            <referenceLatitude>37.738448530273594</referenceLatitude>
+            <referenceLongitude>-119.56968071496732</referenceLongitude>
+            <rosparam param="datum">[37.738448530273594, -119.56968071496732, 0.0, map, base_link]</rosparam>
+            -->
+
+            <rosparam param="datum">[37.738448530273594, -119.56968071496732, 0.0, map, base_link]</rosparam>
 
             <!-- region Gazebo -->
             <node pkg="robot_localization" type="navsat_transform_node" name="gazebo_navsat_transform" clear_params="true">
@@ -65,12 +77,12 @@
                 <param name="yaw_offset" value="0"/>
 
                 <!-- Outputs -->
-                <remap from="odometry/gps" to="gazebo/odometry/gps" />
+                <!--remap from="odometry/gps" to="gazebo/odometry/gps" /-->
 
                 <!-- Inputs -->
                 <remap from="odometry/filtered" to="odometry/filtered_map" />
-                <remap from="gps/fix" to="gazebo/gps/fix"/>
-                <remap from="imu/data" to="gazebo/imu"/>
+                <!--remap from="gps/fix" to="gazebo/gps/fix"/-->
+                <!--remap from="imu/data" to="gazebo/imu"/-->
             </node>
             <!-- endregion -->
 

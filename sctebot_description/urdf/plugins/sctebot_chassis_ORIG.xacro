@@ -34,18 +34,20 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
     <xacro:arg name="enable_gazebo_stereo_camera" default="True"/>
     <xacro:arg name="enable_logitech_stereo_camera" default="False"/>
-    <xacro:arg name="enable_realsense_d435i_stereo_camera" default="False"/>
+    <xacro:arg name="enable_realsense_d435i_stereo_camera" default="True"/>
     <xacro:arg name="enable_ydlidar" default="True"/>
-
-    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_wheel.xacro"/>
-    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_inertials.xacro"/>
-    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_materials.xacro"/>
-
-    <!-- sensor gazebo plugins -->
-    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_sensors.xacro"/>
 
     <!-- ackermann components and gazebo plugins -->
     <xacro:include filename="$(find sctebot_description)/urdf/plugins/sctebot_plugins.gazebo"/>
+    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_wheel.xacro"/>
+    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_inertials.xacro"/>
+
+    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_materials.xacro"/>
+
+    <!-- sensor gazebo plugins -->
+    <xacro:include filename="$(find sctebot_description)/urdf/sctebot_sensors.xacro">
+        <!--xacro:arg name="gazebo_stereo_camera_name" value="${gazebo_stereo_camera_name}"/-->
+    </xacro:include>
 
     <!-- physical components -->
 
@@ -259,12 +261,10 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <!-- region Stereo Cameras -->
     <!-- region Realsense d435i Stereo Camera -->
     <xacro:if value="$(arg enable_realsense_d435i_stereo_camera)">
-
         <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
         <xacro:sensor_d435i parent="computer_enclosure" name="realsense_d435i">
             <origin xyz="${(0.26 * 0.5) + (0.02505 * 0.5)} 0 0.005" rpy="0 0 0"/>
         </xacro:sensor_d435i>
-
     </xacro:if>
     <!-- endregion -->
 
@@ -277,6 +277,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
         TODO drowan_20220709_BUG: The cameras are mounted incorrectly. Need to fix camera link and/or optical link...
     -->
+
     <xacro:if value="$(arg enable_logitech_stereo_camera)">
 
         <xacro:include filename="$(find sctebot_description)/urdf/equipment/camera_rig.xacro"/>
