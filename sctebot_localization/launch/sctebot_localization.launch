@@ -29,6 +29,9 @@
         http://wiki.ros.org/robot_localization/Troubleshooting
         https://answers.ros.org/questions/scope:all/sort:activity-desc/tags:robot_localization/page:1/
         https://answers.ros.org/question/321093/robot_localization-with-gps-map-frame-wont-stay-fixed/
+
+        Good tutorial to sanity check against
+        https://github.com/methylDragon/ros-sensor-fusion-tutorial/blob/master/01%20-%20ROS%20and%20Sensor%20Fusion%20Tutorial.md
     -->
 
     <!-- example from source
