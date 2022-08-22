@@ -29,8 +29,10 @@
         <group if="$(arg simulation_on)">
             <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
                 <arg name="args" value="--delete_db_on_start"/>
-                <arg name="left_image_topic" value="/$(arg robot_namespace)/stereo_fwd/left/image_rect_color"/>
-                <arg name="right_image_topic" value="/$(arg robot_namespace)/stereo_fwd/right/image_rect_color"/>
+                <!--arg name="left_image_topic" value="/$(arg robot_namespace)/stereo_fwd/left/image_rect_color"/>
+                <arg name="right_image_topic" value="/$(arg robot_namespace)/stereo_fwd/right/image_rect_color"/-->
+                <arg name="left_image_topic" value="/$(arg robot_namespace)/stereo_fwd/left/image_raw"/>
+                <arg name="right_image_topic" value="/$(arg robot_namespace)/stereo_fwd/right/image_raw"/>
                 <arg name="left_camera_info_topic" value="/$(arg robot_namespace)/stereo_fwd/left/camera_info"/>
                 <arg name="right_camera_info_topic" value="/$(arg robot_namespace)/stereo_fwd/right/camera_info"/>
                 <arg name="stereo" value="true"/>
@@ -38,7 +40,7 @@
                 <arg name="imu_topic" value="/$(arg robot_namespace)/gazebo/imu"/>
                 <arg name="frame_id" value="base_footprint"/>
                 <arg name="publish_tf_odom" value="false"/>
-                <arg name="publish_tf_map" value="false"/>
+                <arg name="publish_tf_map" value="true"/>
                 <arg name="rtabmapviz" value="false"/>
                 <arg name="rviz" value="false"/>
             </include>
