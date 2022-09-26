@@ -3,7 +3,7 @@
     <arg name="robot_namespace" default="sctebot"/>
     <arg name="enable_joystick" default="1"/>
 
-    <arg name="joy_config" default="teleop_asus" />
+    <arg name="joy_config" default="teleop_logitechf310" /> <!-- teleop_asus -->
     <arg name="joy_dev" default="/dev/input/js0" />
     <arg name="config_filepath" default="$(find sctebot_control)/config/$(arg joy_config).config.yaml" />
 

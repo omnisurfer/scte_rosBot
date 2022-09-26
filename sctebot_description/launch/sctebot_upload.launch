@@ -18,10 +18,21 @@
     <arg name="pitch" default="0.0"/>
     <arg name="yaw" default="0.0"/>
 
+    <arg name="enable_gazebo_stereo_camera" default="false"/>
+    <arg name="enable_logitech_stereo_camera" default="false"/>
+    <arg name="enable_realsense_d435i_stereo_camera" default="false"/>
+    <arg name="enable_ydlidar" default="false"/>
+
     <group ns="$(arg robot_namespace)">
 
         <!-- region Robot description -->
-        <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+        <param name="robot_description"
+                command="$(find xacro)/xacro $(arg model)
+                enable_gazebo_stereo_camera:=$(arg enable_gazebo_stereo_camera)
+                enable_logitech_stereo_camera:=$(arg enable_logitech_stereo_camera)
+                enable_realsense_d435i_stereo_camera:=$(arg enable_realsense_d435i_stereo_camera)
+                enable_ydlidar:=$(arg enable_ydlidar)"
+        />
         <param name="robot_namespace" value="$(arg robot_namespace)"/>
         <!-- endregion -->
 

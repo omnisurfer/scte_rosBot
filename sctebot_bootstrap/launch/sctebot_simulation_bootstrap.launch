@@ -19,6 +19,10 @@
         <arg name="y" value="$(arg y)"/>
         <arg name="z" value="$(arg z)"/>
         <arg name="yaw" value="$(arg yaw)"/>
+        <arg name="enable_gazebo_stereo_camera" value="true"/>
+        <arg name="enable_logitech_stereo_camera" value="false"/>
+        <arg name="enable_realsense_d435i_stereo_camera" value="false"/>
+        <arg name="enable_ydlidar" value="true"/>
     </include>
     <!-- endregion -->
 
