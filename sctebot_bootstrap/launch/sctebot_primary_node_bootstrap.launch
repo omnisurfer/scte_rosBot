@@ -33,7 +33,8 @@
         <arg name="camera_name" value="$(arg camera_name)"/>
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
         <arg name="camera" value="$(arg camera_name)"/>
-        <arg name="enable_pointcloud" value="true"/>
+        <!-- point-cloud uses too much CPU. Use depth instead -->
+        <arg name="enable_pointcloud" value="false"/>
         <arg name="enable_depth" value="true"/>
         <arg name="enable_infra1" value="true"/>
         <arg name="enable_infra2" value="true"/>
