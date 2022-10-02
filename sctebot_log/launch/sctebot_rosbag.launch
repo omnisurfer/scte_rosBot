@@ -14,7 +14,6 @@
         /$(arg namespace)/stereo_fwd/left/camera_info
         /$(arg namespace)/stereo_fwd/right/image_raw/compressed
         /$(arg namespace)/stereo_fwd/right/camera_info
-        /$(arg namespace)/stereo_fwd/points2_throttle
 
         /$(arg namespace)/gps/filtered
         /$(arg namespace)/odometry/filtered
@@ -38,40 +37,33 @@
         /$(arg namespace)/ackermann_steering_controller/odom
 
         /sctebot/realsense_d435i/accel/imu_info
-        /sctebot/realsense_d435i/aligned_depth_to_color/camera_info
-        /sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressed
-        /sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressedDepth
-        /sctebot/realsense_d435i/aligned_depth_to_color/image_raw/theora
-        /sctebot/realsense_d435i/aligned_depth_to_color/image_raw/theora/parameter_descriptions
-        /sctebot/realsense_d435i/aligned_depth_to_color/image_raw/theora/parameter_updates
-        /sctebot/realsense_d435i/color/camera_info
-        /sctebot/realsense_d435i/color/image_raw/compressed
-        /sctebot/realsense_d435i/color/image_raw/theora
-        /sctebot/realsense_d435i/color/metadata
-        /sctebot/realsense_d435i/depth/camera_info
-        /sctebot/realsense_d435i/depth/image_rect_raw/compressed
-        /sctebot/realsense_d435i/depth/image_rect_raw/compressedDepth
-        /sctebot/realsense_d435i/depth/image_rect_raw/compressedDepth/parameter_descriptions
-        /sctebot/realsense_d435i/depth/image_rect_raw/compressedDepth/parameter_updates
-        /sctebot/realsense_d435i/depth/image_rect_raw/theora
-        /sctebot/realsense_d435i/depth/metadata
-        /sctebot/realsense_d435i/extrinsics/depth_to_color
-        /sctebot/realsense_d435i/extrinsics/depth_to_infra1
-        /sctebot/realsense_d435i/extrinsics/depth_to_infra2
         /sctebot/realsense_d435i/gyro/imu_info
         /sctebot/realsense_d435i/imu/data
         /sctebot/realsense_d435i/imu/data_raw
+
+        /sctebot/realsense_d435i/extrinsics/depth_to_color
+        /sctebot/realsense_d435i/extrinsics/depth_to_infra1
+        /sctebot/realsense_d435i/extrinsics/depth_to_infra2
+
+        /sctebot/realsense_d435i/aligned_depth_to_color/camera_info
+        /sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressed
+
+        /sctebot/realsense_d435i/depth/camera_info
+        /sctebot/realsense_d435i/depth/image_rect_raw/compressed
+        /sctebot/realsense_d435i/depth/metadata
+
         /sctebot/realsense_d435i/infra1/metadata
         /sctebot/realsense_d435i/infra2/metadata
+
+        /sctebot/realsense_d435i/color/camera_info
+        /sctebot/realsense_d435i/color/image_raw/compressed
+        /sctebot/realsense_d435i/color/metadata
+
         /sctebot/realsense_d435i/left/camera_info
         /sctebot/realsense_d435i/left/image_raw/compressed
-        /sctebot/realsense_d435i/left/image_raw/theora
-        /sctebot/realsense_d435i/pointcloud/parameter_descriptions
-        /sctebot/realsense_d435i/pointcloud/parameter_updates
-        /sctebot/realsense_d435i/points2
+
         /sctebot/realsense_d435i/right/camera_info
         /sctebot/realsense_d435i/right/image_raw/compressed
-        /sctebot/realsense_d435i/right/image_raw/theora
 
         /tf
         /tf_static
