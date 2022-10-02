@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /TF1/Frames1
-        - /d435i_depth1
         - /d435i_depth1/Occlusion Compensation1
         - /d435i_depth1/Autocompute Value Bounds1
         - /Odometry1/Covariance1/Position1
@@ -293,8 +292,6 @@ Visualization Manager:
           Value: false
         sctebot/steer_bot_hardware_gazebo/:
           Value: true
-        utm:
-          Value: true
         world:
           Value: true
       Marker Alpha: 1
@@ -360,8 +357,6 @@ Visualization Manager:
                   {}
                 rear_wheel_link:
                   {}
-            utm:
-              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -388,8 +383,7 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          Costmap: true
-          DWAPath: true
+          "": true
           Value: true
         LaserScan: true
         Local Map:
@@ -478,8 +472,7 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          Costmap: true
-          DWAPath: true
+          "": true
           Value: true
         LaserScan: true
         Local Map:
@@ -523,8 +516,7 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          Costmap: true
-          DWAPath: true
+          "": true
           Value: true
         LaserScan: true
         Local Map:
@@ -613,8 +605,7 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          Costmap: true
-          DWAPath: true
+          "": true
           Value: true
         LaserScan: true
         Local Map:
@@ -658,8 +649,7 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          Costmap: true
-          DWAPath: true
+          "": true
           Value: true
         LaserScan: true
         Local Map:
@@ -1052,7 +1042,7 @@ Visualization Manager:
   Global Options:
     Background Color: 136; 138; 133
     Default Light: true
-    Fixed Frame: odom
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -1076,7 +1066,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 2.200911521911621
+      Distance: 12.548574447631836
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1092,9 +1082,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.09539894759654999
+      Pitch: 0.5403989553451538
       Target Frame: <Fixed Frame>
-      Yaw: 0.5372375845909119
+      Yaw: 3.2422430515289307
     Saved: ~
 Window Geometry:
   Displays:
@@ -1113,7 +1103,7 @@ Window Geometry:
     collapsed: false
   Width: 1687
   X: 1671
-  Y: 72
+  Y: 27
   d435i_mono:
     collapsed: false
   d435i_port:

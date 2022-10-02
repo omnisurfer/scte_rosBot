@@ -60,7 +60,7 @@
     </include>
 
     <!-- region SLAM & GMAPP -->
-    <include file="$(rind roslaunch sctebot_slam)/sctebot_slam.launch">
+    <include file="$(find roslaunch sctebot_slam)/sctebot_slam.launch">
         <arg name="camera_name" value="realsense_d435i"/>
     </include>
     <!-- endregion -->
