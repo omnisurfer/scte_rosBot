@@ -46,10 +46,10 @@
         /sctebot/realsense_d435i/extrinsics/depth_to_infra2
 
         /sctebot/realsense_d435i/aligned_depth_to_color/camera_info
-        /sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressed
+        /sctebot/realsense_d435i/aligned_depth_to_color/image_raw
 
         /sctebot/realsense_d435i/depth/camera_info
-        /sctebot/realsense_d435i/depth/image_rect_raw/compressed
+        /sctebot/realsense_d435i/depth/image_rect_raw
         /sctebot/realsense_d435i/depth/metadata
 
         /sctebot/realsense_d435i/infra1/metadata
@@ -64,6 +64,8 @@
 
         /sctebot/realsense_d435i/right/camera_info
         /sctebot/realsense_d435i/right/image_raw/compressed
+
+        /sctebot/rtabmap/octomap_binary
 
         /tf
         /tf_static
