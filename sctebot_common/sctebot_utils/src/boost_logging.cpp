@@ -2,7 +2,7 @@
 // Created by user on 12/19/21.
 //
 
-#include "utils/boost_logging.h"
+#include "sctebot_utils/boost_logging.h"
 
 void ScteBotBoostLogger::init_boost_logging() {
 

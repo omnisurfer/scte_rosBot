@@ -20,7 +20,7 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>tf</depend>
-  <depend>utils</depend>
+  <depend>sctebot_utils</depend>
   <depend>i2c_linux</depend>
   <depend>controller_manager</depend>
   <depend>hardware_interface</depend>

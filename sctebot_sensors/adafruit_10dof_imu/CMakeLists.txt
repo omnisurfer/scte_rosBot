@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp rosgraph_msgs
         rospy
         std_msgs
-        utils
+        sctebot_utils
         i2c_linux
         )
 

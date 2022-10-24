@@ -13,8 +13,8 @@
 #include <cmath>
 
 #include "i2c_linux/i2c_linux.h"
-#include "utils/boost_logging.h"
-#include "utils/register_utils.h"
+#include "sctebot_utils/boost_logging.h"
+#include "sctebot_utils/register_utils.h"
 
 #define DEG_TO_RAD (M_PI/180.0)
 

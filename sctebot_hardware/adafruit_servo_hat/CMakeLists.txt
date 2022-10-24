@@ -10,21 +10,21 @@ add_compile_options(-Wall -Wno-undef -fPIC)
 find_package(catkin REQUIRED COMPONENTS
         dynamic_reconfigure
         message_generation
-        roscpp rosgraph_msgs
+        roscpp
+        rosgraph_msgs
         rospy
         std_msgs
-        utils
-        i2c_linux
         geometry_msgs
         nav_msgs
         sensor_msgs
+        sctebot_utils
+        i2c_linux
         tf
         realtime_tools
         hardware_interface
         controller_manager
         ackermann_steering_controller
         )
-# realtime_tools
 
 find_package(Boost 1.69.0 COMPONENTS log REQUIRED)
 

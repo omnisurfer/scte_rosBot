@@ -17,7 +17,7 @@
 #include <iostream>
 
 #include "i2c_linux/i2c_linux.h"
-#include "utils/boost_logging.h"
+#include "sctebot_utils/boost_logging.h"
 
 #define ENABLE 0xFF
 #define DISABLE 0x00

@@ -1,7 +1,7 @@
 <package format="2">
-  <name>utils</name>
+  <name>sctebot_utils</name>
   <version>0.0.0</version>
-  <description>The utils package</description>
+  <description>The sctebot_utils package</description>
 
   <maintainer email="user@todo.todo">user</maintainer>
 
