@@ -72,12 +72,12 @@
     "/>
 
     <!-- region Topic Tools -->
-    <node
+    <!-- node
             name="$(arg namespace)_topic_tools"
             pkg="topic_tools"
             type="throttle"
             args="messages /$(arg namespace)/stereo_fwd/points2 3.0 /$(arg namespace)/realsense_d435i/points2 3.0"
-    />
+    /-->
     <!-- endregion -->
 
     <!-- launch rosbag-->

@@ -43,10 +43,6 @@
         <arg name="enable_accel" value="true"/>
     </include>
 
-    <include file="$(find sctebot_sensors)/launch/sctebot_ydlidar_g2.launch">
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-    </include>
-
     <!--
     <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
         <arg name="gps_name" default="primary_gps"/>

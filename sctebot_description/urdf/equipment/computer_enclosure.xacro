@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
 <robot name="sctebot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-    <xacro:macro name="computer_enclosure" params="link_name parent_link
-    enclosure_origin
-    enclosure_rpy
-    ">
+    <xacro:macro name="computer_enclosure"
+                 params="
+                 link_name
+                 parent_link
+                 enclosure_origin
+                 enclosure_rpy
+                 enclosure_size">
 
         <link name="${link_name}">
             <inertial>
@@ -19,7 +22,8 @@
             <visual name='visual'>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <box size="0.26 0.185 0.06"/>
+                    <!--box size="0.295 0.245 0.116"/-->
+                    <box size="${enclosure_size}"/>
                 </geometry>
                 <material name="none">
                     <color rgba="${122/255} ${125/255} ${121/255} 0.5"/>
@@ -28,7 +32,8 @@
             <collision name='collision'>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <box size="0.26 0.185 0.06"/>
+                    <!--box size="0.295 0.245 0.116"/-->
+                    <box size="${enclosure_size}"/>
                 </geometry>
             </collision>
         </link>

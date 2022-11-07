@@ -1,4 +1,4 @@
-# export ROS_MASTER_URI=http://verthandi-ubuntu:11311
+export ROS_MASTER_URI=http://dev-verthandi-ubuntu:11311
 
 # export ROS_MASTER_URI=http://ros-node:11311
 # export ROS_MASTER_URI=http://ros-amd-node:11311

@@ -11,7 +11,8 @@
     <arg name="timeout" default="0.0"/>
 
     <!-- Gazebo  -->
-    <arg name="gazebo_world" default="sctebot_yosemite.world" />
+    <!--arg name="gazebo_world" default="sctebot_yosemite.world" /-->
+    <arg name="gazebo_world" default="sctebot_ksql.world"/>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" default="$(find sctebot_gazebo)/worlds/$(arg gazebo_world)"/>

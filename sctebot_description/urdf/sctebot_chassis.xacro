@@ -32,7 +32,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
     <xacro:arg name="robot_namespace" default="/"/>
 
-    <xacro:arg name="enable_gazebo_stereo_camera" default="True"/>
+    <xacro:arg name="enable_mock_realsense_camera" default="True"/>
     <xacro:arg name="enable_logitech_stereo_camera" default="False"/>
     <xacro:arg name="enable_realsense_d435i_stereo_camera" default="False"/>
     <xacro:arg name="enable_ydlidar" default="True"/>
@@ -73,7 +73,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:property name="axle_offset" value="0.05" />
     <xacro:property name="steer_offset" value="0.02" />
 
-    <!-- scte dims -->
+    <!-- scte dimensions -->
     <xacro:property name="scte_chassis_length_sq" value="${base_length * base_length}"/>
     <xacro:property name="scte_chassis_width_sq" value="${base_width * base_width}"/>
     <xacro:property name="scte_chassis_height_sq" value="${base_height * base_height}"/>
@@ -102,10 +102,6 @@ http://wiki.ros.org/urdf/XML/joint#Elements
                 <box size="${base_length} ${base_width} ${base_height}"/>
             </geometry>
         </collision>
-        <!--xacro:solid_cuboid_inertial
-                rpy="0 0 0" xyz="0 0 0"
-                mass="${base_mass}"
-                x="${base_length}" y="${base_width}" z="${base_height}" /-->
     </link>
 
     <!-- Inertial link stores the robot's inertial information -->
@@ -125,6 +121,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         <child link="inertial_link" />
     </joint>
 
+    <!-- region Wheels and Bumpers -->
     <!-- Front steer and rear wheel joints required for ackermann_steering_controller -->
     <xacro:front_steer
             name="front"
@@ -197,7 +194,6 @@ http://wiki.ros.org/urdf/XML/joint#Elements
         <origin xyz="${-base_length/2+axle_offset} ${+base_width/2+axle_offset} 0" rpy="${-90 * deg_to_rad} 0 0"/>
     </xacro:rear_wheel_lr>
 
-    <!-- Bumpers -->
     <xacro:include filename="sctebot_front_bumper.xacro"/>
     <xacro:scte_front_bumper
             link_name="front_bumper"
@@ -217,29 +213,64 @@ http://wiki.ros.org/urdf/XML/joint#Elements
             rear_bumper_mount_joint_xyz="${base_length * -0.6} 0 ${0.105 * 0.5}"
             rear_bumper_mount_joint_rpy="0 0 0"
     />
+    <!-- endregion -->
 
     <!-- Sensors and Compute Hardware -->
+    <xacro:property name="computer_enclosure_length" value="0.295"/>
+    <xacro:property name="computer_enclosure_width" value="0.245"/>
+    <xacro:property name="computer_enclosure_height" value="0.116"/>
     <xacro:include filename="$(find sctebot_description)/urdf/equipment/computer_enclosure.xacro"/>
     <xacro:computer_enclosure
             link_name="computer_enclosure"
             parent_link="base_link"
-            enclosure_origin="0 0 0.105"
+            enclosure_origin="0 0 0.174"
             enclosure_rpy="0 0 0"
+            enclosure_size="${computer_enclosure_length} ${computer_enclosure_width} ${computer_enclosure_height}"
     />
 
     <!-- region IMU link -->
-    <link name="imu_link"/>
+    <xacro:property name="imu_module_height" value="0.022"/>
+    <link name="imu_link">
+        <visual name='visual'>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.06 0.035 ${imu_module_height}"/>
+                </geometry>
+                <material name="blue"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.06 0.035 ${imu_module_height}"/>
+            </geometry>
+        </collision>
+    </link>
     <joint name="imu_link_TO_computer_enclosure" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz="0 0 ${(computer_enclosure_height - imu_module_height) * 0.5}" rpy="0 0 0"/>
         <parent link="computer_enclosure"/>
         <child link="imu_link"/>
     </joint>
     <!-- endregion -->
 
     <!-- region GPS link -->
-    <link name="gps_link"/>
+    <xacro:property name="gps_module_height" value="0.022"/>
+    <link name="gps_link">
+        <visual name='visual'>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.035 0.06 ${gps_module_height}"/>
+                </geometry>
+                <material name="blue"/>
+        </visual>
+        <collision name='collision'>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.035 0.06 ${gps_module_height}"/>
+            </geometry>
+        </collision>
+    </link>
     <joint name="gps_link_TO_computer_enclosure" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz="-0.125 0.075 ${(computer_enclosure_height + gps_module_height) * 0.5}" rpy="0 0 0"/>
         <parent link="computer_enclosure"/>
         <child link="gps_link"/>
     </joint>
@@ -249,7 +280,7 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:if value="$(arg enable_ydlidar)">
         <xacro:include filename="$(find ydlidar_ros)/urdf/ydlidar.urdf"/>
         <joint name="ydlidar_base_TO_computer_enclosure" type="fixed">
-            <origin xyz="0.090 0 0.0305" rpy="0 0 0"/> <!--0.0305-->
+            <origin xyz="0 0 ${computer_enclosure_height * 0.5}" rpy="0 0 0"/>
             <parent link="computer_enclosure"/>
             <child link="base_laser"/>
         </joint>
@@ -258,13 +289,24 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
     <!-- region Stereo Cameras -->
     <!-- region Realsense d435i Stereo Camera -->
+    <xacro:property name="realsense_camera_x_offset" value="${computer_enclosure_length * 0.5 -  0.0125}"/>
+    <xacro:property name="realsense_camera_height" value="0.025"/>
     <xacro:if value="$(arg enable_realsense_d435i_stereo_camera)">
-
         <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
         <xacro:sensor_d435i parent="computer_enclosure" name="realsense_d435i">
-            <origin xyz="${(0.26 * 0.5) + (0.02505 * 0.5)} 0 0.005" rpy="0 0 0"/>
+            <origin xyz="${realsense_camera_x_offset} 0 ${(computer_enclosure_height) * 0.5}" rpy="0 0 0"/>
         </xacro:sensor_d435i>
+    </xacro:if>
 
+    <!-- Gazebo mock Realsense Stereo Camera Sensor -->
+    <xacro:if value="$(arg enable_mock_realsense_camera)">
+        <xacro:include filename="$(find sctebot_description)/urdf/gazebo_sensors/gazebo_stereo_camera.xacro"/>
+        <xacro:gazebo_stereo_camera
+                parent_link="computer_enclosure"
+                camera_link="gazebo_stereo_camera"
+                origin_xyz="${realsense_camera_x_offset} 0 ${(computer_enclosure_height + realsense_camera_height) * 0.5}"
+                origin_rpy="0.0 0.0 0.0"
+        />
     </xacro:if>
     <!-- endregion -->
 
@@ -277,40 +319,20 @@ http://wiki.ros.org/urdf/XML/joint#Elements
 
         TODO drowan_20220709_BUG: The cameras are mounted incorrectly. Need to fix camera link and/or optical link...
     -->
+    <xacro:property name="logitech_camera_height" value="0.025"/>
     <xacro:if value="$(arg enable_logitech_stereo_camera)">
-
-        <xacro:include filename="$(find sctebot_description)/urdf/equipment/camera_rig.xacro"/>
-        <xacro:camera_rig
-                link_name="camera_rig"
-                parent_link="computer_enclosure"
-                camera_rig_origin="${0.260 * -0.45} 0 ${0.06 * -0.04}"
-                camera_rig_rpy="0 0 ${pi}"
-        />
-
         <xacro:include filename="$(find logitech_c270_camera)/urdf/logitech_c270.xacro"/>
         <xacro:logitech_c270_camera
-                parent_link="camera_rig_bar"
+                parent_link="computer_enclosure"
                 camera_link="logitech_driver_side_camera"
-                joint_xyz="0.0 0.05 ${0.025 * 0.5}"
-                joint_rpy="0 0 0"
+                joint_xyz="-0.075 0.125 ${(computer_enclosure_height + logitech_camera_height) * 0.5}"
+                joint_rpy="0 0 ${pi}"
         />
         <xacro:logitech_c270_camera
-                parent_link="camera_rig_bar"
-                camera_link="logitech_passenger_side_camera"
-                joint_xyz="0.0 -0.05 ${0.025 * 0.5}"
-                joint_rpy="0 0 0"
-        />
-    </xacro:if>
-    <!-- endregion -->
-
-    <!-- region Gazebo Stereo Camera Sensor -->
-    <xacro:if value="$(arg enable_gazebo_stereo_camera)">
-        <xacro:include filename="$(find sctebot_description)/urdf/gazebo_sensors/gazebo_stereo_camera.xacro"/>
-        <xacro:gazebo_stereo_camera
                 parent_link="computer_enclosure"
-                camera_link="gazebo_stereo_camera"
-                joint_xyz="${(0.26 * 0.5) + (0.02505 * 0.5)} 0 0.018"
-                joint_rpy="0.0 0.0 0.0"
+                camera_link="logitech_passenger_side_camera"
+                joint_xyz="-0.075 -0.125 ${(computer_enclosure_height + logitech_camera_height) * 0.5}"
+                joint_rpy="0 0 ${pi}"
         />
     </xacro:if>
     <!-- endregion -->

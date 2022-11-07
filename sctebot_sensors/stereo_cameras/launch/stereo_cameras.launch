@@ -9,7 +9,6 @@ https://cse.sc.edu/~jokane/agitr/
     <!-- stereo perception using gazebo cameras -->
     <group if="$(arg simulation_on)">
         <group ns="$(arg robot_namespace)/stereo_fwd">
-
             <!---->
             <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
                 <param name="approximate_sync" value="true"/>
@@ -17,7 +16,6 @@ https://cse.sc.edu/~jokane/agitr/
                 <param name="frameId" value="gazebo_stereo_camera_optical"/>
             </node>
             <!---->
-
         </group>
     </group>
 

@@ -33,8 +33,12 @@
       <frameId>gps_link</frameId>
       <topicName>gazebo/gps/fix</topicName>
       <velocityTopicName>gazebo/gps/fix_velocity</velocityTopicName>
-      <referenceLatitude>37.738448530273594</referenceLatitude>
-      <referenceLongitude>-119.56968071496732</referenceLongitude>
+      <!-- Yosemite -->
+      <!--referenceLatitude>37.738448530273594</referenceLatitude>
+      <referenceLongitude>-119.56968071496732</referenceLongitude-->
+      <!-- ksql airport -->
+      <referenceLatitude>37.52207695839262</referenceLatitude>
+      <referenceLongitude>-122.25621399060579</referenceLongitude>
       <referenceHeading>0.0</referenceHeading>
       <referenceLatitude>0.0</referenceLatitude>
       <!--status>1</status> STATUS_FIX -->
