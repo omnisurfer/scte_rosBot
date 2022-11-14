@@ -5,11 +5,18 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /TF1
         - /TF1/Frames1
         - /d435i_depth1/Occlusion Compensation1
         - /d435i_depth1/Autocompute Value Bounds1
         - /Odometry1/Covariance1/Position1
         - /Odometry1/Covariance1/Orientation1
+        - /ada_Imu1
+        - /ada_Imu1/Axes properties1
+        - /ada_Imu1/Acceleration properties1
+        - /real_Imu1
+        - /real_Imu1/Axes properties1
+        - /real_Imu1/Acceleration properties1
       Splitter Ratio: 0.5
     Tree Height: 388
   - Class: rviz/Selection
@@ -29,7 +36,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: d435i_depth
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -187,34 +194,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        logitech_driver_side_camera_base:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        logitech_driver_side_camera_body:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        logitech_driver_side_camera_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        logitech_passenger_side_camera_base:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        logitech_passenger_side_camera_body:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        logitech_passenger_side_camera_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         realsense_d435i_bottom_screw_frame:
           Alpha: 1
           Show Axes: false
@@ -266,21 +245,13 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
+        camera_imu_optical_frame:
+          Value: true
         computer_enclosure:
           Value: true
         front_bumper:
           Value: true
         front_bumper_skid_plate:
-          Value: true
-        front_left_steer_link:
-          Value: true
-        front_left_wheel_link:
-          Value: true
-        front_right_steer_link:
-          Value: true
-        front_right_wheel_link:
-          Value: true
-        front_steer_link:
           Value: true
         gazebo_stereo_camera_base:
           Value: true
@@ -296,35 +267,43 @@ Visualization Manager:
           Value: true
         laser_frame:
           Value: true
-        logitech_driver_side_camera_base:
-          Value: true
-        logitech_driver_side_camera_body:
-          Value: true
-        logitech_driver_side_camera_optical:
-          Value: true
-        logitech_passenger_side_camera_base:
-          Value: true
-        logitech_passenger_side_camera_body:
-          Value: true
-        logitech_passenger_side_camera_optical:
-          Value: true
         map:
           Value: true
         odom:
           Value: true
+        realsense_d435i_accel_frame:
+          Value: true
+        realsense_d435i_accel_optical_frame:
+          Value: true
+        realsense_d435i_aligned_depth_to_color_frame:
+          Value: true
         realsense_d435i_bottom_screw_frame:
+          Value: true
+        realsense_d435i_color_frame:
+          Value: true
+        realsense_d435i_color_optical_frame:
+          Value: true
+        realsense_d435i_depth_frame:
+          Value: true
+        realsense_d435i_depth_optical_frame:
+          Value: true
+        realsense_d435i_gyro_frame:
+          Value: true
+        realsense_d435i_imu_optical_frame:
+          Value: true
+        realsense_d435i_infra1_frame:
+          Value: true
+        realsense_d435i_infra1_optical_frame:
+          Value: true
+        realsense_d435i_infra2_frame:
+          Value: true
+        realsense_d435i_infra2_optical_frame:
           Value: true
         realsense_d435i_link:
           Value: true
         rear_bumper:
           Value: true
         rear_bumper_mount:
-          Value: true
-        rear_left_wheel_link:
-          Value: true
-        rear_right_wheel_link:
-          Value: true
-        rear_wheel_link:
           Value: true
       Marker Alpha: 1
       Marker Scale: 0.4000000059604645
@@ -349,39 +328,37 @@ Visualization Manager:
                     {}
                   imu_link:
                     {}
-                  logitech_driver_side_camera_body:
-                    logitech_driver_side_camera_base:
-                      logitech_driver_side_camera_optical:
-                        {}
-                  logitech_passenger_side_camera_body:
-                    logitech_passenger_side_camera_base:
-                      logitech_passenger_side_camera_optical:
-                        {}
                   realsense_d435i_bottom_screw_frame:
                     realsense_d435i_link:
-                      {}
+                      realsense_d435i_accel_frame:
+                        realsense_d435i_accel_optical_frame:
+                          {}
+                      realsense_d435i_aligned_depth_to_color_frame:
+                        realsense_d435i_color_optical_frame:
+                          {}
+                      realsense_d435i_color_frame:
+                        {}
+                      realsense_d435i_depth_frame:
+                        realsense_d435i_depth_optical_frame:
+                          {}
+                      realsense_d435i_gyro_frame:
+                        realsense_d435i_imu_optical_frame:
+                          camera_imu_optical_frame:
+                            {}
+                      realsense_d435i_infra1_frame:
+                        realsense_d435i_infra1_optical_frame:
+                          {}
+                      realsense_d435i_infra2_frame:
+                        realsense_d435i_infra2_optical_frame:
+                          {}
                 front_bumper_skid_plate:
                   front_bumper:
                     {}
-                front_left_steer_link:
-                  front_left_wheel_link:
-                    {}
-                front_right_steer_link:
-                  front_right_wheel_link:
-                    {}
-                front_steer_link:
-                  {}
                 inertial_link:
                   {}
                 rear_bumper_mount:
                   rear_bumper:
                     {}
-                rear_left_wheel_link:
-                  {}
-                rear_right_wheel_link:
-                  {}
-                rear_wheel_link:
-                  {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -423,6 +400,7 @@ Visualization Manager:
         RobotModel: true
         TF: true
         Value: true
+        ada_Imu: true
         d435i_cloud: true
         d435i_depth: true
         d435i_port: true
@@ -434,6 +412,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        real_Imu: true
         rtabmap_occupancy_grid: true
         stereo_fwd_cloud: true
         utm_grid: true
@@ -468,6 +447,7 @@ Visualization Manager:
         RobotModel: true
         TF: true
         Value: false
+        ada_Imu: true
         d435i_cloud: true
         d435i_depth: true
         d435i_mono: true
@@ -479,6 +459,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        real_Imu: true
         rtabmap_occupancy_grid: true
         stereo_fwd_cloud: true
         utm_grid: true
@@ -513,6 +494,7 @@ Visualization Manager:
         RobotModel: false
         TF: true
         Value: true
+        ada_Imu: true
         d435i_cloud: true
         d435i_depth: true
         d435i_mono: true
@@ -524,6 +506,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        real_Imu: true
         rtabmap_occupancy_grid: true
         stereo_fwd_cloud: true
         utm_grid: true
@@ -558,6 +541,7 @@ Visualization Manager:
         RobotModel: true
         TF: true
         Value: true
+        ada_Imu: true
         d435i_cloud: true
         d435i_depth: true
         d435i_mono: true
@@ -569,6 +553,7 @@ Visualization Manager:
         gazebo_stereo_starboard: true
         logitech_rear_starboard: true
         map_grid: true
+        real_Imu: true
         rtabmap_occupancy_grid: true
         stereo_fwd_cloud: true
         utm_grid: true
@@ -603,6 +588,7 @@ Visualization Manager:
         RobotModel: false
         TF: true
         Value: false
+        ada_Imu: true
         d435i_cloud: true
         d435i_depth: true
         d435i_mono: true
@@ -614,6 +600,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        real_Imu: true
         rtabmap_occupancy_grid: true
         stereo_fwd_cloud: true
         utm_grid: true
@@ -648,6 +635,7 @@ Visualization Manager:
         RobotModel: false
         TF: true
         Value: true
+        ada_Imu: true
         d435i_cloud: true
         d435i_depth: true
         d435i_mono: true
@@ -659,6 +647,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        real_Imu: true
         rtabmap_occupancy_grid: true
         stereo_fwd_cloud: true
         utm_grid: true
@@ -693,6 +682,7 @@ Visualization Manager:
         RobotModel: true
         TF: true
         Value: true
+        ada_Imu: true
         d435i_cloud: true
         d435i_depth: true
         d435i_mono: true
@@ -704,6 +694,7 @@ Visualization Manager:
         gazebo_stereo_starboard: true
         logitech_rear_port: true
         map_grid: true
+        real_Imu: true
         rtabmap_occupancy_grid: true
         stereo_fwd_cloud: true
         utm_grid: true
@@ -738,6 +729,7 @@ Visualization Manager:
         RobotModel: false
         TF: true
         Value: false
+        ada_Imu: true
         d435i_cloud: true
         d435i_depth: true
         d435i_mono: true
@@ -749,6 +741,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        real_Imu: true
         rtabmap_occupancy_grid: true
         stereo_fwd_cloud: true
         utm_grid: true
@@ -1068,11 +1061,59 @@ Visualization Manager:
       Topic: /sctebot/gazebo/gps/fix
       Value: true
       Zoom: 18
+    - Acceleration properties:
+        Acc. vector alpha: 1
+        Acc. vector color: 245; 121; 0
+        Acc. vector scale: 0.10000000149011612
+        Derotate acceleration: true
+        Enable acceleration: false
+      Axes properties:
+        Axes scale: 0.5
+        Enable axes: true
+      Box properties:
+        Box alpha: 1
+        Box color: 255; 0; 0
+        Enable box: false
+        x_scale: 1
+        y_scale: 1
+        z_scale: 1
+      Class: rviz_imu_plugin/Imu
+      Enabled: true
+      Name: ada_Imu
+      Queue Size: 10
+      Topic: /sctebot/adafruit_10dof_imu/imu/data
+      Unreliable: false
+      Value: true
+      fixed_frame_orientation: true
+    - Acceleration properties:
+        Acc. vector alpha: 1
+        Acc. vector color: 117; 80; 123
+        Acc. vector scale: 0.10000000149011612
+        Derotate acceleration: true
+        Enable acceleration: true
+      Axes properties:
+        Axes scale: 0.5
+        Enable axes: true
+      Box properties:
+        Box alpha: 1
+        Box color: 255; 0; 0
+        Enable box: false
+        x_scale: 1
+        y_scale: 1
+        z_scale: 1
+      Class: rviz_imu_plugin/Imu
+      Enabled: true
+      Name: real_Imu
+      Queue Size: 10
+      Topic: /sctebot/realsense_d435i/imu/data
+      Unreliable: false
+      Value: true
+      fixed_frame_orientation: true
   Enabled: true
   Global Options:
     Background Color: 136; 138; 133
     Default Light: true
-    Fixed Frame: odom
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -1096,7 +1137,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 3.0411744117736816
+      Distance: 2.234398365020752
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1104,17 +1145,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0
-        Y: 0
+        X: -0.773766040802002
+        Y: 0.4852137565612793
         Z: 0
-      Focal Shape Fixed Size: false
+      Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.03979634493589401
+      Pitch: 0.3952031135559082
       Target Frame: base_footprint
-      Yaw: 3.2103986740112305
+      Yaw: 2.072261095046997
     Saved: ~
 Window Geometry:
   Displays:

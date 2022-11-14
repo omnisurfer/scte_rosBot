@@ -16,6 +16,9 @@ sleep 3
 echo "Set 10Hz..."
 echo -e "\$PMTK220,100*2F\r\n" > $SERIAL_DEVICE
 sleep 3
+echo "Set AIC..."
+echo -e "\$PMTK286,1*23\r\n" > $SERIAL_DEVICE
+sleep 3
 
 systemctl start gpsd & wait
 systemctl status gpsd

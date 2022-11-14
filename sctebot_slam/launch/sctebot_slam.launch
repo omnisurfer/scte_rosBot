@@ -13,7 +13,8 @@
     <arg name="left_image_topic" default="$(arg camera_name)/left"/>
     <arg name="right_image_topic" default="$(arg camera_name)/right"/>
 
-    <arg name="imu_topic" default="gazebo/imu"/>
+    <!--arg name="imu_topic" default="gazebo/imu"/-->
+    <arg name="imu_topic" default="realsense_d435i/imu/data"/>
 
     <!-- SLAM: Gmapping, etc. Launch -->
     <group ns="$(arg robot_namespace)">
@@ -67,9 +68,12 @@
                 <arg name="camera_info_topic" value="/$(arg robot_namespace)/$(arg camera_name)/color/camera_info"/>
                 <arg name="depth_camera_info_topic" value="/$(arg robot_namespace)/$(arg camera_name)/depth/camera_info"/>
 
+                <arg name="wait_imu_to_init" value="true"/>
+                <arg name="imu_topic" value="/$(arg robot_namespace)/$(arg imu_topic)"/>
+
                 <arg name="frame_id" value="base_footprint"/>
                 <arg name="publish_tf_odom" value="false"/>
-                <arg name="publish_tf_map" value="true"/>
+                <arg name="publish_tf_map" value="false"/>
             </include>
         </group>
 
