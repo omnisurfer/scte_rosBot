@@ -38,6 +38,8 @@ https://cse.sc.edu/~jokane/agitr/
                 <arg name="calibrationFileURL" value="file://${ROS_HOME}/camera_info/stereo_camera_cal.yaml"/> <!--c270_right.yaml"/-->
             </include>
 
+            <!-- http://wiki.ros.org/pcl_ros/Tutorials/VoxelGrid%20filtering -->
+
             <!---->
             <node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc" output="screen">
                 <!--remap from="left/image_raw" to="stereo_fwd/left/image_raw"/>

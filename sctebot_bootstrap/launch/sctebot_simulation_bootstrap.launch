@@ -7,6 +7,12 @@
     <arg name="set_timeout" default="false"/>
     <arg name="timeout" default="0.0"/>
 
+    <!-- region Gazebo -->
+    <include file="$(find sctebot_gazebo)/launch/sctebot_world.launch">
+        <arg name="gui" value="$(arg gui)"/>
+    </include>
+    <!-- endregion -->
+
     <!-- region Model -->
     <arg name="x" default="0"/>
     <arg name="y" default="0"/>
@@ -26,22 +32,10 @@
     </include>
     <!-- endregion -->
 
-    <!-- region Gazebo -->
-    <include file="$(find sctebot_gazebo)/launch/sctebot_world.launch">
-        <arg name="gui" value="$(arg gui)"/>
-    </include>
-    <!-- endregion -->
-
-    <!-- region Sensors -->
-    <!-- endregion -->
-
     <!-- region Localization -->
     <include file="$(find sctebot_localization)/launch/sctebot_localization.launch">
 
     </include>
-    <!-- endregion -->
-
-    <!-- region Hardware -->
     <!-- endregion -->
 
     <!-- region Control -->

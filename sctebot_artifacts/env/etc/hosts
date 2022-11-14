@@ -1,0 +1,6 @@
+192.168.10.10	ros-intel-node
+192.168.10.11	ros-pi-node
+
+192.168.10.20	ros-amd-5560u-node
+
+192.168.10.100	verthandi-ubuntu

@@ -4,7 +4,7 @@
     -->
     <arg name="model" default="sctebot"/>
     <arg name="map_file" default="$(find sctebot_navigation)/maps/map.yaml"/>
-    <arg name="move_forward_only" default="false"/>
+    <arg name="move_forward_only" default="true"/>
 
     <group ns="$(arg model)">
         <!-- Map server (fixed known obstacles?)-->
