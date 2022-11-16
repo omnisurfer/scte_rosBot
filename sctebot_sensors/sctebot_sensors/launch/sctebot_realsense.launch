@@ -149,4 +149,18 @@
         <param name="use_magnetic_field_msg" value="false" />
     </node>
     <!---->
+
+    <!-- region IMU transformer -->
+    <node pkg="tf" type="static_transform_publisher"
+          name="imu_transformer_broadcaster"
+          args="0 0 0 0 0 -1.570 $(arg camera_name)_imu_optical_frame $(arg camera_name)_imu_optical_frame_corrected 100"
+    />
+
+    <node pkg="imu_transformer" type="imu_transformer_node" name="imu_data_transformer" output="screen">
+        <remap from="imu_in" to="/$(arg robot_namespace)/$(arg camera_name)/imu"/>
+        <remap from="imu_out" to="/$(arg robot_namespace)/$(arg camera_name)/imu_corrected"/>
+        <param name="target_frame" value="$(arg camera_name)_imu_optical_frame_corrected"/>
+    </node>
+    <!-- endregion -->
+
 </launch>

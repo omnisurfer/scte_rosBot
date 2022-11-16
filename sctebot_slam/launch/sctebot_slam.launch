@@ -14,7 +14,7 @@
     <arg name="right_image_topic" default="$(arg camera_name)/right"/>
 
     <!--arg name="imu_topic" default="gazebo/imu"/-->
-    <arg name="imu_topic" default="realsense_d435i/imu/data"/>
+    <arg name="imu_topic" default="realsense_d435i/imu_corrected/data"/>
 
     <!-- SLAM: Gmapping, etc. Launch -->
     <group ns="$(arg robot_namespace)">
