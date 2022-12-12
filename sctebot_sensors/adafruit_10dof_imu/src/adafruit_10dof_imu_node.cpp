@@ -502,7 +502,8 @@ int main(int argc, char* argv[]) {
 
     std::string node_name = "adafruit_10dof_imu_node";
 
-    int i2c_bus_number = 0;
+    // device is on bus 4 on raspi
+    int i2c_bus_number = 4;
 
     // lame way to do this but good enough for debug
     if(argv[1]) {

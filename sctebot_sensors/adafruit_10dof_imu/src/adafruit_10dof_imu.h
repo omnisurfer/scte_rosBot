@@ -279,7 +279,7 @@ public:
         #endif
 
         lsm303DlhcMagDeviceHandle->init_device(
-                Lsm303DlhcMagnetometer::OutputDataRates::ODR_75P0_HZ, // ODR_75P0_HZ, //ODR_1P5_HZ,
+                Lsm303DlhcMagnetometer::OutputDataRates::ODR_30P0_HZ, // ODR_75P0_HZ, //ODR_1P5_HZ,
                 Lsm303DlhcMagnetometer::SensorMagnetometerFullScale::PN_1P3G
         );
 #endif

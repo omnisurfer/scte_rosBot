@@ -212,12 +212,9 @@ void L3gd20Gyro::_data_capture_worker() {
         // update gyro status
         gyro_status = this->_update_gyroscope_status();
 
-        if((gyro_status & L3gd20Gyro::BitMasks::StatusRegister::ZYX_DATA_AVAILABLE) == false) {
-            // do nothing
-            // BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": l3gd no gryo zxy data available";
-        }
-        else {
+        bool zyx_data_available = (gyro_status & L3gd20Gyro::BitMasks::StatusRegister::ZYX_DATA_AVAILABLE);
 
+        if(zyx_data_available) {
             this->_update_angular_rate_xyz_axis();
             this->_update_temperature_axis();
 
@@ -237,6 +234,11 @@ void L3gd20Gyro::_data_capture_worker() {
                     x_axis, y_axis, z_axis
             );
         }
+        else {
+            // do nothing
+            // BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": l3gd no gryo zxy data available";
+            std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_polling_period_ms));
+        }
 
         // BOOST_LOG_TRIVIAL(debug) << this->_device_name << " waiting for go signal" << std::endl;
 
@@ -245,8 +247,6 @@ void L3gd20Gyro::_data_capture_worker() {
         execute_cycle_lock.unlock();
 
         // BOOST_LOG_TRIVIAL(debug) << this->_device_name << " got go signal" << std::endl;
-
-        //std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
         data_worker_run_thread_lock.lock();
     }

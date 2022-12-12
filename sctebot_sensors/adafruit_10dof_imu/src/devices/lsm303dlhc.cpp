@@ -240,12 +240,10 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
         // update the accel status
         accel_status = this->_update_accelerometer_status();
 
+        bool zxy_data_available = (accel_status & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE);
+
         // check if data is available and if so, read it. otherwise just pass until data may be available
-        if ((accel_status & Lsm303DlhcAccelerometer::BitMasks::StatusRegisterA::ZXY_DATA_AVAILABLE) == false) {
-            // do nothing
-            // BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc no accel zxy data available";
-        }
-        else {
+        if (zxy_data_available) {
             this->_update_accelerometer_xyz_axis();
 
             std::lock_guard<std::mutex> accelerometer_data_lock(this->accelerometer_data_mutex);
@@ -259,8 +257,12 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
 
             this->_host_callback_function(
                     x_accel_axis, y_accel_axis, z_accel_axis
-                    );
-
+            );
+        }
+        else {
+            // do nothing
+            // BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc no accel zxy data available";
+            std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_polling_period_ms));
         }
 
         // BOOST_LOG_TRIVIAL(debug) << this->_device_name << " waiting for go signal" << std::endl;
@@ -270,8 +272,6 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
         execute_cycle_lock.unlock();
 
         // BOOST_LOG_TRIVIAL(debug) << this->_device_name << " got go signal" << std::endl;
-
-        //std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
         data_worker_run_thread_lock.lock();
     }
@@ -803,10 +803,16 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
 
         mag_status = this->_update_magnetometer_status();
 
-        if(
-                (mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY) == Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY
-                && (mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK) != Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK
-                )
+        bool data_ready = mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY;
+        bool lock_de_asserted = !(mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK);
+
+        /*
+        if(mag_status & 1 << 4) {
+            std::cout << "bit 4 set" << std::endl;
+        }
+        */
+
+        if(data_ready && lock_de_asserted)
         {
             // BOOST_LOG_TRIVIAL(debug) <<  this->_device_name << ": lsm303dlhc mag xyz data AVAILABLE";
             this->_update_temperature_axis();
@@ -829,6 +835,9 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
             // brief sleep here to let the device clear the lock status bit.
             std::this_thread::sleep_for(std::chrono::microseconds(500));
         }
+        else {
+            std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_polling_period_ms));
+        }
 
         // BOOST_LOG_TRIVIAL(debug) << this->_device_name << " waiting for go signal" << std::endl;
 
@@ -837,8 +846,6 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
         execute_cycle_lock.unlock();
 
         // BOOST_LOG_TRIVIAL(debug) << this->_device_name << " got go signal" << std::endl;
-
-        //std::this_thread::sleep_for(std::chrono::milliseconds (this->_sensor_update_period_ms));
 
         data_run_thread_lock.lock();
     }

@@ -262,7 +262,7 @@ private:
     std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
-    int _sensor_update_period_ms{};
+    int _sensor_update_polling_period_ms{};
     std::string _device_name;
 
     context_t _i2c_device_context{};
@@ -517,7 +517,7 @@ public:
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
-        _sensor_update_period_ms = 0;
+        _sensor_update_polling_period_ms = 0;
         _device_name = std::move(device_name);
 
         _host_callback_function = function_pointer;
@@ -541,7 +541,7 @@ public:
 
         float rate_s = (1.0f / float(data_rate_hz));
 
-        this->_sensor_update_period_ms = int(rate_s * 1000);
+        this->_sensor_update_polling_period_ms = int(rate_s / 3);
 
         this->_init_device(output_data_rate, bandwidth_cutoff);
 

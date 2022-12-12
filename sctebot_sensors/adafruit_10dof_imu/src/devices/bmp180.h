@@ -88,7 +88,7 @@ private:
     std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
-    int _sensor_update_period_ms{};
+    int _sensor_update_polling_period_ms{};
     std::string _device_name;
 
     context_t _i2c_device_context{};
@@ -561,7 +561,7 @@ public:
 
     int init_device(int update_period_ms) {
 
-        _sensor_update_period_ms = update_period_ms;
+        _sensor_update_polling_period_ms = update_period_ms;
 
         this->_init_device();
 

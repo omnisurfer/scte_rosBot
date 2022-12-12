@@ -52,7 +52,7 @@ add_library(
         adafruit_10dof_imu
 
         src/adafruit_10dof_imu.cpp
-)
+        src/devices/lsm303dlhc.h src/devices/l3gd20.h src/devices/bmp180.h)
 
 add_executable(
         adafruit_10dof_imu_node

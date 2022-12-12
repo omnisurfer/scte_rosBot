@@ -365,7 +365,7 @@ private:
     std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
-    int _sensor_update_period_ms{};
+    int _sensor_update_polling_period_ms{};
     std::string _device_name;
     //std::string* _device_name = nullptr;
 
@@ -539,7 +539,7 @@ public:
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
-        _sensor_update_period_ms = 0;
+        _sensor_update_polling_period_ms = 0;
         _device_name = std::move(device_name);
         //_device_name = &device_name;
 
@@ -565,11 +565,11 @@ public:
             Lsm303DlhcAccelerometer::SensorAccelerationFullScale_t sensor_full_scale_accelerometer_range
             ) {
 
-        int data_rate = this->data_rate_sample_rate[output_data_rate];
+        int sample_freq_hz = this->data_rate_sample_rate[output_data_rate];
 
-        float rate = (1.0f / float(data_rate)) * (1.0f / 4);
+        float sample_rate_s = 1.0f / sample_freq_hz;
 
-        this->_sensor_update_period_ms = int(rate * 1000);
+        this->_sensor_update_polling_period_ms = int(sample_rate_s / 3);
 
         this->_init_device(output_data_rate, high_pass_filter_cutoff, sensor_full_scale_accelerometer_range);
 
@@ -794,7 +794,7 @@ private:
     std::mutex _i2c_device_mutex;
     int _i2c_bus_number{};
     int _i2c_device_address{};
-    int _sensor_update_period_ms{};
+    int _sensor_update_polling_period_ms{};
     std::string _device_name;
     //std::string* _device_name = nullptr;
 
@@ -977,7 +977,7 @@ public:
             ) {
         _i2c_bus_number = bus_number;
         _i2c_device_address = device_address;
-        _sensor_update_period_ms = 100;
+        _sensor_update_polling_period_ms = 100;
         _device_name = std::move(device_name);
         //_device_name = &device_name;
 
@@ -1002,11 +1002,11 @@ public:
             Lsm303DlhcMagnetometer::SensorMagnetometerFullScale_t magnetometer_full_scale
             ) {
 
-        float data_rate = this->data_rate_sample_rate[output_data_rates];
+        float sample_freq_hz = this->data_rate_sample_rate[output_data_rates];
 
-        float rate = (1.0f / float(data_rate)) * (1.0f / 4);
+        float sample_rate_s = 1.0f / sample_freq_hz;
 
-        this->_sensor_update_period_ms = int(rate * 1000);
+        this->_sensor_update_polling_period_ms = int(sample_rate_s / 3);
 
         this->_init_device(output_data_rates, magnetometer_full_scale);
 
