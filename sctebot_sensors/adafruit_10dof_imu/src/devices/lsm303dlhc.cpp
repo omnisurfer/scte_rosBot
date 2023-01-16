@@ -816,68 +816,69 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
 
             std::cout << "bit 4 set, attempting reset!" << std::endl;
 
-            buffer_t inbound_message;
-            buffer_t outbound_message;
-            uint8_t register_address;
-            uint8_t control_reg[1] = {0};
+            if(true) {
+                buffer_t inbound_message;
+                buffer_t outbound_message;
+                uint8_t register_address;
+                uint8_t control_reg[1] = {0};
 
-            // put to sleep
-            register_address = Lsm303DlhcMagnetometer::Addresses::MR_REG_M;
+                // put to sleep
+                register_address = Lsm303DlhcMagnetometer::Addresses::MR_REG_M;
 
-            inbound_message = {
-                    .bytes = _mr_reg_m,
-                    .size = sizeof(_mr_reg_m)
-            };
+                inbound_message = {
+                        .bytes = _mr_reg_m,
+                        .size = sizeof(_mr_reg_m)
+                };
 
-            if(receive_i2c(&inbound_message, register_address)) {
+                if(receive_i2c(&inbound_message, register_address)) {
 
-                std::string output_string;
-                std::stringstream ss;
+                    std::string output_string;
+                    std::stringstream ss;
 
-                ss << this->_device_name << ": config ";
+                    ss << this->_device_name << ": config ";
 
-                for(uint i = 0; i < sizeof(_mr_reg_m); ++i) {
-                    ss << std::hex << std::setfill('0') << std::setw(2) << (int)_mr_reg_m[i] << " ";
+                    for(uint i = 0; i < sizeof(_mr_reg_m); ++i) {
+                        ss << std::hex << std::setfill('0') << std::setw(2) << (int)_mr_reg_m[i] << " ";
+                    }
+
+                    output_string = ss.str();
+
+                    BOOST_LOG_TRIVIAL(info) << output_string;
                 }
 
-                output_string = ss.str();
+                control_reg[0] =
+                        //_mr_reg_m[0] |
+                        Lsm303DlhcMagnetometer::BitMasks::MrRegM::SLEEP_MODE;
 
-                BOOST_LOG_TRIVIAL(info) << output_string;
+                outbound_message = {
+                        .bytes = control_reg,
+                        .size = sizeof(control_reg)
+                };
+
+                if(send_i2c(&outbound_message, register_address)) {
+                    BOOST_LOG_TRIVIAL(info) << this->_device_name << ": Reg MR_REG_M configure OK - SLEEP";
+                }
+                else {
+                    BOOST_LOG_TRIVIAL(error) << this->_device_name << ": Reg MR_REG_M configure FAILED - SLEEP";
+                }
+
+                // re-enable
+                control_reg[0] =
+                        //_mr_reg_m[0] |
+                        Lsm303DlhcMagnetometer::BitMasks::MrRegM::CONTINUOUS_CONVERSION;
+
+                outbound_message = {
+                        .bytes = control_reg,
+                        .size = sizeof(control_reg)
+                };
+
+                if(send_i2c(&outbound_message, register_address)) {
+                    BOOST_LOG_TRIVIAL(info) << this->_device_name << ": Reg MR_REG_M configure OK - CONTINUOUS_CONVERSION";
+                }
+                else {
+                    BOOST_LOG_TRIVIAL(error) << this->_device_name << ": Reg MR_REG_M configure FAILED - CONTINUOUS_CONVERSION";
+                }
             }
-
-            control_reg[0] =
-                    //_mr_reg_m[0] |
-                    Lsm303DlhcMagnetometer::BitMasks::MrRegM::SLEEP_MODE;
-
-            outbound_message = {
-                    .bytes = control_reg,
-                    .size = sizeof(control_reg)
-            };
-
-            if(send_i2c(&outbound_message, register_address)) {
-                BOOST_LOG_TRIVIAL(info) << this->_device_name << ": Reg MR_REG_M configure OK - SLEEP";
-            }
-            else {
-                BOOST_LOG_TRIVIAL(error) << this->_device_name << ": Reg MR_REG_M configure FAILED - SLEEP";
-            }
-
-            // re-enable
-            control_reg[0] =
-                    //_mr_reg_m[0] |
-                    Lsm303DlhcMagnetometer::BitMasks::MrRegM::CONTINUOUS_CONVERSION;
-
-            outbound_message = {
-                    .bytes = control_reg,
-                    .size = sizeof(control_reg)
-            };
-
-            if(send_i2c(&outbound_message, register_address)) {
-                BOOST_LOG_TRIVIAL(info) << this->_device_name << ": Reg MR_REG_M configure OK - CONTINUOUS_CONVERSION";
-            }
-            else {
-                BOOST_LOG_TRIVIAL(error) << this->_device_name << ": Reg MR_REG_M configure FAILED - CONTINUOUS_CONVERSION";
-            }
-
         }
 
         if(data_ready && lock_de_asserted)
