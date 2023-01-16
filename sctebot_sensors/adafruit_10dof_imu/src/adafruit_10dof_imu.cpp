@@ -25,7 +25,6 @@ void AdaFruit10DoFImu::_data_capture_execute_management_worker() {
     while(this->run_data_capture_execute_management_thread) {
         execute_management_lock.unlock();
 
-
         std::unique_lock<std::mutex> bmp180_execute_lock(this->bmp180_data_capture_worker_execute_cycle_mutex);
         this->bmp180_data_capture_worker_execute_cycle_cv.notify_all();
         bmp180_execute_lock.unlock();

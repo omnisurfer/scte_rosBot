@@ -363,6 +363,12 @@ void Lsm303DlhcAccelerometer::_mock_device_emulation_worker() {
         std::this_thread::sleep_for(std::chrono::microseconds(loop_sleep_microseconds));
         // sleep to help with debug
         std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        // notify accel data ready
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.notify_all();
+        execute_cycle_lock.unlock();
+
         device_lock.lock();
     }
 
@@ -806,11 +812,73 @@ void Lsm303DlhcMagnetometer::_data_capture_worker() {
         bool data_ready = mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY;
         bool lock_de_asserted = !(mag_status & Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK);
 
-        /*
         if(mag_status & 1 << 4) {
-            std::cout << "bit 4 set" << std::endl;
+
+            std::cout << "bit 4 set, attempting reset!" << std::endl;
+
+            buffer_t inbound_message;
+            buffer_t outbound_message;
+            uint8_t register_address;
+            uint8_t control_reg[1] = {0};
+
+            // put to sleep
+            register_address = Lsm303DlhcMagnetometer::Addresses::MR_REG_M;
+
+            inbound_message = {
+                    .bytes = _mr_reg_m,
+                    .size = sizeof(_mr_reg_m)
+            };
+
+            if(receive_i2c(&inbound_message, register_address)) {
+
+                std::string output_string;
+                std::stringstream ss;
+
+                ss << this->_device_name << ": config ";
+
+                for(uint i = 0; i < sizeof(_mr_reg_m); ++i) {
+                    ss << std::hex << std::setfill('0') << std::setw(2) << (int)_mr_reg_m[i] << " ";
+                }
+
+                output_string = ss.str();
+
+                BOOST_LOG_TRIVIAL(info) << output_string;
+            }
+
+            control_reg[0] =
+                    //_mr_reg_m[0] |
+                    Lsm303DlhcMagnetometer::BitMasks::MrRegM::SLEEP_MODE;
+
+            outbound_message = {
+                    .bytes = control_reg,
+                    .size = sizeof(control_reg)
+            };
+
+            if(send_i2c(&outbound_message, register_address)) {
+                BOOST_LOG_TRIVIAL(info) << this->_device_name << ": Reg MR_REG_M configure OK - SLEEP";
+            }
+            else {
+                BOOST_LOG_TRIVIAL(error) << this->_device_name << ": Reg MR_REG_M configure FAILED - SLEEP";
+            }
+
+            // re-enable
+            control_reg[0] =
+                    //_mr_reg_m[0] |
+                    Lsm303DlhcMagnetometer::BitMasks::MrRegM::CONTINUOUS_CONVERSION;
+
+            outbound_message = {
+                    .bytes = control_reg,
+                    .size = sizeof(control_reg)
+            };
+
+            if(send_i2c(&outbound_message, register_address)) {
+                BOOST_LOG_TRIVIAL(info) << this->_device_name << ": Reg MR_REG_M configure OK - CONTINUOUS_CONVERSION";
+            }
+            else {
+                BOOST_LOG_TRIVIAL(error) << this->_device_name << ": Reg MR_REG_M configure FAILED - CONTINUOUS_CONVERSION";
+            }
+
         }
-        */
 
         if(data_ready && lock_de_asserted)
         {
@@ -890,6 +958,22 @@ void Lsm303DlhcMagnetometer::_mock_device_emulation_worker() {
     device_lock.lock();
     while(this->mock_run_device_thread) {
         device_lock.unlock();
+
+        // region LOCK
+        register_address = Lsm303DlhcMagnetometer::Addresses::Registers::SR_REG_Mg;
+
+        uint8_t sr_reg_mg[1] = {0};
+        buffer_t outbound_register_set = {
+                .bytes = sr_reg_mg,
+                .size = sizeof(sr_reg_mg)
+        };
+
+        sr_reg_mg[0] =  Lsm303DlhcMagnetometer::BitMasks::SrRegM::DATA_READY | !Lsm303DlhcMagnetometer::BitMasks::SrRegM::LOCK;
+
+        display_register_8bits("sr_reg_mg 0", sr_reg_mg[0], "sr_reg_mg 0", sr_reg_mg[0]);
+
+        send_i2c(&outbound_register_set, register_address);
+        // endregion
 
         //region TEMP AXIS
         register_address = Lsm303DlhcMagnetometer::Addresses::Registers::TEMP_OUT_H_M;
@@ -978,6 +1062,12 @@ void Lsm303DlhcMagnetometer::_mock_device_emulation_worker() {
         std::this_thread::sleep_for(std::chrono::microseconds(loop_sleep_microseconds));
         // sleep to help with debug
         std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        // Notify of mag data ready
+        std::unique_lock<std::mutex> execute_cycle_lock(this->_data_capture_worker_execute_cycle_mutex);
+        this->_data_capture_worker_execute_cycle_conditional_variable.notify_all();
+        execute_cycle_lock.unlock();
+
         device_lock.lock();
     }
 
@@ -1158,11 +1248,11 @@ void Lsm303DlhcMagnetometer::close_i2c_dev(int bus_number) {
 // endregion
 
 void handle_lsm303dlhc_accel_measurements(float x_accel_axis, float y_accel_axis, float z_accel_axis) {
-    //std::cout << "handle_lsm303dlhc_accel_measurements (x/y/z): " << x_accel_axis << "/" << x_accel_axis << "/" << z_accel_axis << std::endl;
+    std::cout << "handle_lsm303dlhc_accel_measurements (x/y/z): " << x_accel_axis << "/" << x_accel_axis << "/" << z_accel_axis << std::endl;
 }
 
 void handle_lsm303dlhc_mag_measurements(float temperature_deg_c, float x_mag_axis, float y_mag_axis, float z_mag_axis) {
-    //std::cout << "handle_lsm303dlhc_mag_measurements (temp/x/y/z): " << temperature_deg_c << "/" << x_mag_axis  << "/" << y_mag_axis << "/" << z_mag_axis << std::endl;
+    std::cout << "handle_lsm303dlhc_mag_measurements (temp/x/y/z): " << temperature_deg_c << "/" << x_mag_axis  << "/" << y_mag_axis << "/" << z_mag_axis << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -1176,19 +1266,23 @@ int main(int argc, char* argv[]) {
     std::condition_variable lsm303dlhc_accel_data_capture_worker_execute_cycle_conditional_variable;
 
     std::unique_ptr<Lsm303DlhcAccelerometer> lsm303dlhcAccelDeviceHandle(
-            new Lsm303DlhcAccelerometer(lsm303dlhc_accel_data_capture_worker_execute_cycle_mutex,
-                                        lsm303dlhc_accel_data_capture_worker_execute_cycle_conditional_variable)
+            new Lsm303DlhcAccelerometer(
+                    lsm303dlhc_accel_data_capture_worker_execute_cycle_mutex,
+                    lsm303dlhc_accel_data_capture_worker_execute_cycle_conditional_variable
+                    )
             );
 
     std::mutex lsm303dlhc_mag_data_capture_worker_execute_cycle_mutex;
     std::condition_variable lsm303dlhc_mag_data_capture_worker_execute_cycle_conditional_variable;
 
     std::unique_ptr<Lsm303DlhcMagnetometer> lsm303dlhcMagDeviceHandle(
-            new Lsm303DlhcMagnetometer(lsm303dlhc_mag_data_capture_worker_execute_cycle_mutex,
-                                       lsm303dlhc_mag_data_capture_worker_execute_cycle_conditional_variable)
+            new Lsm303DlhcMagnetometer(
+                    lsm303dlhc_mag_data_capture_worker_execute_cycle_mutex,
+                    lsm303dlhc_mag_data_capture_worker_execute_cycle_conditional_variable
+                    )
             );
 
-    int i2c_bus_number = 0;
+    int i2c_bus_number = 9;
 
     // Accel device
     int i2c_accel_device_address = 0x19;

@@ -44,7 +44,7 @@ static int i2c_operation(const context_t* context, message_t *message) {
 
     size_t data_length = message->buffer->size;
 
-    for(size_t i=0; i < data_length; i++) {
+    for(size_t i = 0; i < data_length; i++) {
         smbus_data.byte = message->buffer->bytes[i];
         smbus_args.command = message->i2c_register + i;
         if(ioctl(context->device, I2C_SMBUS, &smbus_args) < 0) {

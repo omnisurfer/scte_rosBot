@@ -84,7 +84,7 @@ int i2c_send(const context_t *context, buffer_t *data, uint8_t register_address)
  *
  * @param   [in]    context device context
  * @param   [out]   data - buffer to store received data in. Buffer
- *                  must be big enough to store data + TAG_LEN bytes.
+ *                  must be big enough to store data bytes.
  * @param   [in]    register_address - what register to write the value at
  * @returns         1 on success, 0 otherwise
  */
