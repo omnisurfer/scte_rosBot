@@ -153,7 +153,7 @@
     <!-- region IMU transformer -->
     <node pkg="tf" type="static_transform_publisher"
           name="imu_transformer_broadcaster"
-          args="0 0 0 0 0 -1.570 $(arg camera_name)_imu_optical_frame $(arg camera_name)_imu_optical_frame_corrected 100"
+          args="0 0 0 0 -1.57 1.57 $(arg camera_name)_imu_optical_frame $(arg camera_name)_imu_optical_frame_corrected 100"
     />
 
     <node pkg="imu_transformer" type="imu_transformer_node" name="imu_data_transformer" output="screen">
