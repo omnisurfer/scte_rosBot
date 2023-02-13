@@ -1,0 +1,111 @@
+<launch>
+    <arg name="robot_namespace" default="sctebot"/>
+    <arg name="pub_tf" default="false"/>
+    <arg name="simulation_on" default="false"/>
+    <arg name="enable_ekf_odom_map" default="true"/>
+    <arg name="enable_navsat_odom" default="true"/>
+
+    <arg name="primary_navsat_gps_device" default="primary_gps"/>
+    <arg name="primary_navmgs_imu_device" default="primary_imu"/>
+
+    <!--
+    Path planning
+        http://wiki.ros.org/base_local_planner
+        http://wiki.ros.org/dwa_local_planner
+    -->
+
+    <!--
+    IMU tie in/robot localization
+    References:
+         https://github.com/udacity/robot_pose_ekf
+         https://answers.ros.org/question/259084/basic-robot_localization-example/
+         https://github.com/cra-ros-pkg/robot_localization/blob/kinetic-devel/params/ekf_template.yaml
+         https://kapernikov.com/the-ros-robot_localization-package/
+         http://docs.ros.org/en/melodic/api/robot_localization/html/integrating_gps.html
+         https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/
+    Notes:
+        Get an error output onto the terminal when using robot_localization
+        https://github.com/ros/geometry2/issues/467
+        http://wiki.ros.org/robot_localization/Troubleshooting
+        https://answers.ros.org/questions/scope:all/sort:activity-desc/tags:robot_localization/page:1/
+        https://answers.ros.org/question/321093/robot_localization-with-gps-map-frame-wont-stay-fixed/
+
+        Good tutorial to sanity check against
+        https://github.com/methylDragon/ros-sensor-fusion-tutorial/blob/master/01%20-%20ROS%20and%20Sensor%20Fusion%20Tutorial.md
+    -->
+
+    <!-- example from source
+    https://github.com/cra-ros-pkg/robot_localization/blob/noetic-devel/launch/dual_ekf_navsat_example.launch
+    -->
+
+    <group ns="$(arg robot_namespace)">
+
+        <!--node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link"
+              args="0.0 0.0 0.005 0.0 0.0 0.0 /base_footprint /base_link 60" /-->
+
+        <rosparam command="load" file="$(find sctebot_localization)/config/ekf_state_estimate_odom_map_navsat.yaml" subst_value="true"/>
+
+        <group if="$(eval enable_ekf_odom_map == true)">
+
+            <!-- ekf odom -->
+            <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
+
+            <!-- ekf map -->
+            <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
+                <remap from="odometry/filtered" to="odometry/filtered_map"/>
+            </node>
+
+        </group>
+
+        <!-- region NavSat -->
+        <group if="$(eval enable_navsat_odom == true)">
+            <!-- Sea World
+            <arg name="reference_Latitude" value="32.76428904214641"/>
+            <arg name="reference_Longitude"> value="-117.22632586042305"/>
+            <rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam>
+            -->
+
+            <!-- Yosemite parking lot
+            <referenceLatitude>37.738448530273594</referenceLatitude>
+            <referenceLongitude>-119.56968071496732</referenceLongitude>
+            <rosparam param="datum">[37.738448530273594, -119.56968071496732, 0.0, map, base_link]</rosparam>
+            -->
+
+            <rosparam param="datum">[37.738448530273594, -119.56968071496732, 0.0, map, base_link]</rosparam>
+
+            <!-- region Gazebo -->
+            <node pkg="robot_localization" type="navsat_transform_node" name="gazebo_navsat_transform" clear_params="true">
+                <param name="magnetic_declination_radians" value="0"/>
+
+                <param name="yaw_offset" value="0"/>
+
+                <!-- Outputs -->
+                <!--remap from="odometry/gps" to="gazebo/odometry/gps" /-->
+
+                <!-- Inputs -->
+                <remap from="odometry/filtered" to="odometry/filtered_map" />
+                <!--remap from="gps/fix" to="gazebo/gps/fix"/-->
+                <!--remap from="imu/data" to="gazebo/imu"/-->
+            </node>
+            <!-- endregion -->
+
+            <node pkg="robot_localization" type="navsat_transform_node" name="ultimate_gps_navsat_transform" clear_params="true">
+                <param name="magnetic_declination_radians" value="0"/>
+
+                <param name="yaw_offset" value="0"/>
+
+                <!-- Outputs -->
+                <remap from="odometry/gps" to="adafruit_ultimate_gps/odometry/gps" />
+
+                <!-- Inputs -->
+                <!--remap from="odometry/filtered" to="odometry/filtered_map" /-->
+                <remap from="gps/fix" to="adafruit_ultimate_gps/gps/fix"/>
+                <remap from="imu/data" to="adafruit_10dof_imu/imu/data"/>
+            </node>
+
+        </group>
+        <!-- endregion -->
+
+    </group>
+
+</launch>
