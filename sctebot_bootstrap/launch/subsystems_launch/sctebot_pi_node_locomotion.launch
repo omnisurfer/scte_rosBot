@@ -1,0 +1,14 @@
+<launch>
+
+    <arg name="node_name" default="ros-pi-node"/>
+    <arg name="robot_namespace" default="sctebot" />
+
+    <include file="$(find sctebot_control)/launch/sctebot_control.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+
+    <include file="$(find adafruit_servo_hat)/launch/adafruit_servo_hat.launch">
+        <arg name="i2c_bus_number" value="4"/>
+    </include>
+
+</launch>

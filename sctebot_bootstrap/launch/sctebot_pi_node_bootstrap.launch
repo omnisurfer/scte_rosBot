@@ -1,0 +1,19 @@
+<launch>
+
+    <arg name="node_name" default="ros-pi-node"/>
+    <arg name="robot_namespace" default="sctebot" />
+
+    <!--
+    Using ros remote launch does not work. The launched nodes can't access the i2c devices regardless of permission settings.
+    <machine name="$(arg node_name)" user="user" address="ros-pi-node" default="never" env-loader="/opt/ros/noetic/env.sh" timeout="10"/>
+    -->
+
+    <include file="$(find sctebot_bootstrap)/launch/subsystems_launch/sctebot_pi_node_sensors.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+
+    <include file="$(find sctebot_bootstrap)/launch/subsystems_launch/sctebot_pi_node_locomotion.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+
+</launch>

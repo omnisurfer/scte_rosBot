@@ -1,0 +1,17 @@
+<launch>
+
+    <arg name="node_name" default="ros-pi-node"/>
+    <arg name="robot_namespace" default="sctebot" />
+
+    <include file="$(find sctebot_sensors)/launch/sctebot_ydlidar_g2.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
+    </include>
+
+    <include file="$(find adafruit_10dof_imu)/launch/adafruit_10dof_imu.launch">
+        <arg name="i2c_bus_number" value="4"/>
+    </include>
+
+    <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
+        <arg name="gps_name" value="adafruit_ultimate_gps"/>
+    </include>
+</launch>

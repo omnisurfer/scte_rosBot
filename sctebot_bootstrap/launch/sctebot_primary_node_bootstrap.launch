@@ -1,16 +1,7 @@
 <launch>
 
+    <arg name="node_name" default="ros-amd-node"/>
     <arg name="robot_namespace" default="sctebot" />
-
-    <!-- region Model -->
-    <arg name="x" default="0"/>
-    <arg name="y" default="0"/>
-    <arg name="z" default="1"/>
-    <arg name="yaw" default="0.0"/>
-
-    <arg name="latitude_ref" default="0"/>
-    <arg name="longitude_ref" default="0"/>
-    <arg name="altitude_ref" default="0"/>
 
     <include file="$(find sctebot_description)/launch/sctebot_upload.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
@@ -19,56 +10,12 @@
         <arg name="enable_ydlidar" default="true"/>
     </include>
 
-    <!---->
-    <include file="$(find sctebot_control)/launch/sctebot_control.launch">
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-    </include>
-    <!---->
-    <!-- endregion -->
-
-    <!-- region Sensors -->
-    <arg name="camera_name" default="realsense_d435i"/>
-
-    <include file="$(find sctebot_sensors)/launch/sctebot_realsense.launch">
-        <arg name="camera_name" value="$(arg camera_name)"/>
-        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
-        <arg name="camera" value="$(arg camera_name)"/>
-        <!-- point-cloud uses too much CPU. Use depth instead -->
-        <arg name="enable_pointcloud" value="false"/>
-        <arg name="enable_depth" value="true"/>
-        <arg name="enable_infra1" value="true"/>
-        <arg name="enable_infra2" value="true"/>
-        <arg name="enable_color" value="true"/>
-        <arg name="enable_gyro" value="true"/>
-        <arg name="enable_accel" value="true"/>
-    </include>
-
-    <!--
-    <include file="$(find gpsd_gps)/launch/gpsd_gps.launch">
-        <arg name="gps_name" default="primary_gps"/>
-    </include>
-    -->
-    <!-- endregion -->
-
-    <!-- region Localization -->
     <include file="$(find sctebot_localization)/launch/sctebot_localization.launch">
         <arg name="robot_namespace" value="$(arg robot_namespace)"/>
     </include>
 
-    <!-- region SLAM & GMAPP -->
-    <include file="$(find sctebot_slam)/launch/sctebot_slam.launch">
-        <arg name="camera_name" value="realsense_d435i"/>
+    <include file="$(find sctebot_bootstrap)/launch/subsystems_launch/sctebot_primary_node_sensors.launch">
+        <arg name="robot_namespace" value="$(arg robot_namespace)"/>
     </include>
-    <!-- endregion -->
-
-    <!-- region Throttle
-    <node pkg="topic_tools"
-          type="throttle"
-          name="$(arg camera_name)_points2_throttle"
-          output="screen"
-          respawn="false"
-          args="messages /$(arg robot_namespace)/$(arg camera_name)/points2 5 /$(arg robot_namespace)/$(arg camera_name)/points2_throttle"
-    />
-    endregion -->
 
 </launch>
