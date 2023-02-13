@@ -1016,6 +1016,8 @@ Visualization Manager:
           Value: true
         rear_wheel_link:
           Value: true
+        utm:
+          Value: true
       Marker Alpha: 1
       Marker Scale: 0.4000000059604645
       Name: TF
@@ -1084,6 +1086,8 @@ Visualization Manager:
                   {}
                 rear_wheel_link:
                   {}
+            utm:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1194,20 +1198,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
-      Class: rviz/TopDownOrtho
+      Class: rviz/ThirdPersonFollower
+      Distance: 10
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Field of View: 0.7853981852531433
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 150.04385375976562
+      Pitch: 0.3453981876373291
       Target Frame: <Fixed Frame>
-      X: 0
-      Y: 0
+      Yaw: 2.445399045944214
     Saved: ~
 Window Geometry:
   Displays:
