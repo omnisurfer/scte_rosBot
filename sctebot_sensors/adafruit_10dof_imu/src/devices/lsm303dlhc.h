@@ -39,7 +39,7 @@ public:
      * -1.0 if no orientation estimate is created
      * */
     constexpr static const double orientation_field_covariance[9] = {
-            0.0, 0.0, 0.0,
+            -1.0, 0.0, 0.0,
             0.0, 0.0, 0.0,
             0.0, 0.0, 0.0
     };

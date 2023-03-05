@@ -248,7 +248,6 @@ void Lsm303DlhcAccelerometer::_data_capture_worker() {
 
             std::lock_guard<std::mutex> accelerometer_data_lock(this->accelerometer_data_mutex);
             {
-
                 x_accel_axis = accelerometer_x_axis_g;
                 y_accel_axis = accelerometer_y_axis_g;
                 z_accel_axis = accelerometer_z_axis_g;

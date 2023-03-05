@@ -12,6 +12,16 @@
             <param name="adafruit_frame_id" value="imu_link"/>
         </node>
 
+        <!-- For some reason, when the sensor is NOT level with gravity, it seems to be stable. Once level, it moves as if
+        being pushed. What is odd is that the intel realsense IMU is outputing similar looking data (i.e. gravity not
+        removed
+
+        Maybe the covariance is too optimistic from the datasheet and/or I calculated wrong - doesn't seem to change
+        Maybe calculated/converting bytes to gravity values wrong?
+
+        Maybe put -1.0 in orientation covariance output. Intel driver seems to do this for its raw imu output...
+
+        -->
         <node pkg="imu_filter_madgwick" type="imu_filter_node" name="$(arg node_name)_filter_madgwick" output="screen" clear_params="true" respawn="false">
             <remap from="imu/data_raw" to="$(arg node_name)/imu/data_raw"/>
             <remap from="imu/data" to="$(arg node_name)/imu/data"/>
