@@ -1,10 +1,24 @@
 <launch>
 
+    <arg name="node_name" default="witmotion_ahrs"/>
     <arg name="robot_namespace" default="sctebot"/>
 
     <group ns="$(arg robot_namespace)">
         <rosparam command="load" file="$(find witmotion_ros)/config/config.yml" />
-        <node name="witmotion_imu" pkg="witmotion_ros"  type="witmotion_ros_node" output="screen"/>
+        <node name="$(arg node_name)" pkg="witmotion_ros"  type="witmotion_ros_node" output="screen">
+            <remap from="/altitude" to="$(arg node_name)/altitude"/>
+            <remap from="/barometer" to="$(arg node_name)/barometer"/>
+            <remap from="/gps" to="$(arg node_name)/gps"/>
+            <remap from="/gps_altitude" to="$(arg node_name)/gps_altitude"/>
+            <remap from="/gps_ground_speed" to="$(arg node_name)/gps_ground_speed"/>
+            <remap from="/gps_satellites" to="$(arg node_name)/gps_satellites"/>
+            <remap from="/gps_variance" to="$(arg node_name)/gps_variance"/>
+            <remap from="/imu" to="$(arg node_name)/imu/data"/>
+            <remap from="/magnetometer" to="$(arg node_name)/magnetometer"/>
+            <remap from="/orientation" to="$(arg node_name)/orientation"/>
+            <remap from="/temperature" to="$(arg node_name)/temperature"/>
+            <remap from="/witmotion_clock" to="$(arg node_name)/witmotion_clock"/>
+        </node>
     </group>
 
     <!-- IMU madgwick -->
