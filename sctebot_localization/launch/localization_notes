@@ -1,0 +1,27 @@
+Path planning
+    http://wiki.ros.org/base_local_planner
+    http://wiki.ros.org/dwa_local_planner
+
+IMU tie in/robot localization
+References:
+     https://github.com/udacity/robot_pose_ekf
+     https://answers.ros.org/question/259084/basic-robot_localization-example/
+     https://github.com/cra-ros-pkg/robot_localization/blob/kinetic-devel/params/ekf_template.yaml
+     https://kapernikov.com/the-ros-robot_localization-package/
+     http://docs.ros.org/en/melodic/api/robot_localization/html/integrating_gps.html
+     https://answers.ros.org/question/239612/can-i-change-arg-value-in-roslaunch/
+Notes:
+    Get an error output onto the terminal when using robot_localization
+    https://github.com/ros/geometry2/issues/467
+    http://wiki.ros.org/robot_localization/Troubleshooting
+    https://answers.ros.org/questions/scope:all/sort:activity-desc/tags:robot_localization/page:1/
+    https://answers.ros.org/question/321093/robot_localization-with-gps-map-frame-wont-stay-fixed/
+
+    Good tutorial to sanity check against
+    https://github.com/methylDragon/ros-sensor-fusion-tutorial/blob/master/01%20-%20ROS%20and%20Sensor%20Fusion%20Tutorial.md
+
+https://github.com/cra-ros-pkg/robot_localization/blob/noetic-devel/launch/dual_ekf_navsat_example.launch
+
+http://docs.ros.org/en/melodic/api/robot_localization/html/configuring_robot_localization.html
+http://docs.ros.org/en/noetic/api/robot_localization/html/
+https://github.com/locusrobotics/fuse/issues/179

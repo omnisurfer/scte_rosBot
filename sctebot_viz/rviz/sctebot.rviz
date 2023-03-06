@@ -9,10 +9,11 @@ Panels:
         - /d435i_depth1/Autocompute Value Bounds1
         - /Odometry1/Covariance1/Position1
         - /Odometry1/Covariance1/Orientation1
-        - /ada_Imu1/Axes properties1
-        - /ada_Imu1/Acceleration properties1
+        - /ada_Imu1/Box properties1
+        - /real_Imu1/Box properties1
         - /real_Imu1/Axes properties1
         - /real_Imu1/Acceleration properties1
+        - /real_Imu_corrected1/Axes properties1
       Splitter Ratio: 0.6583463549613953
     Tree Height: 390
   - Class: rviz/Selection
@@ -1016,8 +1017,6 @@ Visualization Manager:
           Value: true
         rear_wheel_link:
           Value: true
-        utm:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 0.4000000059604645
       Name: TF
@@ -1027,67 +1026,64 @@ Visualization Manager:
       Tree:
         map:
           odom:
-            base_footprint:
-              base_link:
-                computer_enclosure:
-                  base_laser:
-                    laser_frame:
+            base_link:
+              computer_enclosure:
+                base_laser:
+                  laser_frame:
+                    {}
+                gazebo_stereo_camera_body:
+                  gazebo_stereo_camera_base:
+                    gazebo_stereo_camera_optical_frame:
                       {}
-                  gazebo_stereo_camera_body:
-                    gazebo_stereo_camera_base:
-                      gazebo_stereo_camera_optical_frame:
+                gps_link:
+                  {}
+                imu_link:
+                  {}
+                realsense_d435i_bottom_screw_frame:
+                  realsense_d435i_link:
+                    realsense_d435i_accel_frame:
+                      realsense_d435i_accel_optical_frame:
                         {}
-                  gps_link:
-                    {}
-                  imu_link:
-                    {}
-                  realsense_d435i_bottom_screw_frame:
-                    realsense_d435i_link:
-                      realsense_d435i_accel_frame:
-                        realsense_d435i_accel_optical_frame:
-                          {}
-                      realsense_d435i_aligned_depth_to_color_frame:
-                        realsense_d435i_color_optical_frame:
-                          {}
-                      realsense_d435i_color_frame:
+                    realsense_d435i_aligned_depth_to_color_frame:
+                      realsense_d435i_color_optical_frame:
                         {}
-                      realsense_d435i_depth_frame:
-                        realsense_d435i_depth_optical_frame:
+                    realsense_d435i_color_frame:
+                      {}
+                    realsense_d435i_depth_frame:
+                      realsense_d435i_depth_optical_frame:
+                        {}
+                    realsense_d435i_gyro_frame:
+                      realsense_d435i_imu_optical_frame:
+                        realsense_d435i_imu_optical_frame_corrected:
                           {}
-                      realsense_d435i_gyro_frame:
-                        realsense_d435i_imu_optical_frame:
-                          realsense_d435i_imu_optical_frame_corrected:
-                            {}
-                      realsense_d435i_infra1_frame:
-                        realsense_d435i_infra1_optical_frame:
-                          {}
-                      realsense_d435i_infra2_frame:
-                        realsense_d435i_infra2_optical_frame:
-                          {}
-                front_bumper_skid_plate:
-                  front_bumper:
-                    {}
-                front_left_steer_link:
-                  front_left_wheel_link:
-                    {}
-                front_right_steer_link:
-                  front_right_wheel_link:
-                    {}
-                front_steer_link:
+                    realsense_d435i_infra1_frame:
+                      realsense_d435i_infra1_optical_frame:
+                        {}
+                    realsense_d435i_infra2_frame:
+                      realsense_d435i_infra2_optical_frame:
+                        {}
+              front_bumper_skid_plate:
+                front_bumper:
                   {}
-                inertial_link:
+              front_left_steer_link:
+                front_left_wheel_link:
                   {}
-                rear_bumper_mount:
-                  rear_bumper:
-                    {}
-                rear_left_wheel_link:
+              front_right_steer_link:
+                front_right_wheel_link:
                   {}
-                rear_right_wheel_link:
+              front_steer_link:
+                {}
+              inertial_link:
+                {}
+              rear_bumper_mount:
+                rear_bumper:
                   {}
-                rear_wheel_link:
-                  {}
-            utm:
-              {}
+              rear_left_wheel_link:
+                {}
+              rear_right_wheel_link:
+                {}
+              rear_wheel_link:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1111,10 +1107,10 @@ Visualization Manager:
       Box properties:
         Box alpha: 1
         Box color: 255; 0; 0
-        Enable box: false
-        x_scale: 1
-        y_scale: 1
-        z_scale: 1
+        Enable box: true
+        x_scale: 0.10000000149011612
+        y_scale: 0.10000000149011612
+        z_scale: 0.10000000149011612
       Class: rviz_imu_plugin/Imu
       Enabled: true
       Name: ada_Imu
@@ -1140,12 +1136,12 @@ Visualization Manager:
         y_scale: 1
         z_scale: 1
       Class: rviz_imu_plugin/Imu
-      Enabled: false
+      Enabled: true
       Name: real_Imu
       Queue Size: 10
       Topic: /sctebot/realsense_d435i/imu/data
       Unreliable: false
-      Value: false
+      Value: true
       fixed_frame_orientation: true
     - Acceleration properties:
         Acc. vector alpha: 1
@@ -1154,15 +1150,15 @@ Visualization Manager:
         Derotate acceleration: true
         Enable acceleration: false
       Axes properties:
-        Axes scale: 0.05000000074505806
+        Axes scale: 0.5
         Enable axes: true
       Box properties:
         Box alpha: 1
         Box color: 255; 0; 0
-        Enable box: false
-        x_scale: 0.5
-        y_scale: 0.5
-        z_scale: 1
+        Enable box: true
+        x_scale: 0.10000000149011612
+        y_scale: 0.10000000149011612
+        z_scale: 0.10000000149011612
       Class: rviz_imu_plugin/Imu
       Enabled: true
       Name: real_Imu_corrected
@@ -1199,7 +1195,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 10
+      Distance: 1.8979061841964722
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1215,9 +1211,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3453981876373291
+      Pitch: 0.21039801836013794
       Target Frame: <Fixed Frame>
-      Yaw: 2.445399045944214
+      Yaw: 3.4603993892669678
     Saved: ~
 Window Geometry:
   Displays:
