@@ -1,4 +1,4 @@
-ada_10dof_imu_primary_ekf_se_odom:
+ekf_se_odom:
 
   # region basic config
   frequency: 50
@@ -29,7 +29,7 @@ ada_10dof_imu_primary_ekf_se_odom:
   # ax, ay, az
 
   # region Odometry sources
-  odom0: ackermann_steering_controller/odom_DISABLED
+  odom0: ackermann_steering_controller/odom
   odom0_config: [false,  false,  false,
                  false, false, false,
                  true, true, false,
@@ -57,12 +57,12 @@ ada_10dof_imu_primary_ekf_se_odom:
   # endregion
 
   # region IMU sources
-  imu0: adafruit_10dof_imu/imu/data
-  imu0_config: [ true, true, true,
-                 true, true, true,
+  imu0: gazebo/imu_DISABLED
+  imu0_config: [ false, false, false,
+                 false, false, true,
                  false, false, false,
-                 false, false, false,
-                 false, false, false ]
+                 false, false, true,
+                 true, true, false ]
   imu0_nodelay: false
   imu0_differential: false
   imu0_relative: false
@@ -72,26 +72,40 @@ ada_10dof_imu_primary_ekf_se_odom:
   imu0_linear_acceleration_rejection_threshold: 0.8  #
   imu0_remove_gravitational_acceleration: false
 
-  imu1: realsense_d435i/imu_corrected/data_DISABLED
-  imu1_config: [true, true, true,
-                true, true, true,
-                false, false, false,
-                false, false, false,
-                false, false, false]
+  imu1: adafruit_10dof_imu/imu/data
+  imu1_config: [ true, true, true,
+                 true, true, true,
+                 false, false, false,
+                 false, false, false,
+                 false, false, false ]
   imu1_nodelay: false
-  imu1_differential: true
+  imu1_differential: false
   imu1_relative: false
   imu1_queue_size: 10
   imu1_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
   imu1_twist_rejection_threshold: 0.8                #
   imu1_linear_acceleration_rejection_threshold: 0.8  #
   imu1_remove_gravitational_acceleration: false
+
+  imu2: realsense_d435i/imu_corrected/data_DISABLED
+  imu2_config: [true, true, true,
+                true, true, true,
+                false, false, false,
+                false, false, false,
+                false, false, false]
+  imu2_nodelay: false
+  imu2_differential: true
+  imu2_relative: false
+  imu2_queue_size: 10
+  imu2_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
+  imu2_twist_rejection_threshold: 0.8                #
+  imu2_linear_acceleration_rejection_threshold: 0.8  #
+  imu2_remove_gravitational_acceleration: false
   # endregion
 
   # [ADVANCED] Some IMUs automatically remove acceleration due to gravity, and others don't. If yours doesn't, please set
   # this to true, and *make sure* your data conforms to REP-103, specifically, that the data is in ENU frame.
   # imu0_remove_gravitational_acceleration: true
-
   # region Advanced config
   use_control: false # was true
   stamped_control: false
@@ -135,7 +149,3 @@ ada_10dof_imu_primary_ekf_se_odom:
                                 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    1e-9, 0,
                                 0,    0,    0,    0,    0,    0,    0,    0,    0,    0,     0,     0,     0,    0,    1e-9]
   # endregion
-
-# yost_3space_ahrs_primary_ekf_se_odom:
-
-# witmotion_gps_ahrs_primary_ekf_se_odom:

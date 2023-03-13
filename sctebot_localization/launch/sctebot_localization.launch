@@ -7,75 +7,66 @@
     <arg name="enable_ekf_map" default="true"/>
     <arg name="enable_navsat_transform" default="true"/>
 
+    <!-- just choose one manually for now -->
+    <arg name="enable_adafruit_10dof_imu_primary" default="false"/>
+    <arg name="enable_yost_3space_ahrs_primary" default="false"/>
+    <arg name="enable_witmotion_gps_ahrs_primary" default="false"/>
+
     <group ns="$(arg robot_namespace)">
 
-        <group if="$(eval enable_ekf_odom == true)">
+        <group if="$(arg enable_adafruit_10dof_imu_primary)">
 
-            <!--rosparam command="load" file="$(find sctebot_localization)/config/ekf_state_estimate_odom_map_navsat_ORIG.yaml" subst_value="true"/-->
-            <!-- odom to base_link -->
-            <rosparam command="load" file="$(find sctebot_localization)/config/ekf_state_estimate_odom.yaml" subst_value="true"/>
-            <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
+            <include file="$(find sctebot_localization)/launch/_localization_sensor_selection.launch">
+                <arg name="enable_ekf_odom" value="$(arg enable_ekf_odom)"/>
+                <arg name="enable_ekf_map" value="$(arg enable_ekf_map)"/>
+                <arg name="enable_navsat_transform" value="$(arg enable_navsat_transform)"/>
 
-        </group>
+                <arg name="ekf_odom" value="ada_10dof_imu_primary_ekf_se_odom"/>
+                <arg name="ekf_map" value="ada_10dof_imu_primary_ekf_se_map"/>
 
-        <group if="$(eval enable_ekf_map == true)">
+                <arg name="navsat_transform_gps_odometry" value="adafruit_ultimate_gps/odometry/gps"/>
 
-            <!-- map to odom -->
-            <rosparam command="load" file="$(find sctebot_localization)/config/ekf_state_estimate_map.yaml" subst_value="true"/>
-            <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
-                <remap from="odometry/filtered" to="odometry/filtered_map"/>
-            </node>
-
-        </group>
-
-        <group if="$(eval enable_navsat_transform == true)">
-
-            <group if="$(eval enable_simulation == true)">
-                <!-- Sea World
-                <arg name="reference_Latitude" value="32.76428904214641"/>
-                <arg name="reference_Longitude"> value="-117.22632586042305"/>
-                <rosparam param="datum">[32.75394484000334, -117.21848979362261, 0.0, map, base_link]</rosparam>
-                -->
-
-                <!-- Yosemite parking lot
-                <referenceLatitude>37.738448530273594</referenceLatitude>
-                <referenceLongitude>-119.56968071496732</referenceLongitude>
-                <rosparam param="datum">[37.738448530273594, -119.56968071496732, 0.0, map, base_link]</rosparam>
-                -->
-
-                <rosparam param="datum">[37.738448530273594, -119.56968071496732, 0.0, map, base_link]</rosparam>
-
-                <node pkg="robot_localization" type="navsat_transform_node" name="gazebo_navsat_transform" clear_params="true">
-                    <param name="magnetic_declination_radians" value="0"/>
-
-                    <param name="yaw_offset" value="0"/>
-
-                    <!-- Outputs -->
-                    <!--remap from="odometry/gps" to="gazebo/odometry/gps" /-->
-
-                    <!-- Inputs -->
-                    <!--remap from="odometry/filtered" to="odometry/filtered"/-->
-                    <!--remap from="gps/fix" to="gazebo/gps/fix"/-->
-                    <!--remap from="imu/data" to="gazebo/imu"/-->
-                </node>
-            </group>
-
-            <node pkg="robot_localization" type="navsat_transform_node" name="ultimate_gps_navsat_transform" clear_params="true">
-                <param name="magnetic_declination_radians" value="0"/>
-
-                <param name="yaw_offset" value="0"/>
-
-                <!-- Outputs -->
-                <remap from="odometry/gps" to="adafruit_ultimate_gps/odometry/gps"/>
-
-                <!-- Inputs -->
-                <remap from="imu/data" to="adafruit_10dof_imu/imu/data"/>
-                <remap from="gps/fix" to="adafruit_ultimate_gps/gps/fix"/>
-                <!--remap from="odometry/filtered" to="odometry/filtered"/-->
-            </node>
+                <arg name="navsat_transform_imu" value="adafruit_10dof_imu/imu/data"/>
+                <arg name="navsat_transform_gps_fix" value="adafruit_ultimate_gps/gps/fix"/>
+            </include>
 
         </group>
 
+        <group if="$(arg enable_yost_3space_ahrs_primary)">
+
+            <include file="$(find sctebot_localization)/launch/_localization_sensor_selection.launch">
+                <arg name="enable_ekf_odom" value="$(arg enable_ekf_odom)"/>
+                <arg name="enable_ekf_map" value="$(arg enable_ekf_map)"/>
+                <arg name="enable_navsat_transform" value="$(arg enable_navsat_transform)"/>
+
+                <arg name="ekf_odom" value="yost_3space_ahrs_primary_ekf_se_odom"/>
+                <arg name="ekf_map" value="yost_3space_ahrs_primary_ekf_se_map"/>
+
+                <arg name="navsat_transform_gps_odometry" value="adafruit_ultimate_gps/odometry/gps"/>
+
+                <arg name="navsat_transform_imu" value="yost_3space_ahrs/imu/data"/>
+                <arg name="navsat_transform_gps_fix" value="adafruit_ultimate_gps/gps/fix"/>
+            </include>
+
+        </group>
+
+        <group if="$(arg enable_witmotion_gps_ahrs_primary)">
+
+            <include file="$(find sctebot_localization)/launch/_localization_sensor_selection.launch">
+                <arg name="enable_ekf_odom" value="$(arg enable_ekf_odom)"/>
+                <arg name="enable_ekf_map" value="$(arg enable_ekf_map)"/>
+                <arg name="enable_navsat_transform" value="$(arg enable_navsat_transform)"/>
+
+                <arg name="ekf_odom" value="witmotion_gps_ahrs_primary_ekf_se_odom"/>
+                <arg name="ekf_map" value="witmotion_gps_ahrs_primary_ekf_se_map"/>
+
+                <arg name="navsat_transform_gps_odometry" value="adafruit_ultimate_gps/odometry/gps"/>
+
+                <arg name="navsat_transform_imu" value="witmotion_gps_ahrs/imu/data"/>
+                <arg name="navsat_transform_gps_fix" value="adafruit_ultimate_gps/gps/fix"/>
+            </include>
+
+        </group>
     </group>
 
 </launch>
