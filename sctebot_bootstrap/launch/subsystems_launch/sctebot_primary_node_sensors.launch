@@ -9,6 +9,9 @@
 
     <arg name="camera_name" default="realsense_d435i"/>
 
+    <arg name="enable_yost_3space_ahrs_primary" default="false"/>
+    <arg name="enable_witmotion_gps_ahrs_primary" default="false"/>
+
     <group if="$(eval enable_realsense_depth_camera == true)">
         <include file="$(find sctebot_sensors)/launch/sctebot_realsense.launch">
             <arg name="camera_name" value="$(arg camera_name)"/>
@@ -36,6 +39,10 @@
         <include file="$(find navsat_serial_gps)/launch/bu353s4_navsat_gps.launch">
             <arg name="gps_name" value="bu353s4_gps"/>
         </include>
+    </group>
+
+    <group if="$(eval enable_yost_3space_ahrs_primary" default="false">
+
     </group>
 
 </launch>
