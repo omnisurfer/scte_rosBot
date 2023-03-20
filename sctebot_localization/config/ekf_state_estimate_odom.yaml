@@ -208,7 +208,7 @@ yost_3space_ahrs_primary_ekf_se_odom:
   imu0_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
   imu0_twist_rejection_threshold: 0.8                #
   imu0_linear_acceleration_rejection_threshold: 0.8  #
-  imu0_remove_gravitational_acceleration: false
+  imu0_remove_gravitational_acceleration: false      # Y3 sensor may need this set to true
 
   imu1: realsense_d435i/imu_corrected/data_DISABLED
   imu1_config: [ true, true, true,
