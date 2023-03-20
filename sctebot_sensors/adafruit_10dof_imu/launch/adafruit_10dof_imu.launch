@@ -12,8 +12,9 @@
             <param name="adafruit_frame_id" value="imu_link"/>
         </node>
 
-        <!--
-        enabling ekf_se_map is causing the unexpected "free-fall" in the xy plane
+        <!-- IMU madgwick
+            - Including this inside the group causes issues with topic remapping
+            - enabling ekf_se_map is causing the unexpected "free-fall" in the xy plane
         -->
         <node pkg="imu_filter_madgwick" type="imu_filter_node" name="$(arg node_name)_filter_madgwick" output="screen" clear_params="true" respawn="false">
             <remap from="imu/data_raw" to="$(arg node_name)/imu/data_raw"/>

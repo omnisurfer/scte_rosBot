@@ -8,13 +8,18 @@
     <arg name="enable_navsat_transform" default="true"/>
 
     <!-- just choose one manually for now -->
-    <arg name="enable_adafruit_10dof_imu_primary" default="false"/>
-    <arg name="enable_yost_3space_ahrs_primary" default="false"/>
-    <arg name="enable_witmotion_gps_ahrs_primary" default="false"/>
+    <!--
+        adafruit_10dof_imu
+        yost_3space_ahrs
+        witmotion_gps_ahrs
+    -->
+
+    <arg name="primary_imu" default="adafruit_10dof_imu"/>
+    <arg name="primary_gps" default="adafruit_ultimate_gps"/>
 
     <group ns="$(arg robot_namespace)">
 
-        <group if="$(arg enable_adafruit_10dof_imu_primary)">
+        <group if="$(eval arg('primary_imu') == 'adafruit_10dof_imu')">
 
             <include file="$(find sctebot_localization)/launch/_localization_sensor_selection.launch">
                 <arg name="enable_ekf_odom" value="$(arg enable_ekf_odom)"/>
@@ -24,15 +29,15 @@
                 <arg name="ekf_odom" value="ada_10dof_imu_primary_ekf_se_odom"/>
                 <arg name="ekf_map" value="ada_10dof_imu_primary_ekf_se_map"/>
 
-                <arg name="navsat_transform_gps_odometry" value="adafruit_ultimate_gps/odometry/gps"/>
+                <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 
                 <arg name="navsat_transform_imu" value="adafruit_10dof_imu/imu/data"/>
-                <arg name="navsat_transform_gps_fix" value="adafruit_ultimate_gps/gps/fix"/>
+                <arg name="navsat_transform_gps_fix" value="$(arg primary_gps)/gps/fix"/>
             </include>
 
         </group>
 
-        <group if="$(arg enable_yost_3space_ahrs_primary)">
+        <group if="$(eval arg('primary_imu') == 'yost_3space_ahrs')">
 
             <include file="$(find sctebot_localization)/launch/_localization_sensor_selection.launch">
                 <arg name="enable_ekf_odom" value="$(arg enable_ekf_odom)"/>
@@ -42,15 +47,15 @@
                 <arg name="ekf_odom" value="yost_3space_ahrs_primary_ekf_se_odom"/>
                 <arg name="ekf_map" value="yost_3space_ahrs_primary_ekf_se_map"/>
 
-                <arg name="navsat_transform_gps_odometry" value="adafruit_ultimate_gps/odometry/gps"/>
+                <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 
                 <arg name="navsat_transform_imu" value="yost_3space_ahrs/imu/data"/>
-                <arg name="navsat_transform_gps_fix" value="adafruit_ultimate_gps/gps/fix"/>
+                <arg name="navsat_transform_gps_fix" value="$(arg primary_gps)/gps/fix"/>
             </include>
 
         </group>
 
-        <group if="$(arg enable_witmotion_gps_ahrs_primary)">
+        <group if="$(eval arg('primary_imu') == 'witmotion_gps_ahrs')">
 
             <include file="$(find sctebot_localization)/launch/_localization_sensor_selection.launch">
                 <arg name="enable_ekf_odom" value="$(arg enable_ekf_odom)"/>
@@ -60,10 +65,10 @@
                 <arg name="ekf_odom" value="witmotion_gps_ahrs_primary_ekf_se_odom"/>
                 <arg name="ekf_map" value="witmotion_gps_ahrs_primary_ekf_se_map"/>
 
-                <arg name="navsat_transform_gps_odometry" value="adafruit_ultimate_gps/odometry/gps"/>
+                <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 
                 <arg name="navsat_transform_imu" value="witmotion_gps_ahrs/imu/data"/>
-                <arg name="navsat_transform_gps_fix" value="adafruit_ultimate_gps/gps/fix"/>
+                <arg name="navsat_transform_gps_fix" value="$(arg primary_gps)/gps/fix"/>
             </include>
 
         </group>

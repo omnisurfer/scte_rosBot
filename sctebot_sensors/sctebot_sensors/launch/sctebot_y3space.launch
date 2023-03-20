@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="node_name" default="y3space_ahrs"/>
+    <arg name="node_name" default="yost_3space_ahrs"/>
     <arg name="robot_namespace" default="sctebot"/>
 
     <group ns="$(arg robot_namespace)">
@@ -10,20 +10,16 @@
               type="y3space_driver"
               output="screen">
             <rosparam command="load" file="$(find y3space_driver)/config/y3space.yaml" />
-            <remap from="/imu/filtered" to="$(arg node_name)/imu/filtered"/>
+            <remap from="/imu/filtered" to="$(arg node_name)/imu/data"/>
             <remap from="/imu/temp" to="$(arg node_name)/imu/temp"/>
         </node>
 
     </group>
 
-    <!-- IMU madgwick -->
-    <!--
-    https://answers.ros.org/question/353799/how-to-convert-imu-from-left-handed-rule-to-right-handed-rule/
-    https://support.intelrealsense.com/hc/en-us/community/posts/360051415094-Realsense-D435i-rs-motion-drift-on-y-orientation
-    https://github.com/IntelRealSense/realsense-ros/wiki/SLAM-with-D435i
-    https://www.intelrealsense.com/how-to-getting-imu-data-from-d435i-and-t265/
+    <!-- IMU madgwick
+        - refer to adafruit_10dof_imu.launch for notes/example implementation
     -->
-    <!-- Including this inside the group causes issues with topic remapping - ->
+    <!-- madgwick may not be needed since the y3 is an AHRS with its own filtering...
     <node pkg="imu_filter_madgwick" type="imu_filter_node" name="$(arg camera_name)_imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
         <remap from="imu/data_raw" to="/$(arg robot_namespace)/$(arg camera_name)/imu/data_raw"/>
         <remap from="imu/data" to="/$(arg robot_namespace)/$(arg camera_name)/imu/data"/>
@@ -34,21 +30,6 @@
         <param name="use_mag" value="false" />
         <param name="use_magnetic_field_msg" value="false" />
     </node>
-    <!- - -->
-
-    <!-- region IMU transformer -->
-    <!--
-    <node pkg="tf" type="static_transform_publisher"
-          name="imu_transformer_broadcaster"
-          args="0 0 0 0 -1.57 1.57 $(arg camera_name)_imu_optical_frame $(arg camera_name)_imu_optical_frame_corrected 100"
-    />
-
-    <node pkg="imu_transformer" type="imu_transformer_node" name="imu_data_transformer" output="screen">
-        <remap from="imu_in" to="/$(arg robot_namespace)/$(arg camera_name)/imu"/>
-        <remap from="imu_out" to="/$(arg robot_namespace)/$(arg camera_name)/imu_corrected"/>
-        <param name="target_frame" value="$(arg camera_name)_imu_optical_frame_corrected"/>
-    </node>
     -->
-    <!-- endregion -->
 
 </launch>

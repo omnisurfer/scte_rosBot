@@ -3,13 +3,13 @@
     <arg name="node_name" default="ros-amd-node"/>
     <arg name="robot_namespace" default="sctebot" />
 
-    <arg name="enable_realsense_depth_camera" default="true"/>
-    <arg name="enable_realsense_depth_camera_slam" default="true"/>
+    <arg name="enable_realsense_depth_camera" default="false"/>
+    <arg name="enable_realsense_depth_camera_slam" default="false"/>
     <arg name="enable_bu353s4_gps" default="false"/>
 
     <arg name="camera_name" default="realsense_d435i"/>
 
-    <arg name="enable_yost_3space_ahrs_primary" default="false"/>
+    <arg name="enable_yost_3space_ahrs_primary" default="true"/>
     <arg name="enable_witmotion_gps_ahrs_primary" default="false"/>
 
     <group if="$(eval enable_realsense_depth_camera == true)">
@@ -41,8 +41,10 @@
         </include>
     </group>
 
-    <group if="$(eval enable_yost_3space_ahrs_primary" default="false">
+    <group if="$(eval enable_yost_3space_ahrs_primary == true)">
+        <include file="$(find sctebot_sensors)/launch/sctebot_y3space.launch">
 
+        </include>
     </group>
 
 </launch>
