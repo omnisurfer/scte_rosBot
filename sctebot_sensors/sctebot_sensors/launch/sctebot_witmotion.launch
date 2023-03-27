@@ -4,6 +4,7 @@
     <arg name="robot_namespace" default="sctebot"/>
 
     <group ns="$(arg robot_namespace)">
+        <!-- the witmotion_ros driver IMU data is very delayed. Unsure why.
         <rosparam command="load" file="$(find witmotion_ros)/config/config.yml" />
         <node name="$(arg node_name)" pkg="witmotion_ros"  type="witmotion_ros_node" output="screen">
             <remap from="/altitude" to="$(arg node_name)/altitude"/>
@@ -18,6 +19,16 @@
             <remap from="/orientation" to="$(arg node_name)/orientation"/>
             <remap from="/temperature" to="$(arg node_name)/temperature"/>
             <remap from="/witmotion_clock" to="$(arg node_name)/witmotion_clock"/>
+        </node>
+        -->
+        <arg name="port" default = "/dev/ttyUSB0" />
+        <node pkg="nodelet" type="nodelet" output="screen" name="wit_nodelet_manager" args="manager"/>
+        <node pkg="nodelet" type="nodelet" output="screen" name="$(arg node_name)" args="load wit_node/WitNodelet wit_nodelet_manager" >
+            <param name="port" value="$(arg port)" />
+            <param name="/bond_disable_heartbeat_timeout" value="true" />
+            <remap from="/imu" to="$(arg node_name)/imu/data_raw"/>
+            <remap from="/gps" to="$(arg node_name)/gps/data"/>
+            <remap from="~raw_data" to="$(arg node_name)/auxiliary_data"/>
         </node>
     </group>
 
