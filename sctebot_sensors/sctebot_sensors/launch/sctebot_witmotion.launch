@@ -4,7 +4,7 @@
     <arg name="robot_namespace" default="sctebot"/>
 
     <group ns="$(arg robot_namespace)">
-        <!-- the witmotion_ros driver IMU data is very delayed. Unsure why.
+        <!-- witmotion_ros driver IMU data is very delayed. Unsure why.
         <rosparam command="load" file="$(find witmotion_ros)/config/config.yml" />
         <node name="$(arg node_name)" pkg="witmotion_ros"  type="witmotion_ros_node" output="screen">
             <remap from="/altitude" to="$(arg node_name)/altitude"/>
@@ -21,9 +21,11 @@
             <remap from="/witmotion_clock" to="$(arg node_name)/witmotion_clock"/>
         </node>
         -->
+
+        <!-- witnode_ros driver seems to work fine -->
         <arg name="port" default = "/dev/ttyUSB0" />
-        <node pkg="nodelet" type="nodelet" output="screen" name="wit_nodelet_manager" args="manager"/>
-        <node pkg="nodelet" type="nodelet" output="screen" name="$(arg node_name)" args="load wit_node/WitNodelet wit_nodelet_manager" >
+        <node pkg="nodelet" type="nodelet" output="screen" name="$(arg node_name)_nodelet_manager" args="manager"/>
+        <node pkg="nodelet" type="nodelet" output="screen" name="$(arg node_name)" args="load wit_node/WitNodelet $(arg node_name)_nodelet_manager" >
             <param name="port" value="$(arg port)" />
             <param name="/bond_disable_heartbeat_timeout" value="true" />
             <remap from="/imu" to="$(arg node_name)/imu/data_raw"/>
@@ -40,9 +42,9 @@
     https://www.intelrealsense.com/how-to-getting-imu-data-from-d435i-and-t265/
     -->
     <!-- Including this inside the group causes issues with topic remapping - ->
-    <node pkg="imu_filter_madgwick" type="imu_filter_node" name="$(arg camera_name)_imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
-        <remap from="imu/data_raw" to="/$(arg robot_namespace)/$(arg camera_name)/imu/data_raw"/>
-        <remap from="imu/data" to="/$(arg robot_namespace)/$(arg camera_name)/imu/data"/>
+    <node pkg="imu_filter_madgwick" type="imu_filter_node" name="/$(arg robot_namespace)/$(arg node_name)_imu_filter_madgwick" output="screen" clear_params="true" respawn="false">
+        <remap from="imu/data_raw" to="/$(arg robot_namespace)/$(arg node_name)/imu/data_raw"/>
+        <remap from="imu/data" to="/$(arg robot_namespace)/$(arg node_name)/imu/data"/>
         <param name="fixed_frame" value="pal_odom" />
         <param name="world_frame" value="enu" />
         <param name="publish_tf" value="false" />
@@ -56,13 +58,13 @@
     <!--
     <node pkg="tf" type="static_transform_publisher"
           name="imu_transformer_broadcaster"
-          args="0 0 0 0 -1.57 1.57 $(arg camera_name)_imu_optical_frame $(arg camera_name)_imu_optical_frame_corrected 100"
+          args="0 0 0 0 -1.57 1.57 $(arg node_name)_imu_optical_frame $(arg node_name)_imu_optical_frame_corrected 100"
     />
 
     <node pkg="imu_transformer" type="imu_transformer_node" name="imu_data_transformer" output="screen">
-        <remap from="imu_in" to="/$(arg robot_namespace)/$(arg camera_name)/imu"/>
-        <remap from="imu_out" to="/$(arg robot_namespace)/$(arg camera_name)/imu_corrected"/>
-        <param name="target_frame" value="$(arg camera_name)_imu_optical_frame_corrected"/>
+        <remap from="imu_in" to="/$(arg robot_namespace)/$(arg node_name)/imu"/>
+        <remap from="imu_out" to="/$(arg robot_namespace)/$(arg node_name)/imu_corrected"/>
+        <param name="target_frame" value="$(arg node_name)_imu_optical_frame_corrected"/>
     </node>
     -->
     <!-- endregion -->
