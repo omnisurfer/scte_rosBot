@@ -57,7 +57,7 @@ ada_10dof_imu_primary_ekf_se_odom:
   # endregion
 
   # region IMU sources
-  imu0: adafruit_10dof_imu/imu/data
+  imu0: adafruit_10dof_imu/imu/data_DISABLED
   imu0_config: [ false, false, false,
                  false, false, false,
                  false, false, false,
@@ -195,7 +195,7 @@ yost_3space_ahrs_primary_ekf_se_odom:
   # endregion
 
   # region IMU sources
-  imu0: yost_3space_ahrs/imu/data
+  imu0: yost_3space_ahrs/imu/data_DISABLED
   imu0_config: [ false, false, false,
                  false, false, false,
                  false, false, false,

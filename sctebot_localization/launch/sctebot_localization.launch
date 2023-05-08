@@ -14,7 +14,8 @@
         witmotion_gps_ahrs
     -->
 
-    <arg name="primary_imu" default="adafruit_10dof_imu"/>
+    <!--arg name="primary_imu" default="adafruit_10dof_imu"/-->
+    <arg name="primary_imu" default="witmotion_ahrs"/>
     <arg name="primary_gps" default="adafruit_ultimate_gps"/>
 
     <group ns="$(arg robot_namespace)">
@@ -55,7 +56,7 @@
 
         </group>
 
-        <group if="$(eval arg('primary_imu') == 'witmotion_gps_ahrs')">
+        <group if="$(eval arg('primary_imu') == 'witmotion_ahrs')">
 
             <include file="$(find sctebot_localization)/launch/_localization_sensor_selection.launch">
                 <arg name="enable_ekf_odom" value="$(arg enable_ekf_odom)"/>
@@ -67,7 +68,7 @@
 
                 <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 
-                <arg name="navsat_transform_imu" value="witmotion_gps_ahrs/imu/data"/>
+                <arg name="navsat_transform_imu" value="witmotion_ahrs/imu/data"/>
                 <arg name="navsat_transform_gps_fix" value="$(arg primary_gps)/gps/fix"/>
             </include>
 

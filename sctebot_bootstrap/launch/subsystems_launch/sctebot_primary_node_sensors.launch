@@ -3,7 +3,7 @@
     <arg name="node_name" default="ros-amd-node"/>
     <arg name="robot_namespace" default="sctebot" />
 
-    <arg name="enable_realsense_depth_camera" default="false"/>
+    <arg name="enable_realsense_depth_camera" default="true"/>
     <arg name="enable_realsense_depth_camera_slam" default="false"/>
     <arg name="enable_bu353s4_gps" default="false"/>
 
