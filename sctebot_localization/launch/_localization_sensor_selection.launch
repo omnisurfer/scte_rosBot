@@ -4,8 +4,9 @@
     <arg name="enable_ekf_map" default="true"/>
     <arg name="enable_navsat_transform" default="true"/>
 
-    <arg name="ekf_odom" default="ada_10dof_imu_primary_ekf_se_odom"/>
-    <arg name="ekf_map" default="ada_10dof_imu_primary_ekf_se_map"/>
+    <arg name="ekf_odom" default="ada_10dof_imu_ekf_se_odom"/>
+    <arg name="ekf_map" default="ada_10dof_imu_ekf_se_map"/>
+    <arg name="navsat_transform" default="ultimate_gps_navsat_transform"/>
 
     <arg name="navsat_transform_gps_odometry" default="adafruit_ultimate_gps/odometry/gps"/>
 
@@ -15,7 +16,7 @@
     <group if="$(arg enable_ekf_odom)">
 
         <!-- odom to base_link -->
-        <rosparam command="load" file="$(find sctebot_localization)/config/ekf_state_estimate_odom.yaml" subst_value="true"/>
+        <rosparam command="load" file="$(find sctebot_localization)/config/$(arg ekf_odom).yaml" subst_value="true"/>
         <node pkg="robot_localization" type="ekf_localization_node" name="$(arg ekf_odom)" clear_params="true"/>
 
     </group>
@@ -23,7 +24,7 @@
     <group if="$(arg enable_ekf_map)">
 
         <!-- map to odom -->
-        <rosparam command="load" file="$(find sctebot_localization)/config/ekf_state_estimate_map.yaml" subst_value="true"/>
+        <rosparam command="load" file="$(find sctebot_localization)/config/$(arg ekf_map).yaml" subst_value="true"/>
         <node pkg="robot_localization" type="ekf_localization_node" name="$(arg ekf_map)" clear_params="true">
             <remap from="odometry/filtered" to="odometry/filtered_map"/>
         </node>
@@ -32,7 +33,8 @@
 
     <group if="$(arg enable_navsat_transform)">
 
-        <node pkg="robot_localization" type="navsat_transform_node" name="ultimate_gps_navsat_transform" clear_params="true">
+        <rosparam command="load" file="$(find sctebot_localization)/config/$(arg navsat_transform).yaml" subst_value="true"/>
+        <node pkg="robot_localization" type="navsat_transform_node" name="$(arg navsat_transform)" clear_params="true">
             <param name="magnetic_declination_radians" value="0"/>
 
             <param name="yaw_offset" value="0"/>
@@ -43,7 +45,7 @@
             <!-- Inputs -->
             <remap from="imu/data" to="$(arg navsat_transform_imu)"/>
             <remap from="gps/fix" to="$(arg navsat_transform_gps_fix)"/>
-            <!--remap from="odometry/filtered" to="odometry/filtered"/-->
+            <remap from="odometry/filtered" to="odometry/filtered_map"/>
         </node>
 
     </group>

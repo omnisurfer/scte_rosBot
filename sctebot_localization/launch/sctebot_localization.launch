@@ -5,7 +5,7 @@
 
     <arg name="enable_ekf_odom" default="true"/>
     <arg name="enable_ekf_map" default="true"/>
-    <arg name="enable_navsat_transform" default="true"/>
+    <arg name="enable_navsat_transform" default="false"/>
 
     <!-- just choose one manually for now -->
     <!--
@@ -15,10 +15,32 @@
     -->
 
     <!--arg name="primary_imu" default="adafruit_10dof_imu"/-->
-    <arg name="primary_imu" default="witmotion_ahrs"/>
-    <arg name="primary_gps" default="adafruit_ultimate_gps"/>
+    <!--arg name="primary_imu" default="yost_3space_ahrs"/-->
+    <!--arg name="primary_imu" default="witmotion_ahrs"/-->
+    <arg name="primary_imu" default="gazebo"/>
+    <!--arg name="primary_gps" default="adafruit_ultimate_gps"/-->
+    <arg name="primary_gps" default="gazebo"/>
 
     <group ns="$(arg robot_namespace)">
+
+        <group if="$(eval arg('primary_imu') == 'gazebo')">
+
+            <include file="$(find sctebot_localization)/launch/_localization_sensor_selection.launch">
+                <arg name="enable_ekf_odom" value="$(arg enable_ekf_odom)"/>
+                <arg name="enable_ekf_map" value="$(arg enable_ekf_map)"/>
+                <arg name="enable_navsat_transform" value="$(arg enable_navsat_transform)"/>
+
+                <arg name="ekf_odom" value="gazebo_sim_imu_ekf_se_odom"/>
+                <arg name="ekf_map" value="gazebo_sim_imu_ekf_se_map"/>
+                <arg name="navsat_transform" value="gazebo_sim_navsat_transform"/>
+
+                <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
+
+                <arg name="navsat_transform_imu" value="$(arg primary_imu)/imu/data"/>
+                <arg name="navsat_transform_gps_fix" value="$(arg primary_gps)/gps/fix"/>
+            </include>
+
+        </group>
 
         <group if="$(eval arg('primary_imu') == 'adafruit_10dof_imu')">
 
@@ -27,12 +49,12 @@
                 <arg name="enable_ekf_map" value="$(arg enable_ekf_map)"/>
                 <arg name="enable_navsat_transform" value="$(arg enable_navsat_transform)"/>
 
-                <arg name="ekf_odom" value="ada_10dof_imu_primary_ekf_se_odom"/>
-                <arg name="ekf_map" value="ada_10dof_imu_primary_ekf_se_map"/>
+                <arg name="ekf_odom" value="ada_10dof_imu_ekf_se_odom"/>
+                <arg name="ekf_map" value="ada_10dof_imu_ekf_se_map"/>
 
                 <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 
-                <arg name="navsat_transform_imu" value="adafruit_10dof_imu/imu/data"/>
+                <arg name="navsat_transform_imu" value="$(arg primary_imu)/imu/data"/>
                 <arg name="navsat_transform_gps_fix" value="$(arg primary_gps)/gps/fix"/>
             </include>
 
@@ -45,12 +67,12 @@
                 <arg name="enable_ekf_map" value="$(arg enable_ekf_map)"/>
                 <arg name="enable_navsat_transform" value="$(arg enable_navsat_transform)"/>
 
-                <arg name="ekf_odom" value="yost_3space_ahrs_primary_ekf_se_odom"/>
-                <arg name="ekf_map" value="yost_3space_ahrs_primary_ekf_se_map"/>
+                <arg name="ekf_odom" value="yost_3space_ahrs_ekf_se_odom"/>
+                <arg name="ekf_map" value="yost_3space_ahrs_ekf_se_map"/>
 
                 <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 
-                <arg name="navsat_transform_imu" value="yost_3space_ahrs/imu/data"/>
+                <arg name="navsat_transform_imu" value="$(arg primary_imu)/imu/data"/>
                 <arg name="navsat_transform_gps_fix" value="$(arg primary_gps)/gps/fix"/>
             </include>
 
@@ -63,12 +85,12 @@
                 <arg name="enable_ekf_map" value="$(arg enable_ekf_map)"/>
                 <arg name="enable_navsat_transform" value="$(arg enable_navsat_transform)"/>
 
-                <arg name="ekf_odom" value="witmotion_gps_ahrs_primary_ekf_se_odom"/>
-                <arg name="ekf_map" value="witmotion_gps_ahrs_primary_ekf_se_map"/>
+                <arg name="ekf_odom" value="witmotion_gps_ahrs_ekf_se_odom"/>
+                <arg name="ekf_map" value="witmotion_gps_ahrs_ekf_se_map"/>
 
                 <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 
-                <arg name="navsat_transform_imu" value="witmotion_ahrs/imu/data"/>
+                <arg name="navsat_transform_imu" value="$(arg primary_imu)/imu/data"/>
                 <arg name="navsat_transform_gps_fix" value="$(arg primary_gps)/gps/fix"/>
             </include>
 

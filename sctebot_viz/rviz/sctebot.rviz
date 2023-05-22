@@ -33,7 +33,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: d435i_depth
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -45,7 +45,7 @@ Visualization Manager:
       Cell Size: 1
       Class: rviz/Grid
       Color: 239; 41; 41
-      Enabled: true
+      Enabled: false
       Line Style:
         Line Width: 0.029999999329447746
         Value: Lines
@@ -58,7 +58,7 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: true
+      Value: false
     - Alpha: 0.5
       Cell Size: 1
       Class: rviz/Grid
@@ -80,8 +80,26 @@ Visualization Manager:
     - Alpha: 0.5
       Cell Size: 1
       Class: rviz/Grid
-      Color: 245; 121; 0
+      Color: 239; 41; 41
       Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: odom_grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: odom
+      Value: true
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 245; 121; 0
+      Enabled: false
       Line Style:
         Line Width: 0.029999999329447746
         Value: Lines
@@ -94,7 +112,7 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: utm
-      Value: true
+      Value: false
     - Alpha: 0.75
       Class: rviz/RobotModel
       Collision Enabled: false
@@ -105,15 +123,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_laser:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         base_link:
           Alpha: 1
           Show Axes: false
@@ -187,19 +196,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        laser_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        realsense_d435i_bottom_screw_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        realsense_d435i_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         rear_bumper:
           Alpha: 1
           Show Axes: false
@@ -273,6 +269,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        odom_grid: true
         real_Imu: true
         real_Imu_corrected: true
         rtabmap_occupancy_grid: true
@@ -321,6 +318,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        odom_grid: true
         real_Imu: true
         real_Imu_corrected: true
         rtabmap_occupancy_grid: true
@@ -369,6 +367,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        odom_grid: true
         real_Imu: true
         real_Imu_corrected: true
         rtabmap_occupancy_grid: true
@@ -417,6 +416,7 @@ Visualization Manager:
         gazebo_stereo_starboard: true
         logitech_rear_starboard: true
         map_grid: true
+        odom_grid: true
         real_Imu: true
         real_Imu_corrected: true
         rtabmap_occupancy_grid: true
@@ -465,6 +465,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        odom_grid: true
         real_Imu: true
         real_Imu_corrected: true
         rtabmap_occupancy_grid: true
@@ -513,6 +514,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        odom_grid: true
         real_Imu: true
         real_Imu_corrected: true
         rtabmap_occupancy_grid: true
@@ -561,6 +563,7 @@ Visualization Manager:
         gazebo_stereo_starboard: true
         logitech_rear_port: true
         map_grid: true
+        odom_grid: true
         real_Imu: true
         real_Imu_corrected: true
         rtabmap_occupancy_grid: true
@@ -609,6 +612,7 @@ Visualization Manager:
         logitech_rear_port: true
         logitech_rear_starboard: true
         map_grid: true
+        odom_grid: true
         real_Imu: true
         real_Imu_corrected: true
         rtabmap_occupancy_grid: true
@@ -932,91 +936,11 @@ Visualization Manager:
       Zoom: 18
     - Class: rviz/TF
       Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_footprint:
-          Value: false
-        base_laser:
-          Value: false
-        base_link:
-          Value: false
-        computer_enclosure:
-          Value: true
-        front_bumper:
-          Value: false
-        front_bumper_skid_plate:
-          Value: false
-        front_left_steer_link:
-          Value: true
-        front_left_wheel_link:
-          Value: true
-        front_right_steer_link:
-          Value: true
-        front_right_wheel_link:
-          Value: true
-        front_steer_link:
-          Value: true
-        gazebo_stereo_camera_base:
-          Value: false
-        gazebo_stereo_camera_body:
-          Value: false
-        gazebo_stereo_camera_optical_frame:
-          Value: false
-        gps_link:
-          Value: false
-        imu_link:
-          Value: false
-        inertial_link:
-          Value: false
-        laser_frame:
-          Value: false
-        map:
-          Value: false
-        odom:
-          Value: false
-        realsense_d435i_accel_frame:
-          Value: false
-        realsense_d435i_accel_optical_frame:
-          Value: false
-        realsense_d435i_aligned_depth_to_color_frame:
-          Value: false
-        realsense_d435i_bottom_screw_frame:
-          Value: false
-        realsense_d435i_color_frame:
-          Value: false
-        realsense_d435i_color_optical_frame:
-          Value: false
-        realsense_d435i_depth_frame:
-          Value: false
-        realsense_d435i_depth_optical_frame:
-          Value: false
-        realsense_d435i_gyro_frame:
-          Value: false
-        realsense_d435i_imu_optical_frame:
-          Value: false
-        realsense_d435i_imu_optical_frame_corrected:
-          Value: false
-        realsense_d435i_infra1_frame:
-          Value: false
-        realsense_d435i_infra1_optical_frame:
-          Value: false
-        realsense_d435i_infra2_frame:
-          Value: false
-        realsense_d435i_infra2_optical_frame:
-          Value: false
-        realsense_d435i_link:
-          Value: false
-        rear_bumper:
-          Value: false
-        rear_bumper_mount:
-          Value: false
-        rear_left_wheel_link:
-          Value: true
-        rear_right_wheel_link:
-          Value: true
-        rear_wheel_link:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 0.4000000059604645
       Name: TF
@@ -1024,66 +948,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        map:
-          odom:
-            base_link:
-              computer_enclosure:
-                base_laser:
-                  laser_frame:
-                    {}
-                gazebo_stereo_camera_body:
-                  gazebo_stereo_camera_base:
-                    gazebo_stereo_camera_optical_frame:
-                      {}
-                gps_link:
-                  {}
-                imu_link:
-                  {}
-                realsense_d435i_bottom_screw_frame:
-                  realsense_d435i_link:
-                    realsense_d435i_accel_frame:
-                      realsense_d435i_accel_optical_frame:
-                        {}
-                    realsense_d435i_aligned_depth_to_color_frame:
-                      realsense_d435i_color_optical_frame:
-                        {}
-                    realsense_d435i_color_frame:
-                      {}
-                    realsense_d435i_depth_frame:
-                      realsense_d435i_depth_optical_frame:
-                        {}
-                    realsense_d435i_gyro_frame:
-                      realsense_d435i_imu_optical_frame:
-                        realsense_d435i_imu_optical_frame_corrected:
-                          {}
-                    realsense_d435i_infra1_frame:
-                      realsense_d435i_infra1_optical_frame:
-                        {}
-                    realsense_d435i_infra2_frame:
-                      realsense_d435i_infra2_optical_frame:
-                        {}
-              front_bumper_skid_plate:
-                front_bumper:
-                  {}
-              front_left_steer_link:
-                front_left_wheel_link:
-                  {}
-              front_right_steer_link:
-                front_right_wheel_link:
-                  {}
-              front_steer_link:
-                {}
-              inertial_link:
-                {}
-              rear_bumper_mount:
-                rear_bumper:
-                  {}
-              rear_left_wheel_link:
-                {}
-              rear_right_wheel_link:
-                {}
-              rear_wheel_link:
-                {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1171,7 +1036,7 @@ Visualization Manager:
   Global Options:
     Background Color: 136; 138; 133
     Default Light: true
-    Fixed Frame: map
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
@@ -1194,26 +1059,20 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/ThirdPersonFollower
-      Distance: 1.8979061841964722
+      Angle: -1.5700000524520874
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Field of View: 0.7853981852531433
-      Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
-      Focal Shape Fixed Size: false
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.21039801836013794
+      Scale: 76.89966583251953
       Target Frame: <Fixed Frame>
-      Yaw: 3.4603993892669678
+      X: 0
+      Y: 0
     Saved: ~
 Window Geometry:
   Displays:
