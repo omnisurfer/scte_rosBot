@@ -246,6 +246,7 @@ yost_3space_ahrs_primary_ekf_se_map:
   # endregion
 
 witmotion_gps_ahrs_primary_ekf_se_map:
+
   # region basic config
   frequency: 50
   sensor_timeout: 0.1
