@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="node_name" default="witmotion_ahrs"/>
+    <arg name="node_name" default="witmotion_gps_ahrs"/>
     <arg name="robot_namespace" default="sctebot"/>
 
     <group ns="$(arg robot_namespace)">

@@ -5,21 +5,30 @@
 
     <arg name="enable_ekf_odom" default="true"/>
     <arg name="enable_ekf_map" default="true"/>
-    <arg name="enable_navsat_transform" default="false"/>
+    <arg name="enable_navsat_transform" default="true"/>
 
     <!-- just choose one manually for now -->
     <!--
         adafruit_10dof_imu
         yost_3space_ahrs
         witmotion_gps_ahrs
+        gazebo
     -->
 
+    <!--arg name="primary_imu" default="gazebo"/-->
+    <!--arg name="primary_gps" default="gazebo"/-->
+
     <!--arg name="primary_imu" default="adafruit_10dof_imu"/-->
-    <!--arg name="primary_imu" default="yost_3space_ahrs"/-->
-    <!--arg name="primary_imu" default="witmotion_ahrs"/-->
-    <arg name="primary_imu" default="gazebo"/>
     <!--arg name="primary_gps" default="adafruit_ultimate_gps"/-->
-    <arg name="primary_gps" default="gazebo"/>
+
+    <!--arg name="primary_imu" default="yost_3space_ahrs"/-->
+    <!--arg name="primary_gps" default="adafruit_ultimate_gps"/-->
+
+    <!--arg name="primary_imu" default="witmotion_gps_ahrs"/-->
+    <!--arg name="primary_gps" default="adafruit_ultimate_gps"/-->
+
+    <arg name="primary_imu" default="adafruit_10dof_imu"/>
+    <arg name="primary_gps" default="adafruit_ultimate_gps"/>
 
     <group ns="$(arg robot_namespace)">
 
@@ -51,6 +60,7 @@
 
                 <arg name="ekf_odom" value="ada_10dof_imu_ekf_se_odom"/>
                 <arg name="ekf_map" value="ada_10dof_imu_ekf_se_map"/>
+                <arg name="navsat_transform" value="ada_10dof_imu_navsat_transform"/>
 
                 <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 
@@ -69,6 +79,7 @@
 
                 <arg name="ekf_odom" value="yost_3space_ahrs_ekf_se_odom"/>
                 <arg name="ekf_map" value="yost_3space_ahrs_ekf_se_map"/>
+                <arg name="navsat_transform" value="yost_3space_ahrs_navsat_transform"/>
 
                 <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 
@@ -78,7 +89,7 @@
 
         </group>
 
-        <group if="$(eval arg('primary_imu') == 'witmotion_ahrs')">
+        <group if="$(eval arg('primary_imu') == 'witmotion_gps_ahrs')">
 
             <include file="$(find sctebot_localization)/launch/_localization_sensor_selection.launch">
                 <arg name="enable_ekf_odom" value="$(arg enable_ekf_odom)"/>
@@ -87,6 +98,7 @@
 
                 <arg name="ekf_odom" value="witmotion_gps_ahrs_ekf_se_odom"/>
                 <arg name="ekf_map" value="witmotion_gps_ahrs_ekf_se_map"/>
+                <arg name="navsat_transform" value="witmotion_gps_ahrs_navsat_transform"/>
 
                 <arg name="navsat_transform_gps_odometry" value="$(arg primary_gps)/odometry/gps"/>
 

@@ -10,7 +10,7 @@
         yost_3space_ahrs
         witmotion_gps_ahrs
     -->
-    <arg name="primary_imu" default="yost_3space_ahrs"/>
+    <arg name="primary_imu" default="witmotion_gps_ahrs"/>
     <arg name="primary_gps" default="adafruit_ultimate_gps"/>
 
     <include file="$(find sctebot_description)/launch/sctebot_upload.launch">
