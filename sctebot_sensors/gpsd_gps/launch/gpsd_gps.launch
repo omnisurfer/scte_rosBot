@@ -9,6 +9,7 @@
         <node name="$(arg gps_name)" pkg="gpsd_client" type="gpsd_client" output="screen">
             <param name="_host" value="$(arg host_ip)"/>
             <param name="_port" value="$(arg host_port)"/>
+            <param name="frame_id" value="gps_link"/>
             <remap from="fix" to="$(arg gps_name)/gps/fix"/>
             <remap from="extended_fix" to="$(arg gps_name)/gps/extended_fix"/>
         </node>

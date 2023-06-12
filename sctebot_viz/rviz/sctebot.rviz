@@ -9,14 +9,13 @@ Panels:
         - /d435i_depth1/Autocompute Value Bounds1
         - /Odometry1/Covariance1/Position1
         - /Odometry1/Covariance1/Orientation1
-        - /AerialMapDisplay1
         - /ada_Imu1/Box properties1
+        - /ada_Imu1/Axes properties1
         - /real_Imu1/Box properties1
         - /real_Imu1/Axes properties1
-        - /real_Imu1/Acceleration properties1
         - /real_Imu_corrected1/Axes properties1
       Splitter Ratio: 0.6583463549613953
-    Tree Height: 362
+    Tree Height: 352
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -34,7 +33,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: d435i_mono
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -311,7 +310,8 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          "": true
+          Costmap: true
+          DWAPath: true
           Value: true
         LaserScan: true
         Local Map:
@@ -360,7 +360,8 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          "": true
+          Costmap: true
+          DWAPath: true
           Value: true
         LaserScan: true
         Local Map:
@@ -409,7 +410,8 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          "": true
+          Costmap: true
+          DWAPath: true
           Value: true
         LaserScan: true
         Local Map:
@@ -508,7 +510,8 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          "": true
+          Costmap: true
+          DWAPath: true
           Value: true
         LaserScan: true
         Local Map:
@@ -557,7 +560,8 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          "": true
+          Costmap: true
+          DWAPath: true
           Value: true
         LaserScan: true
         Local Map:
@@ -688,7 +692,7 @@ Visualization Manager:
       Decay Time: 0
       Depth Map Topic: /sctebot/realsense_d435i/aligned_depth_to_color/image_raw
       Depth Map Transport Hint: raw
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 10
@@ -706,7 +710,7 @@ Visualization Manager:
       Topic Filter: true
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -759,7 +763,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -774,7 +778,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -952,7 +956,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: AerialMapDisplay
-      Object URI: https://localhost/osm-intl/{z}/{x}/{y}.png
+      Object URI: http://192.168.1.2:8081/tile/{z}/{x}/{y}.png
       Topic: /sctebot/gps/filtered
       Value: true
       Zoom: 18
@@ -963,11 +967,87 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        base_laser:
+          Value: true
         base_link:
+          Value: true
+        computer_enclosure:
+          Value: true
+        front_bumper:
+          Value: true
+        front_bumper_skid_plate:
+          Value: true
+        front_left_steer_link:
+          Value: true
+        front_left_wheel_link:
+          Value: true
+        front_right_steer_link:
+          Value: true
+        front_right_wheel_link:
+          Value: true
+        front_steer_link:
+          Value: true
+        gazebo_stereo_camera_base:
+          Value: true
+        gazebo_stereo_camera_body:
+          Value: true
+        gazebo_stereo_camera_optical_frame:
+          Value: true
+        gps_link:
+          Value: true
+        imu_link:
+          Value: true
+        inertial_link:
+          Value: true
+        laser_frame:
           Value: true
         map:
           Value: true
         odom:
+          Value: true
+        realsense_d435i_accel_frame:
+          Value: true
+        realsense_d435i_accel_optical_frame:
+          Value: true
+        realsense_d435i_aligned_depth_to_color_frame:
+          Value: true
+        realsense_d435i_bottom_screw_frame:
+          Value: true
+        realsense_d435i_color_frame:
+          Value: true
+        realsense_d435i_color_optical_frame:
+          Value: true
+        realsense_d435i_depth_frame:
+          Value: true
+        realsense_d435i_depth_optical_frame:
+          Value: true
+        realsense_d435i_gyro_frame:
+          Value: true
+        realsense_d435i_imu_optical_frame:
+          Value: true
+        realsense_d435i_imu_optical_frame_corrected:
+          Value: true
+        realsense_d435i_infra1_frame:
+          Value: true
+        realsense_d435i_infra1_optical_frame:
+          Value: true
+        realsense_d435i_infra2_frame:
+          Value: true
+        realsense_d435i_infra2_optical_frame:
+          Value: true
+        realsense_d435i_link:
+          Value: true
+        rear_bumper:
+          Value: true
+        rear_bumper_mount:
+          Value: true
+        rear_left_wheel_link:
+          Value: true
+        rear_right_wheel_link:
+          Value: true
+        rear_wheel_link:
+          Value: true
+        utm:
           Value: true
       Marker Alpha: 1
       Marker Scale: 0.4000000059604645
@@ -979,7 +1059,65 @@ Visualization Manager:
         map:
           odom:
             base_link:
-              {}
+              computer_enclosure:
+                base_laser:
+                  laser_frame:
+                    {}
+                gazebo_stereo_camera_body:
+                  gazebo_stereo_camera_base:
+                    gazebo_stereo_camera_optical_frame:
+                      {}
+                gps_link:
+                  {}
+                imu_link:
+                  {}
+                realsense_d435i_bottom_screw_frame:
+                  realsense_d435i_link:
+                    realsense_d435i_accel_frame:
+                      realsense_d435i_accel_optical_frame:
+                        {}
+                    realsense_d435i_aligned_depth_to_color_frame:
+                      realsense_d435i_color_optical_frame:
+                        {}
+                    realsense_d435i_color_frame:
+                      {}
+                    realsense_d435i_depth_frame:
+                      realsense_d435i_depth_optical_frame:
+                        {}
+                    realsense_d435i_gyro_frame:
+                      realsense_d435i_imu_optical_frame:
+                        realsense_d435i_imu_optical_frame_corrected:
+                          {}
+                    realsense_d435i_infra1_frame:
+                      realsense_d435i_infra1_optical_frame:
+                        {}
+                    realsense_d435i_infra2_frame:
+                      realsense_d435i_infra2_optical_frame:
+                        {}
+              front_bumper_skid_plate:
+                front_bumper:
+                  {}
+              front_left_steer_link:
+                front_left_wheel_link:
+                  {}
+              front_right_steer_link:
+                front_right_wheel_link:
+                  {}
+              front_steer_link:
+                {}
+              inertial_link:
+                {}
+              rear_bumper_mount:
+                rear_bumper:
+                  {}
+              rear_left_wheel_link:
+                {}
+              rear_right_wheel_link:
+                {}
+              rear_wheel_link:
+                {}
+          utm:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1001,67 +1139,67 @@ Visualization Manager:
         Axes scale: 0.5
         Enable axes: true
       Box properties:
-        Box alpha: 1
-        Box color: 255; 0; 0
+        Box alpha: 0.5
+        Box color: 138; 226; 52
         Enable box: true
         x_scale: 0.10000000149011612
         y_scale: 0.10000000149011612
         z_scale: 0.10000000149011612
       Class: rviz_imu_plugin/Imu
-      Enabled: true
+      Enabled: false
       Name: ada_Imu
       Queue Size: 10
       Topic: /sctebot/adafruit_10dof_imu/imu/data
       Unreliable: false
-      Value: true
+      Value: false
       fixed_frame_orientation: true
     - Acceleration properties:
         Acc. vector alpha: 1
         Acc. vector color: 117; 80; 123
         Acc. vector scale: 0.10000000149011612
         Derotate acceleration: true
-        Enable acceleration: false
-      Axes properties:
-        Axes scale: 0.05000000074505806
-        Enable axes: true
-      Box properties:
-        Box alpha: 1
-        Box color: 255; 0; 0
-        Enable box: false
-        x_scale: 1
-        y_scale: 1
-        z_scale: 1
-      Class: rviz_imu_plugin/Imu
-      Enabled: true
-      Name: real_Imu
-      Queue Size: 10
-      Topic: /sctebot/realsense_d435i/imu/data
-      Unreliable: false
-      Value: true
-      fixed_frame_orientation: true
-    - Acceleration properties:
-        Acc. vector alpha: 1
-        Acc. vector color: 252; 175; 62
-        Acc. vector scale: 0.10000000149011612
-        Derotate acceleration: true
-        Enable acceleration: false
+        Enable acceleration: true
       Axes properties:
         Axes scale: 0.5
         Enable axes: true
       Box properties:
-        Box alpha: 1
+        Box alpha: 0.5
         Box color: 255; 0; 0
         Enable box: true
         x_scale: 0.10000000149011612
         y_scale: 0.10000000149011612
         z_scale: 0.10000000149011612
       Class: rviz_imu_plugin/Imu
-      Enabled: true
+      Enabled: false
+      Name: real_Imu
+      Queue Size: 10
+      Topic: /sctebot/realsense_d435i/imu/data
+      Unreliable: false
+      Value: false
+      fixed_frame_orientation: true
+    - Acceleration properties:
+        Acc. vector alpha: 1
+        Acc. vector color: 252; 175; 62
+        Acc. vector scale: 0.10000000149011612
+        Derotate acceleration: true
+        Enable acceleration: true
+      Axes properties:
+        Axes scale: 0.5
+        Enable axes: true
+      Box properties:
+        Box alpha: 0.5
+        Box color: 255; 0; 0
+        Enable box: true
+        x_scale: 0.10000000149011612
+        y_scale: 0.10000000149011612
+        z_scale: 0.10000000149011612
+      Class: rviz_imu_plugin/Imu
+      Enabled: false
       Name: real_Imu_corrected
       Queue Size: 10
       Topic: /sctebot/realsense_d435i/imu_corrected/data
       Unreliable: false
-      Value: true
+      Value: false
       fixed_frame_orientation: true
     - Acceleration properties:
         Acc. vector alpha: 1
@@ -1080,12 +1218,12 @@ Visualization Manager:
         y_scale: 0.10000000149011612
         z_scale: 0.10000000149011612
       Class: rviz_imu_plugin/Imu
-      Enabled: true
+      Enabled: false
       Name: witmotion_Imu
       Queue Size: 10
-      Topic: /sctebot/witmotion_ahrs/imu/data
+      Topic: /sctebot/witmotion_gps_ahrs/imu/data
       Unreliable: false
-      Value: true
+      Value: false
       fixed_frame_orientation: true
   Enabled: true
   Global Options:
@@ -1114,28 +1252,34 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -1.5700000524520874
-      Class: rviz/TopDownOrtho
+      Class: rviz/ThirdPersonFollower
+      Distance: 2.0547468662261963
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Field of View: 0.7853981852531433
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 66.98532104492188
+      Pitch: 0.9903981685638428
       Target Frame: <Fixed Frame>
-      X: 0
-      Y: 0
+      Yaw: 0.35039952397346497
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1016
+  Height: 1247
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000002a300000145fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000231000000bc0000000000000000fb0000000c00430061006d00650072006100000002e1000001890000000000000000fb0000000c00430061006d00650072006100000001b6000001e60000000000000000fb0000000c00430061006d00650072006100000001b6000001e60000000000000000fb0000000a0049006d006100670065000000021a000001820000000000000000fb0000000c00430061006d0065007200610000000218000001450000000000000000000000010000015f0000011bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000281000000640000005c00fffffffb0000000a0056006900650077007301000002eb000000b1000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b2000000000000000000000002000006440000023efc0100000008fb000000100044006900730070006c0061007900730100000000000003770000015600fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073010000018e000001210000000000000000fc0000037d000000be000000be00fffffffa000000020200000005fb0000001400640034003300350069005f0070006f00720074010000003d000001710000001600fffffffb00000024006c006f006700690074006500630068005f0072006500610072005f0070006f007200740000000000ffffffff0000001600fffffffb0000002400670061007a00650062006f005f00730074006500720065006f005f0070006f007200740100000000ffffffff0000001600fffffffb0000001c0044003400350035005000610073007300430061006d0065007200610000000000ffffffff0000000000000000fb0000001e00440034003500350044007200690076006500430061006d0065007200610000000000ffffffff0000000000000000fc000004410000011a000000f100fffffffa000000000200000002fb0000001400640034003300350069005f006d006f006e006f010000003d0000014b0000001600fffffffb0000003000670061007a00650062006f005f00730074006500720065006f005f006d006f006e006f005f0063006f006c006f00720100000000ffffffff0000001600fffffffc00000561000000e3000000e300fffffffa000000020200000003fb0000001e00640034003300350069005f00730074006100720062006f006100720064010000003d0000014b0000001600fffffffb0000002e006c006f006700690074006500630068005f0072006500610072005f00730074006100720062006f0061007200640000000000ffffffff0000001600fffffffb0000002e00670061007a00650062006f005f00730074006500720065006f005f00730074006100720062006f0061007200640100000000ffffffff0000001600fffffffc0000060e0000014e0000000000fffffffa000000000200000003fb0000001c0044003400350035005000610073007300430061006d0065007200610100000000ffffffff0000000000000000fb0000002000440034003500350044007200690076006500430061006d00650072006100580000000000ffffffff0000000000000000fb0000001c00530074006500720065006f004600770064005f0050006100730073000000003d000001730000000000000000fb0000001c0050006100730073005300690064006500430061006d00650072006100000003f3000001ab0000000000000000fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000064400000039fc0100000002fb0000000800540069006d0065010000000000000644000003bc00fffffffb0000000800540069006d00650100000000000004500000000000000000000004df0000011b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000002a300000145fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000231000000bc0000000000000000fb0000000c00430061006d00650072006100000002e1000001890000000000000000fb0000000c00430061006d00650072006100000001b6000001e60000000000000000fb0000000c00430061006d00650072006100000001b6000001e60000000000000000fb0000000a0049006d006100670065000000021a000001820000000000000000fb0000000c00430061006d0065007200610000000218000001450000000000000000000000010000015f0000020cfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000277000000bb0000005c00fffffffb0000000a0056006900650077007301000003380000014b000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000a8d00000234fc0100000008fb000000100044006900730070006c0061007900730100000000000006220000015600fffffffb0000001e0054006f006f006c002000500072006f0070006500720074006900650073010000018e000001210000000000000000fc0000062800000143000000be00fffffffa000000020200000005fb0000001400640034003300350069005f0070006f00720074010000003d000001710000001600fffffffb00000024006c006f006700690074006500630068005f0072006500610072005f0070006f007200740000000000ffffffff0000001600fffffffb0000002400670061007a00650062006f005f00730074006500720065006f005f0070006f007200740100000000ffffffff0000001600fffffffb0000001c0044003400350035005000610073007300430061006d0065007200610000000000ffffffff0000000000000000fb0000001e00440034003500350044007200690076006500430061006d0065007200610000000000ffffffff0000000000000000fc0000077100000196000000f100fffffffa000000000200000002fb0000001400640034003300350069005f006d006f006e006f010000003d0000014b0000001600fffffffb0000003000670061007a00650062006f005f00730074006500720065006f005f006d006f006e006f005f0063006f006c006f00720100000000ffffffff0000001600fffffffc0000090d00000180000000e300fffffffa000000020200000003fb0000001e00640034003300350069005f00730074006100720062006f006100720064010000003d0000014b0000001600fffffffb0000002e006c006f006700690074006500630068005f0072006500610072005f00730074006100720062006f0061007200640000000000ffffffff0000001600fffffffb0000002e00670061007a00650062006f005f00730074006500720065006f005f00730074006100720062006f0061007200640100000000ffffffff0000001600fffffffc0000060e0000014e0000000000fffffffa000000000200000003fb0000001c0044003400350035005000610073007300430061006d0065007200610100000000ffffffff0000000000000000fb0000002000440034003500350044007200690076006500430061006d00650072006100580000000000ffffffff0000000000000000fb0000001c00530074006500720065006f004600770064005f0050006100730073000000003d000001730000000000000000fb0000001c0050006100730073005300690064006500430061006d00650072006100000003f3000001ab0000000000000000fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000a8d00000039fc0100000002fb0000000800540069006d0065010000000000000a8d000003bc00fffffffb0000000800540069006d00650100000000000004500000000000000000000009280000020c00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1144,8 +1288,8 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1604
-  X: 72
+  Width: 2701
+  X: 2012
   Y: 27
   d435i_mono:
     collapsed: false

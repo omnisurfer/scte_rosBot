@@ -30,7 +30,7 @@ ada_10dof_imu_ekf_se_odom:
 
   # region Odometry sources
   odom0: ackermann_steering_controller/odom
-  odom0_config: [ true,  true,  false,
+  odom0_config: [ true,  true,  true,
                   false, false, false,
                   false, false, false,
                   false, false, false,
@@ -56,13 +56,15 @@ ada_10dof_imu_ekf_se_odom:
   odom1_nodelay: false
   # endregion
 
+  # https://navigation.ros.org/setup_guides/odom/setup_odom.html?highlight=localization
+  # just fusing in RPY per Nav2 suggestion for low end IMUs
   # region IMU sources
   imu0: adafruit_10dof_imu/imu/data
   imu0_config: [ false, false, false,
+                 true, true, true,
                  false, false, false,
                  false, false, false,
-                 false, false, true,
-                 true, true, false ]
+                 false, false, false ]
   imu0_nodelay: false
   imu0_differential: false
   imu0_relative: false
@@ -72,12 +74,12 @@ ada_10dof_imu_ekf_se_odom:
   imu0_linear_acceleration_rejection_threshold: 0.8  #
   imu0_remove_gravitational_acceleration: false
 
-  imu1: realsense_d435i/imu_corrected/data_DISABLED
+  imu1: realsense_d435i/imu_corrected/data
   imu1_config: [ false, false, false,
+                 true, true, true,
                  false, false, false,
                  false, false, false,
-                 false, false, true,
-                 true, true, false ]
+                 false, false, false ]
   imu1_nodelay: false
   imu1_differential: true
   imu1_relative: false

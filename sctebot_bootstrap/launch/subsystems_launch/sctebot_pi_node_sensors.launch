@@ -3,7 +3,7 @@
     <arg name="node_name" default="ros-pi-node"/>
     <arg name="robot_namespace" default="sctebot" />
 
-    <arg name="enable_ydlidar" default="false"/>
+    <arg name="enable_ydlidar" default="true"/>
     <arg name="enable_ada_imu" default="true"/>
     <arg name="enable_ada_gps" default="true"/>
 
