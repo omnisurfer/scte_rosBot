@@ -79,25 +79,25 @@ http://wiki.ros.org/urdf/XML/joint#Elements
     <xacro:property name="scte_chassis_height_sq" value="${base_height * base_height}"/>
 
     <!-- base footprint for nav -->
-    <!--link name='base_footprint'/>
+    <link name='base_footprint'/>
 
     <joint name="base_link_TO_base_footprint" type="fixed">
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <parent link="base_footprint"/>
         <child link="base_link"/>
-    </joint-->
+    </joint>
 
     <!-- Base link -->
     <link name="base_link">
         <visual>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${wheel_radius * 2.0}" rpy="0 0 0"/>
             <geometry>
                 <box size="${base_length} ${base_width} ${base_height}"/>
             </geometry>
             <material name="green" />
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 ${wheel_radius * 2.0}" rpy="0 0 0"/>
             <geometry>
                 <box size="${base_length} ${base_width} ${base_height}"/>
             </geometry>

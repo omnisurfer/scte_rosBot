@@ -752,10 +752,10 @@
       </link>
     </model>
     <state world_name='default'>
-      <sim_time>0</sim_time>
-      <real_time>1105 858081487</real_time>
-      <wall_time>1667787004 559371337</wall_time>
-      <iterations>1089008</iterations>
+      <sim_time>269 534000000</sim_time>
+      <real_time>39 482809768</real_time>
+      <wall_time>1688505454 20874997</wall_time>
+      <iterations>39192</iterations>
       <model name='FemaleVisitor'>
         <pose>7.11981 8.93053 0.484007 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -827,11 +827,11 @@
         </link>
       </model>
       <model name='VendingMachine'>
-        <pose>-1.83761 -19.7541 -5.81111e+06 5e-06 -0 1.58291</pose>
+        <pose>-1.83761 -19.7541 -9.04363e+06 5e-06 -0 1.58291</pose>
         <scale>1 1 1</scale>
         <link name='body'>
-          <pose>-1.83761 -19.7541 -5.81111e+06 5e-06 -0 1.58291</pose>
-          <velocity>-0 -0 -10672.3 0 -0 0</velocity>
+          <pose>-1.83761 -19.7541 -9.04363e+06 5e-06 -0 1.58291</pose>
+          <velocity>0 0 -13313.7 0 -0 0</velocity>
           <acceleration>0 0 -9.8 0 -0 0</acceleration>
           <wrench>0 0 -9.8 0 -0 0</wrench>
         </link>
@@ -851,26 +851,6 @@
         <scale>1 1 1</scale>
         <link name='link'>
           <pose>-17.752 -11.5442 1.86617 -1.48783 0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='foldable_chair'>
-        <pose>4.53775 7.6144 0.542894 0 0 -2.95971</pose>
-        <scale>1 1 1</scale>
-        <link name='base_link'>
-          <pose>4.53775 7.6144 0.542894 0 0 -2.95971</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='foldable_table'>
-        <pose>15.2691 -5.57646 0.528414 0 -0 0</pose>
-        <scale>1 1 1</scale>
-        <link name='base_link'>
-          <pose>15.2691 -5.57646 0.528414 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -1132,16 +1112,6 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='tent'>
-        <pose>18.0439 16.1846 0.47518 0 -0 0</pose>
-        <scale>1 1 1</scale>
-        <link name='base_link'>
-          <pose>18.0439 16.1846 0.47518 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
       <light name='sun'>
         <pose>0 0 10 0 -0 0</pose>
       </light>
@@ -1325,80 +1295,6 @@
         <kinematic>0</kinematic>
       </link>
       <pose>-16.6363 -12.8573 0 0 -0 0</pose>
-    </model>
-    <model name='tent'>
-      <static>1</static>
-      <link name='base_link'>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>/home/daniel/.ignition/fuel/fuel.gazebosim.org/openrobotics/models/tent/2/mesh/tent.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <collision name='collision'>
-          <pose>0 0 1.5 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>3 3 3</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose>18.0439 16.1846 0 0 -0 0</pose>
-    </model>
-    <model name='foldable_table'>
-      <static>1</static>
-      <link name='base_link'>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>/home/daniel/.ignition/fuel/fuel.gazebosim.org/openrobotics/models/foldable_table/2/mesh/foldable_table.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <collision name='collision'>
-          <pose>0 0 0.35 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>1.82 0.74 0.67</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose>15.2691 -5.57646 0 0 -0 0</pose>
     </model>
     <model name='LitterBin'>
       <static>1</static>
@@ -1743,47 +1639,9 @@
       </link>
       <pose>32.4367 -10.5842 0 0 -0 0</pose>
     </model>
-    <model name='foldable_chair'>
-      <static>1</static>
-      <link name='base_link'>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <scale>0.1 0.1 0.1</scale>
-              <uri>/home/daniel/.ignition/fuel/fuel.gazebosim.org/openrobotics/models/foldable_chair/1/mesh/foldable_chair.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <collision name='collision'>
-          <pose>0 0.05 0.4 0 -0 0</pose>
-          <geometry>
-            <box>
-              <size>0.5 0.5 0.8</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose>4.53775 7.6144 0 0 -0 0</pose>
-    </model>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>-19.8789 68.097 52.1836 0 0.584091 -1.467</pose>
+        <pose>-24.4931 5.33565 17.3403 0 0.468663 -0.01577</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>

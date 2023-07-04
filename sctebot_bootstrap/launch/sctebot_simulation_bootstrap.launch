@@ -34,7 +34,8 @@
 
     <!-- region Localization -->
     <include file="$(find sctebot_localization)/launch/sctebot_localization.launch">
-
+        <arg name="primary_imu" value="gazebo"/>
+        <arg name="primary_gps" value="gazebo"/>
     </include>
     <!-- endregion -->
 
