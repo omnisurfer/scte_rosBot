@@ -9,8 +9,8 @@
 
     <arg name="camera_name" default="realsense_d435i"/>
 
-    <arg name="enable_yost_3space_ahrs_primary" default="true"/>
-    <arg name="enable_witmotion_gps_ahrs_primary" default="true"/>
+    <arg name="enable_yost_3space_ahrs_primary" default="false"/>
+    <arg name="enable_witmotion_gps_ahrs_primary" default="false"/>
 
     <group if="$(eval enable_realsense_depth_camera == true)">
         <include file="$(find sctebot_sensors)/launch/sctebot_realsense.launch">
