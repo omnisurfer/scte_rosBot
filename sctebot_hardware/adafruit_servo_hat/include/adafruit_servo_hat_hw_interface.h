@@ -75,6 +75,7 @@ private:
     int _i2c_device_address = 0;
 
     double _max_linear_x_speed_m_s;
+    double _max_linear_speed_of_vehicle_as_geared_m_s;
     double _max_angular_z_rad_s;
     double _tire_radius_m;
 
@@ -163,6 +164,7 @@ public:
     int init_device(
             int i2c_bus_number,
             double max_linear_speed_m_s,
+            double max_linear_speed_of_vehicle_as_geared_m_s,
             double max_angular_rad_s,
             double tire_radius_m,
             double wheel_separation_h,
@@ -175,6 +177,7 @@ public:
         this->pca9685DeviceHandle.reset(new Pca9685LEDController());
 
         this->_max_linear_x_speed_m_s = max_linear_speed_m_s;
+        this->_max_linear_speed_of_vehicle_as_geared_m_s = max_linear_speed_of_vehicle_as_geared_m_s;
         this->_max_angular_z_rad_s = max_angular_rad_s;
         this->_tire_radius_m = tire_radius_m;
 
@@ -323,7 +326,15 @@ public:
         this->_current_command_mutex.unlock();
 
         double cmd_linear_pwm;
-        cmd_linear_pwm = (cmd_linear_x_velocity / this->_max_linear_x_speed_m_s) * 0.5 + 0.5;
+
+        //clamp the velocity to be within the driver max/min
+        double lower_velocity_limit = this->_max_linear_x_speed_m_s * -0.25;
+        double upper_velocity_limit = this->_max_linear_x_speed_m_s;
+        cmd_linear_x_velocity = std::max(lower_velocity_limit, std::min(cmd_linear_x_velocity, upper_velocity_limit));
+
+        cmd_linear_pwm = (cmd_linear_x_velocity / this->_max_linear_speed_of_vehicle_as_geared_m_s) * 0.5 + 0.5;
+
+        std::cout << "cmd_lin_x: " << cmd_linear_x_velocity << " cmd_lin_pwm: " << cmd_linear_pwm << std::endl;
 
         // TODO these calls will go into the write command
         this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm));
@@ -338,7 +349,15 @@ public:
         this->_current_command_mutex.unlock();
 
         double cmd_angular_pwm;
+
+        // clamp the angular velocity
+        double lower_velocity_limit = this->_max_angular_z_rad_s * -0.25;
+        double upper_velocity_limit = this->_max_angular_z_rad_s;
+        cmd_angular_z_velocity = std::max(lower_velocity_limit, std::min(cmd_angular_z_velocity, upper_velocity_limit));
+
         cmd_angular_pwm = (cmd_angular_z_velocity / this->_max_angular_z_rad_s) * 0.5 + 0.5;
+
+        std::cout << "cmd_ang_x: " << cmd_angular_z_velocity << " cmd_ang_pwm: " << cmd_angular_pwm << std::endl;
 
         // TODO these calls will go into the write command
         this->command_pwm(Pca9685LEDController::LED0, float(cmd_angular_pwm));

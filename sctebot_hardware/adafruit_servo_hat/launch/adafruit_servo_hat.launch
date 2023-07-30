@@ -3,7 +3,9 @@
     <arg name="robot_namespace" default="/sctebot"/>
     <arg name="update_rate" default="30.0"/>
     <arg name="i2c_bus_number" default="0"/>
-    <arg name="max_linear_speed_m_s" default="2.0"/>
+    <arg name="max_linear_speed_m_s" default="5.0"/>
+    <!-- 2S LIPO calc max speed: 12.5 m/s, 3S LIP calc max speed: 18.3 m/s -->
+    <arg name="max_linear_speed_of_vehicle_as_geared_m_s" default="12.5"/>
     <arg name="max_angular_speed_rad_s" default="1.5"/>
     <arg name="tire_radius_m" default="0.05"/>
     <arg name="wheel_separation_h" default="0.75"/>
@@ -21,6 +23,7 @@
             <param name="i2c_bus_number" value="$(arg i2c_bus_number)"/>
             <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)"/>
             <param name="max_linear_speed_m_s" value="$(arg max_linear_speed_m_s)"/>
+            <param name="max_linear_speed_of_vehicle_as_geared_m_s" value="$(arg max_linear_speed_of_vehicle_as_geared_m_s)"/>
             <param name="max_angular_speed_rad_s" value="$(arg max_angular_speed_rad_s)"/>
             <param name="tire_radius_m" value="$(arg tire_radius_m)"/>
             <param name="wheel_separation_h" value="$(arg wheel_separation_h)"/>

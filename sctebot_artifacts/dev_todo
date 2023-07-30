@@ -1,2 +1,6 @@
 2022-11-13:
     Realsense IMU is inverted relative to vehicle body. May be cause of RTAB occupancy grid issues?
+2023-07-30:
+    Need to add code to adafruit servo driver to convert desired velocity into PWM duty cycle.
+    https://scriptasylum.com/rc_speed/top_speed.html
+    Spur 40T, Pinion 16T, 2650kV, Tire diameter 4"

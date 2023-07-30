@@ -73,6 +73,7 @@ int main(int argc, char* argv[]) {
     double update_rate = 100.0;
 
     double max_linear_speed_m_s = 2.0;
+    double max_linear_speed_of_vehicle_as_geared_m_s = 12.5;
     double max_angular_rad_s = 1.5;
 
     double tire_radius_m = 0.05;
@@ -112,6 +113,12 @@ int main(int argc, char* argv[]) {
         ROS_INFO("%s: max_linear_speed_m_s %f", node_name.c_str(), max_linear_speed_m_s);
     } else {
         ROS_WARN("%s: max_linear_speed_m_s, using default %f", node_name.c_str(), max_linear_speed_m_s);
+    }
+
+    if(ros_node_handle.getParam(node_name + "/max_linear_speed_of_vehicle_as_geared_m_s", max_linear_speed_of_vehicle_as_geared_m_s)) {
+        ROS_INFO("%s: max_linear_speed_of_vehicle_as_geared_m_s %f", node_name.c_str(), max_linear_speed_of_vehicle_as_geared_m_s);
+    } else {
+        ROS_WARN("%s: max_linear_speed_of_vehicle_as_geared_m_s, using default %f", node_name.c_str(), max_linear_speed_of_vehicle_as_geared_m_s);
     }
 
     if(ros_node_handle.getParam(node_name + "/max_angular_speed_rad_s", max_angular_rad_s)) {
@@ -168,6 +175,7 @@ int main(int argc, char* argv[]) {
         init_ok = adafruit_servo_hat->init_device(
                 i2c_bus_number,
                 max_linear_speed_m_s,
+                max_linear_speed_of_vehicle_as_geared_m_s,
                 max_angular_rad_s,
                 tire_radius_m,
                 wheel_separation_h,
