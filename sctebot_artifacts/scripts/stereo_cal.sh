@@ -1,4 +1,3 @@
-
 #!/bin/sh
 rosrun camera_calibration cameracalibrator.py \
 approximate 0.1 --size 8x6 --square 0.108 \
