@@ -127,7 +127,7 @@
         name="$(arg namespace)_rosbag_record"
         pkg="rosbag"
         type="record"
-        args="record -o $(arg log_to_directory) --split --duration 5m $(arg topics_to_record)"
+        args="record -o $(arg log_to_directory) --split --size 1024 $(arg topics_to_record)"
     />
 
 </launch>
