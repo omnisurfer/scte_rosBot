@@ -4,71 +4,113 @@
     <arg name="namespace" default="sctebot"/>
     <arg name="username" default="$(optenv USER)"/>
 
-    <arg name="bag_name" default="sctebot"/>
-    <arg name="topics_to_record" default="
-        /$(arg namespace)/gazebo/gps/fix
-        /$(arg namespace)/gazebo/imu
-        /$(arg namespace)/stereo_fwd/color/image_raw/compressed
-        /$(arg namespace)/stereo_fwd/color/camera_info
-        /$(arg namespace)/stereo_fwd/left/image_raw/compressed
-        /$(arg namespace)/stereo_fwd/left/camera_info
-        /$(arg namespace)/stereo_fwd/right/image_raw/compressed
-        /$(arg namespace)/stereo_fwd/right/camera_info
+    <arg name="bag_name" default=""/>
 
-        /$(arg namespace)/gps/filtered
-        /$(arg namespace)/odometry/filtered
+    <arg name="log_to_directory"
+        default="/home/$(arg username)/rosbags/$(arg namespace)/$(arg namespace)_$(arg bag_name)"
+    />
 
-        /$(arg namespace)/scan
+    <arg name="ackermann_steering_controller_topics" default="
+        /$(arg namespace)/ackermann_steering_controller/cmd_vel
+        /$(arg namespace)/ackermann_steering_controller/odom
+    "/>
 
+    <arg name="adafruit_10dof_imu_topics" default="
         /$(arg namespace)/adafruit_10dof_imu/imu/data_raw
         /$(arg namespace)/adafruit_10dof_imu/mag/data_raw
         /$(arg namespace)/adafruit_10dof_imu/atm_pressure/data_raw
         /$(arg namespace)/adafruit_10dof_imu/sea_lvl_pressure/data_raw
         /$(arg namespace)/adafruit_10dof_imu/atm_temperature/data_raw
         /$(arg namespace)/adafruit_10dof_imu/atm_altitude/data_raw
+    "/>
 
-        /sctebot/adafruit_ultimate_gps/gps/extended_fix
-        /sctebot/adafruit_ultimate_gps/gps/fix
+    <arg name="adafruit_ultimate_gps_topics" default="
+        /$(arg namespace)/adafruit_ultimate_gps/gps/fix
+        /$(arg namespace)/adafruit_ultimate_gps/gps/extended_fix
+        /$(arg namespace)/adafruit_ultimate_gps/odometry/gps
+    "/>
 
+    <arg name="gazebo_sensor_topics" default="
+        /$(arg namespace)/gazebo/gps/fix
+        /$(arg namespace)/gazebo/imu
+    "/>
+
+    <arg name="gpsd_gps_topics" default="
         /$(arg namespace)/gpsd_gps/gps/fix
         /$(arg namespace)/gpsd_gps/gps/extended_fix
+    "/>
 
-        /$(arg namespace)/ackermann_steering_controller/cmd_vel
-        /$(arg namespace)/ackermann_steering_controller/odom
+    <arg name="realsense_d435i_camera_image_topics" default="
+        /$(arg namespace)/realsense_d435i/color/image_raw/compressed
+        /$(arg namespace)/realsense_d435i/aligned_depth_to_color/image_raw/compressed
+        /$(arg namespace)/realsense_d435i/left/image_raw/compressed
+        /$(arg namespace)/realsense_d435i/right/image_raw/compressed
+        /$(arg namespace)/realsense_d435i/depth/image_rect_raw
+    "/>
 
-        /sctebot/realsense_d435i/accel/imu_info
-        /sctebot/realsense_d435i/gyro/imu_info
-        /sctebot/realsense_d435i/imu/data
-        /sctebot/realsense_d435i/imu/data_raw
+    <arg name="realsense_d435i_camera_meta_topics" default="
+        /$(arg namespace)/realsense_d435i/color/camera_info
+        /$(arg namespace)/realsense_d435i/left/camera_info
+        /$(arg namespace)/realsense_d435i/right/camera_info
+        /$(arg namespace)/realsense_d435i/depth/camera_info
+        /$(arg namespace)/realsense_d435i/aligned_depth_to_color/camera_info
+        /$(arg namespace)/realsense_d435i/color/metadata
+        /$(arg namespace)/realsense_d435i/depth/metadata
+        /$(arg namespace)/realsense_d435i/infra1/metadata
+        /$(arg namespace)/realsense_d435i/infra2/metadata
+        /$(arg namespace)/realsense_d435i/extrinsics/depth_to_color
+        /$(arg namespace)/realsense_d435i/extrinsics/depth_to_infra1
+        /$(arg namespace)/realsense_d435i/extrinsics/depth_to_infra2
+    "/>
 
-        /sctebot/realsense_d435i/extrinsics/depth_to_color
-        /sctebot/realsense_d435i/extrinsics/depth_to_infra1
-        /sctebot/realsense_d435i/extrinsics/depth_to_infra2
+    <arg name="realsense_d435i_imu_topics" default="
+        /$(arg namespace)/realsense_d435i/imu/data_raw
+        /$(arg namespace)/realsense_d435i/imu/data
+        /$(arg namespace)/realsense_d435i/imu_corrected/data
+        /$(arg namespace)/realsense_d435i/gyro/imu_info
+        /$(arg namespace)/realsense_d435i/accel/imu_info
+    "/>
 
-        /sctebot/realsense_d435i/aligned_depth_to_color/camera_info
-        /sctebot/realsense_d435i/aligned_depth_to_color/image_raw
-
-        /sctebot/realsense_d435i/depth/camera_info
-        /sctebot/realsense_d435i/depth/image_rect_raw
-        /sctebot/realsense_d435i/depth/metadata
-
-        /sctebot/realsense_d435i/infra1/metadata
-        /sctebot/realsense_d435i/infra2/metadata
-
-        /sctebot/realsense_d435i/color/camera_info
-        /sctebot/realsense_d435i/color/image_raw/compressed
-        /sctebot/realsense_d435i/color/metadata
-
-        /sctebot/realsense_d435i/left/camera_info
-        /sctebot/realsense_d435i/left/image_raw/compressed
-
-        /sctebot/realsense_d435i/right/camera_info
-        /sctebot/realsense_d435i/right/image_raw/compressed
-
-        /sctebot/rtabmap/octomap_binary
-
+    <arg name="ros_topics" default="
         /tf
         /tf_static
+        /$(arg namespace)/joint_states
+        /$(arg namespace)/gps/filtered
+        /$(arg namespace)/odom
+        /$(arg namespace)/odometry/filtered
+        /$(arg namespace)/odometry/filtered_map
+    "/>
+
+    <arg name="rtabmap_topics" default="
+        /$(arg namespace)/rtabmap/octomap_binary
+    "/>
+
+    <arg name="stereo_fwd_camera_topics" default="
+        /$(arg namespace)/stereo_fwd/color/image_raw/compressed
+        /$(arg namespace)/stereo_fwd/color/camera_info
+        /$(arg namespace)/stereo_fwd/left/image_raw/compressed
+        /$(arg namespace)/stereo_fwd/left/camera_info
+        /$(arg namespace)/stereo_fwd/right/image_raw/compressed
+        /$(arg namespace)/stereo_fwd/right/camera_info
+    "/>
+
+    <arg name="y3_lidar_topics" default="
+        /$(arg namespace)/scan
+    "/>
+
+    <arg name="topics_to_record" default="
+        $(arg ackermann_steering_controller_topics)
+        $(arg adafruit_10dof_imu_topics)
+        $(arg adafruit_ultimate_gps_topics)
+        $(arg gazebo_sensor_topics)
+        $(arg gpsd_gps_topics)
+        $(arg realsense_d435i_camera_image_topics)
+        $(arg realsense_d435i_camera_meta_topics)
+        $(arg realsense_d435i_imu_topics)
+        $(arg ros_topics)
+        $(arg rtabmap_topics)
+        $(arg stereo_fwd_camera_topics)
+        $(arg y3_lidar_topics)
     "/>
 
     <!-- region Topic Tools -->
@@ -85,129 +127,7 @@
         name="$(arg namespace)_rosbag_record"
         pkg="rosbag"
         type="record"
-        args="record -o /home/$(arg username)/sctebot_rosbags/$(arg namespace) --split --duration 10m $(arg topics_to_record)"
+        args="record -o $(arg log_to_directory) --split --duration 5m $(arg topics_to_record)"
     />
 
 </launch>
-
-<!--
-/diagnostics
-/realsense_d435i_imu_filter_madgwick/parameter_descriptions
-/realsense_d435i_imu_filter_madgwick/parameter_updates
-/rosout
-/rosout_agg
-/sctebot/ackermann_steering_controller/cmd_vel
-/sctebot/ackermann_steering_controller/odom
-/sctebot/adafruit_10dof_imu/atm_altitude/data_raw
-/sctebot/adafruit_10dof_imu/atm_pressure/data_raw
-/sctebot/adafruit_10dof_imu/atm_temperature/data_raw
-/sctebot/adafruit_10dof_imu/imu/data
-/sctebot/adafruit_10dof_imu/imu/data_raw
-/sctebot/adafruit_10dof_imu/mag/data_raw
-/sctebot/adafruit_10dof_imu/sea_lvl_pressure/data_raw
-/sctebot/adafruit_10dof_imu_filter_madgwick/parameter_descriptions
-/sctebot/adafruit_10dof_imu_filter_madgwick/parameter_updates
-/sctebot/adafruit_ultimate_gps/gps/extended_fix
-/sctebot/adafruit_ultimate_gps/gps/fix
-/sctebot/adafruit_ultimate_gps/odometry/gps
-/sctebot/gazebo/imu
-/sctebot/gazebo/odometry/gps
-/sctebot/gps/filtered
-/sctebot/gps/fix
-/sctebot/imu/data
-/sctebot/joint_states
-/sctebot/odom
-/sctebot/odometry/filtered
-/sctebot/odometry/filtered_map
-/sctebot/odometry/gps
-/sctebot/realsense_d435i/accel/imu_info
-/sctebot/realsense_d435i/align_to_color/parameter_descriptions
-/sctebot/realsense_d435i/align_to_color/parameter_updates
-/sctebot/realsense_d435i/aligned_depth_to_color/camera_info
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressed
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressed/parameter_descriptions
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressed/parameter_updates
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressedDepth
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressedDepth/parameter_descriptions
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw/compressedDepth/parameter_updates
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw/theora
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw/theora/parameter_descriptions
-/sctebot/realsense_d435i/aligned_depth_to_color/image_raw/theora/parameter_updates
-/sctebot/realsense_d435i/color/camera_info
-/sctebot/realsense_d435i/color/image_raw
-/sctebot/realsense_d435i/color/image_raw/compressed
-/sctebot/realsense_d435i/color/image_raw/compressed/parameter_descriptions
-/sctebot/realsense_d435i/color/image_raw/compressed/parameter_updates
-/sctebot/realsense_d435i/color/image_raw/compressedDepth
-/sctebot/realsense_d435i/color/image_raw/compressedDepth/parameter_descriptions
-/sctebot/realsense_d435i/color/image_raw/compressedDepth/parameter_updates
-/sctebot/realsense_d435i/color/image_raw/theora
-/sctebot/realsense_d435i/color/image_raw/theora/parameter_descriptions
-/sctebot/realsense_d435i/color/image_raw/theora/parameter_updates
-/sctebot/realsense_d435i/color/metadata
-/sctebot/realsense_d435i/depth/camera_info
-/sctebot/realsense_d435i/depth/image_rect_raw
-/sctebot/realsense_d435i/depth/image_rect_raw/compressed
-/sctebot/realsense_d435i/depth/image_rect_raw/compressed/parameter_descriptions
-/sctebot/realsense_d435i/depth/image_rect_raw/compressed/parameter_updates
-/sctebot/realsense_d435i/depth/image_rect_raw/compressedDepth
-/sctebot/realsense_d435i/depth/image_rect_raw/compressedDepth/parameter_descriptions
-/sctebot/realsense_d435i/depth/image_rect_raw/compressedDepth/parameter_updates
-/sctebot/realsense_d435i/depth/image_rect_raw/theora
-/sctebot/realsense_d435i/depth/image_rect_raw/theora/parameter_descriptions
-/sctebot/realsense_d435i/depth/image_rect_raw/theora/parameter_updates
-/sctebot/realsense_d435i/depth/metadata
-/sctebot/realsense_d435i/extrinsics/depth_to_color
-/sctebot/realsense_d435i/extrinsics/depth_to_infra1
-/sctebot/realsense_d435i/extrinsics/depth_to_infra2
-/sctebot/realsense_d435i/gyro/imu_info
-/sctebot/realsense_d435i/imu/data
-/sctebot/realsense_d435i/imu/data_raw
-/sctebot/realsense_d435i/infra1/metadata
-/sctebot/realsense_d435i/infra2/metadata
-/sctebot/realsense_d435i/left/camera_info
-/sctebot/realsense_d435i/left/image_raw
-/sctebot/realsense_d435i/left/image_raw/compressed
-/sctebot/realsense_d435i/left/image_raw/compressed/parameter_descriptions
-/sctebot/realsense_d435i/left/image_raw/compressed/parameter_updates
-/sctebot/realsense_d435i/left/image_raw/compressedDepth
-/sctebot/realsense_d435i/left/image_raw/compressedDepth/parameter_descriptions
-/sctebot/realsense_d435i/left/image_raw/compressedDepth/parameter_updates
-/sctebot/realsense_d435i/left/image_raw/theora
-/sctebot/realsense_d435i/left/image_raw/theora/parameter_descriptions
-/sctebot/realsense_d435i/left/image_raw/theora/parameter_updates
-/sctebot/realsense_d435i/motion_module/parameter_descriptions
-/sctebot/realsense_d435i/motion_module/parameter_updates
-/sctebot/realsense_d435i/pointcloud/parameter_descriptions
-/sctebot/realsense_d435i/pointcloud/parameter_updates
-/sctebot/realsense_d435i/points2
-/sctebot/realsense_d435i/points2_throttle
-/sctebot/realsense_d435i/realsense2_camera_manager/bond
-/sctebot/realsense_d435i/rgb_camera/auto_exposure_roi/parameter_descriptions
-/sctebot/realsense_d435i/rgb_camera/auto_exposure_roi/parameter_updates
-/sctebot/realsense_d435i/rgb_camera/parameter_descriptions
-/sctebot/realsense_d435i/rgb_camera/parameter_updates
-/sctebot/realsense_d435i/right/camera_info
-/sctebot/realsense_d435i/right/image_raw
-/sctebot/realsense_d435i/right/image_raw/compressed
-/sctebot/realsense_d435i/right/image_raw/compressed/parameter_descriptions
-/sctebot/realsense_d435i/right/image_raw/compressed/parameter_updates
-/sctebot/realsense_d435i/right/image_raw/compressedDepth
-/sctebot/realsense_d435i/right/image_raw/compressedDepth/parameter_descriptions
-/sctebot/realsense_d435i/right/image_raw/compressedDepth/parameter_updates
-/sctebot/realsense_d435i/right/image_raw/theora
-/sctebot/realsense_d435i/right/image_raw/theora/parameter_descriptions
-/sctebot/realsense_d435i/right/image_raw/theora/parameter_updates
-/sctebot/realsense_d435i/stereo_module/auto_exposure_roi/parameter_descriptions
-/sctebot/realsense_d435i/stereo_module/auto_exposure_roi/parameter_updates
-/sctebot/realsense_d435i/stereo_module/parameter_descriptions
-/sctebot/realsense_d435i/stereo_module/parameter_updates
-/sctebot/rtabmap/odom
-/sctebot/scan
-/sctebot/sctebot/joint_states
-/sctebot/set_pose
-/steer_ctrl
-/tf
-/tf_static
--->
