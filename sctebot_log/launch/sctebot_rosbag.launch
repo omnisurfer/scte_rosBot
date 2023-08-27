@@ -79,6 +79,7 @@
         /$(arg namespace)/odom
         /$(arg namespace)/odometry/filtered
         /$(arg namespace)/odometry/filtered_map
+        /$(arg namespace)/robot_description
     "/>
 
     <arg name="rtabmap_topics" default="
