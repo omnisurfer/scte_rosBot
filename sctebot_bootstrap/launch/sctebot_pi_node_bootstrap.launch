@@ -7,7 +7,7 @@
     Using ros remote launch does not work. The launched nodes can't access the i2c devices regardless of permission settings.
     <machine name="$(arg node_name)" user="user" address="ros-pi-node" default="never" env-loader="/opt/ros/noetic/env.sh" timeout="10"/>
     -->
-    <arg name="launch_common" default="false"/>
+    <arg name="launch_common" default="true"/>
 
     <group if="$(eval launch_common == true)">
         <include file="$(find sctebot_bootstrap)/launch/subsystems_launch/sctebot_common.launch">
