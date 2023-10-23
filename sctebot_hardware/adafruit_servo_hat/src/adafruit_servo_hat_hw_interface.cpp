@@ -6,7 +6,7 @@
 AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::string& robot_namespace, const ros::NodeHandle& node_handle):
         _node_handle(node_handle) {
 
-    this->_robot_namespace = robot_namespace + "/steer_bot_hardware_gazebo/";
+    this->_robot_namespace = "steer_bot_hardware_gazebo/";
 
     ros::NodeHandle n("~");
     std::string front_steer_joint_names("front_steer_joint");
@@ -117,7 +117,7 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
      * for reference
      */
     if (_open_loop_odom) {
-        _odometry.updateOpenLoop(linear_velocity_x, linear_velocity_x, time);
+        _odometry.updateOpenLoop(linear_velocity_x, angular_position_z, time);
     }
     else {
         // TODO read in real positions

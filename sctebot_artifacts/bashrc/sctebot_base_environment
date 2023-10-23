@@ -1,2 +1,2 @@
-export ROS_MASTER_URI=http://ros-amd-5560u-node:11311
-# export ROS_MASTER_URI=http://ros-pi-node:11311
+# export ROS_MASTER_URI=http://ros-amd-5560u-node:11311
+export ROS_MASTER_URI=http://ros-pi-node:11311

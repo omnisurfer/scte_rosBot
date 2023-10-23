@@ -16,8 +16,8 @@ ackermann_steering_controller:
 
   # odom calibration and tuning
   wheel_seperation_h_multiplier: 1.0
-  wheel_radius_multiplier: 1.0
-  steer_pos_multiplier: 1.0
+  wheel_radius_multiplier: 97.0
+  steer_pos_multiplier: 0.2
 
   # odom covariances for the encoder output of the robot
   pose_covariance_diagonal: [ 0.001, 0.001, 0.001, 0.001, 0.001, 0.13 ]

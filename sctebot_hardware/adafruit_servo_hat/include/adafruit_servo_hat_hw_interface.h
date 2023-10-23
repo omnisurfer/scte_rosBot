@@ -264,7 +264,7 @@ public:
          * This odom publisher may compliment the ackermann steering controller odom which may be based
          * purely on dead reckoning.
          */
-        _odom_publisher = _node_handle.advertise<nav_msgs::Odometry>("odom", 100);
+        _odom_publisher = _node_handle.advertise<nav_msgs::Odometry>(_robot_namespace + "odom", 100);
 
         nav_msgs::Odometry _odom_msg;
         _odom_msg.header.frame_id = frame_id;
