@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
     std::string cmd_vel_topic;
     double update_rate = 100.0;
 
-    double max_linear_speed_m_s = 2.0;
+    double max_linear_speed_m_s = 2.4;
     double max_linear_speed_of_vehicle_as_geared_m_s = 12.5;
     double max_angular_rad_s = 1.5;
 

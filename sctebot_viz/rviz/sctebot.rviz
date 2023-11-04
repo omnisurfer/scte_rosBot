@@ -33,7 +33,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: LaserScan
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -1229,7 +1229,7 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.4603983759880066
-      Target Frame: base_link
+      Target Frame: <Fixed Frame>
       Yaw: 2.6804001331329346
     Saved: ~
 Window Geometry:
@@ -1248,8 +1248,8 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 2435
-  X: 1610
-  Y: 78
+  X: 2415
+  Y: 100
   d435i_mono:
     collapsed: false
   d435i_port:

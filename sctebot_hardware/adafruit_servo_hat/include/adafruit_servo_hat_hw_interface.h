@@ -355,9 +355,11 @@ public:
         double upper_velocity_limit = this->_max_angular_z_rad_s;
         cmd_angular_z_velocity = std::max(lower_velocity_limit, std::min(cmd_angular_z_velocity, upper_velocity_limit));
 
+        // DMR_DEBUG_20231104 - Inverting the result. For some reason direction is inverted. Need to look into this.
+        //cmd_angular_z_velocity *= -1.0;
         cmd_angular_pwm = (cmd_angular_z_velocity / this->_max_angular_z_rad_s) * 0.5 + 0.5;
 
-        //std::cout << "cmd_ang_x: " << cmd_angular_z_velocity << " cmd_ang_pwm: " << cmd_angular_pwm << std::endl;
+        //std::cout << "cmd_ang_z: " << cmd_angular_z_velocity << " cmd_ang_pwm: " << cmd_angular_pwm << std::endl;
 
         // TODO these calls will go into the write command
         this->command_pwm(Pca9685LEDController::LED0, float(cmd_angular_pwm));

@@ -1,10 +1,12 @@
+# https://answers.ros.org/question/364176/dwa-planner-failed-to-produce-path/
 local_costmap:
   global_frame: odom
   robot_base_frame: base_footprint
 
   update_frequency: 10.0
   publish_frequency: 10.0
-  transform_tolerance: 0.5  
+  transform_tolerance: 0.5
+  track_unknown_space: false
 
   static_map: false
   rolling_window: true
