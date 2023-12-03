@@ -5,7 +5,7 @@
 
     <arg name="joy_config" default="teleop_logitechf310" /> <!-- teleop_asus -->
     <arg name="joy_dev" default="/dev/input/js0" />
-    <arg name="config_filepath" default="$(find sctebot_control)/config/joystick/$(arg joy_config).config.yaml" />
+    <arg name="config_filepath" default="$(find sctebot_control)/config/joystick/teleop_$(arg joy_config).config.yaml" />
 
     <group if="$(eval arg('enable_joystick') == 1)">
         <group ns="$(arg robot_namespace)">
