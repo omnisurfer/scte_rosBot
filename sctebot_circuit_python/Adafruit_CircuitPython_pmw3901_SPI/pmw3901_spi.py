@@ -19,10 +19,17 @@ Implementation Notes
 * Adafruit Blinka:
   https://github.com/adafruit/Adafruit_Blinka
 
+* Using this API doc for SPI usage:
+https://docs.circuitpython.org/en/latest/shared-bindings/adafruit_bus_device/spi_device/index.html#module-adafruit_bus_device.spi_device
+https://learn.adafruit.com/circuitpython-digital-inputs-and-outputs/digital-outputs
+
 """
 import struct
 import time
 import board
+# from board import *
+import busio
+import digitalio
 
 try:
     from digitalio import DigitalInOut
@@ -35,7 +42,7 @@ from adafruit_bus_device.spi_device import SPIDevice
 __version__ = "0.0.0+auto.0"
 __repo__ = "WIP"
 
-WAIT = -1
+WAIT = 0xff  # -1
 
 BG_CS_FRONT_BCM = 7
 BG_CS_BACK_BCM = 8
@@ -56,54 +63,69 @@ class Pmw3901_SPI:
     WIP
     """
 
+    # DMR_TODO_20231228 - fix SPI configuration
     def __init__(
             self,
-            spi_bus: SPI,
+            spi_bus: SPI = None,
             cs: DigitalInOut = None,
             frequency: int = 400000,
     ):  # pylint: disable=invalid-name
 
         # SPI setup
-        self._spi = SPIDevice(spi_bus, chip_select=cs, baudrate=frequency)
+        self.spi_bus_ = busio.SPI(board.SCK, board.MOSI, board.MISO)
+        self.cs = digitalio.DigitalInOut(board.D4)
+        self.cs.direction = digitalio.Direction.OUTPUT
         self._out_buffer = bytearray(3)
         self._in_buffer = bytearray(3)
 
         # toggle chip select
-        cs.value = False
-        time.sleep(0.05)
-        cs.value = True
+        # cs.value = False
+        # time.sleep(0.05)
+        # cs.value = True
 
         # write out POWER UP RESET
-        with self._spi as spi:
+        with self.spi_bus_ as spi_bus:
+            device = SPIDevice(spi_bus, self.cs)
             # self.spi_dev.xfer2([register | 0x80, value])
             _output = bytearray(2)
-            _output.append(REG_POWER_UP_RESET)
-            _output.append(0x5a)
-            spi.write(_output)
-        time.sleep(0.02)
-        _input = bytearray(5)
-        for offset in range(5):
-            status = 0
-            spi.readinto(status, write_value=(REG_DATA_READY + offset))
-            _input.append(status)
-        print(f"got status {_input}")
+            _output[0] = (REG_POWER_UP_RESET.to_bytes(1, 'little'))[0]  # REG_POWER_UP_RESET
+            _output[1] = 0x5a
+            with device as spi:
+                spi.write(_output)
 
-        self._secret_sauce()
+            time.sleep(0.02)
 
-        product_id, revision = self.get_id()
-        if product_id != 0x49 or revision != 0x00:
-            raise RuntimeError(
-                "Invalid Product ID or Revision for PMW3901: 0x{:02x}/0x{:02x}".format(product_id, revision))
-        else:
-            print(f"got product id {product_id} and revision {revision}")
+            _input = bytearray(5)
 
-    def get_id(self):
+            for idx, offset in enumerate(range(5)):
+                status = bytearray(1)
+                with device as spi:
+                    spi.readinto(status, write_value=(REG_DATA_READY + offset))
+                _input[idx] = status[0].to_bytes(1, 'little')[0]
+            print(f"got status {_input}")
+
+            self._secret_sauce(device)
+
+            product_id, revision = self.get_id(device)
+            # DMR_DEBUG_20231228 - ignore revision to see if get_motion crashes
+            if product_id != 0x49:  # or revision != 0x00:
+                raise RuntimeError(
+                    "Invalid Product ID or Revision for PMW3901: 0x{:02x}/0x{:02x}".format(product_id, revision))
+            else:
+                print(f"got product id {product_id} and revision {revision}")
+
+            # DEBUG_DMR_20231228 - call set_orientation and get_motion
+            self.set_orientation(device=device)
+            self.get_motion(device=device)
+
+
+    def get_id(self, device):
 
         _output = bytearray(2)
-        with self._spi as spi:
+        with device as spi:
             spi.readinto(_output, write_value=REG_ID)
 
-        return _output[0], _output[1]
+        return _output[1], _output[0]
 
     def set_rotation(self, degrees=0):
         """Set orientation of PMW3901 in increments of 90 degrees.
@@ -122,7 +144,7 @@ class Pmw3901_SPI:
         else:
             raise TypeError("Degrees must be one of 0, 90, 180 or 270")
 
-    def set_orientation(self, invert_x=False, invert_y=False, swap_xy=False):
+    def set_orientation(self, invert_x=False, invert_y=False, swap_xy=False, device=None):
         """Set orientation of PMW3901 manually.
 
         Swapping is performed before flipping.
@@ -141,10 +163,13 @@ class Pmw3901_SPI:
             value |= 0b00100000
 
         # SPI WRITE REG_ORIENTATION, value
-        with self._spi as spi:
+        #with self.spi_bus_ as spi_bus:
+        #    device = SPIDevice(spi_bus, self.cs)
+
+        with device as spi:
             spi.write([REG_ORIENTATION, value])
 
-    def get_motion(self, timeout=5):
+    def get_motion(self, timeout=5, device=None):
         """Get motion data from PMW3901 using burst read.
 
         Reads 12 bytes sequentially from the PMW3901 and validates
@@ -158,19 +183,22 @@ class Pmw3901_SPI:
         """
         t_start = time.time()
         while time.time() - t_start < timeout:
-            with self._spi as spi:
-                _data = bytearray(12)
+            # with self.spi_bus_ as spi_bus:
+            _data = bytearray(12)
+
+            # device = SPIDevice(spi_bus, self.cs)
+            with device as spi:
                 spi.readinto(_data, write_value=REG_MOTION_BURST)
 
-                (_, dr, obs,
-                 x, y, quality,
-                 raw_sum, raw_max, raw_min,
-                 shutter_upper, shutter_lower) = struct.unpack("<BBBhhBBBBB", _data)
+            (_, dr, obs,
+             x, y, quality,
+             raw_sum, raw_max, raw_min,
+             shutter_upper, shutter_lower) = struct.unpack("<BBBhhBBBBB", _data)
 
-                if dr & 0b10000000 and not (quality < 0x19 and shutter_upper == 0x1f):
-                    return x, y
+            if dr & 0b10000000 and not (quality < 0x19 and shutter_upper == 0x1f):
+                return x, y
 
-                time.sleep(0.01)
+            time.sleep(0.01)
 
         raise RuntimeError("Timed out waiting for motion data.")
 
@@ -185,9 +213,11 @@ class Pmw3901_SPI:
         """
         t_start = time.time()
         while time.time() - t_start < timeout:
-            with self._spi as spi:
+            with self.spi_bus_ as spi_bus:
                 _data = bytearray(5)
-                spi.readinto(_data, write_value=REG_DATA_READY)
+                device = SPIDevice(spi_bus, self.cs)
+                with device as spi:
+                    spi.readinto(_data, write_value=REG_DATA_READY)
                 dr, x, y = struct.unpack("<Bhh", _data)
                 if dr & 0b10000000:
                     return x, y
@@ -202,7 +232,8 @@ class Pmw3901_SPI:
         Warning: This is *very* slow and of limited usefulness.
 
         """
-        with self._spi as spi:
+        with self.spi_bus_ as spi_bus:
+            device = SPIDevice(spi_bus, self.cs)
 
             _magic_buff = bytearray([
                 0x7f, 0x07,
@@ -219,20 +250,21 @@ class Pmw3901_SPI:
                 0x7f, 0x00,
                 0x58, 0xff
             ])
-            spi.write(_magic_buff)
+            with device as spi:
+                spi.write(_magic_buff)
 
             t_start = time.time()
 
             while True:
-                status = 0
-                spi.readinto(status, write_value=REG_RAWDATA_GRAB_STATUS)
-                if status & 0b11000000:
+                status = bytearray(1)
+                spi_bus.readinto(status, write_value=REG_RAWDATA_GRAB_STATUS)
+                if status[0] & 0b11000000:
                     break
 
                 if time.time() - t_start > timeout:
                     raise RuntimeError("Frame capture init timed out.")
 
-            spi.write([REG_RAWDATA_GRAB, 0x00])
+            spi_bus.write([REG_RAWDATA_GRAB, 0x00])
 
             RAW_DATA_LEN = 1225
 
@@ -242,7 +274,8 @@ class Pmw3901_SPI:
 
             while True:
                 data_byte = 0
-                spi.readinto(data_byte, write_value=REG_RAWDATA_GRAB)
+                with device as spi:
+                    spi.readinto(data_byte, write_value=REG_RAWDATA_GRAB)
 
                 if data_byte & 0b11000000 == 0b01000000:  # Upper 6 bits
                     raw_data[x] &= ~0b11111100
@@ -258,7 +291,7 @@ class Pmw3901_SPI:
                 if time.time() - t_start > timeout:
                     raise RuntimeError(f"Raw data capture timeout, got {x} values.")
 
-    def _secret_sauce(self):
+    def _secret_sauce(self, device):
         """Write the secret sauce registers.
 
         Don't ask what these do, the datasheet refuses to explain.
@@ -266,159 +299,166 @@ class Pmw3901_SPI:
         They are some proprietary calibration magic.
 
         """
-        with self._spi as spi:
+        # Config phase 1
+        _magic_buff = bytearray([
+            0x7f, 0x00,
+            0x55, 0x01,
+            0x50, 0x07,
 
-            # Config phase 1
-            _magic_buff = bytearray([
-                0x7f, 0x00,
-                0x55, 0x01,
-                0x50, 0x07,
-
-                0x7f, 0x0e,
-                0x43, 0x10
-            ])
+            0x7f, 0x0e,
+            0x43, 0x10
+        ])
+        with device as spi:
             spi.write(_magic_buff)
 
-            status = 0
+        status = bytearray(1)
+        with device as spi:
             spi.readinto(status, write_value=0x67)
-            if status & 0b10000000:
-                spi.write([0x48, 0x04])
-            else:
-                spi.write([0x48, 0x02])
 
-            # Config phase 2
-            _magic_buff = bytearray([
-                0x7f, 0x00,
-                0x51, 0x7b,
+        if status[0] & 0b10000000:
+            spi.write([0x48, 0x04])
+        else:
+            spi.write([0x48, 0x02])
 
-                0x50, 0x00,
-                0x55, 0x00,
-                0x7f, 0x0E
-            ])
+        # Config phase 2
+        _magic_buff = bytearray([
+            0x7f, 0x00,
+            0x51, 0x7b,
+
+            0x50, 0x00,
+            0x55, 0x00,
+            0x7f, 0x0E
+        ])
+        with device as spi:
             spi.write(_magic_buff)
 
+        with device as spi:
             spi.readinto(status, write_value=0x73)
-            if status == 0x00:
-                _c1 = 0
+        if status[0] == 0x00:
+            _c1 = bytearray(1)
+            with device as spi:
                 spi.readinto(_c1, write_value=0x70)
-                _c2 = 0
+            _c2 = bytearray(1)
+            with device as spi:
                 spi.readinto(_c2, write_value=0x71)
 
-                if _c1 <= 28:
-                    _c1 += 14
-                if _c1 > 28:
-                    _c1 += 11
+            if _c1[0] <= 28:
+                _c1[0] += 14
+            if _c1[0] > 28:
+                _c1[0] += 11
 
-                _c1 = max(0, min(0x3F, _c1))
-                _c2 = (_c2 * 45) // 100
+            _c1[0] = max(0, min(0x3F, _c1[0]))
+            _c2[0] = (_c2[0] * 45) // 100
 
-                _magic_buff = bytearray([
-                    0x7f, 0x00,
-                    0x61, 0xad,
-                    0x51, 0x70,
-                    0x7f, 0x0e
-                ])
-                spi.write(_magic_buff)
-                spi.write([0x70, _c1])
-                spi.write([0x71, _c2])
-
-            # Config phase 3
             _magic_buff = bytearray([
                 0x7f, 0x00,
                 0x61, 0xad,
-                0x7f, 0x03,
-                0x40, 0x00,
-                0x7f, 0x05,
-
-                0x41, 0xb3,
-                0x43, 0xf1,
-                0x45, 0x14,
-                0x5b, 0x32,
-                0x5f, 0x34,
-                0x7b, 0x08,
-                0x7f, 0x06,
-                0x44, 0x1b,
-                0x40, 0xbf,
-                0x4e, 0x3f,
-                0x7f, 0x08,
-                0x65, 0x20,
-                0x6a, 0x18,
-
-                0x7f, 0x09,
-                0x4f, 0xaf,
-                0x5f, 0x40,
-                0x48, 0x80,
-                0x49, 0x80,
-
-                0x57, 0x77,
-                0x60, 0x78,
-                0x61, 0x78,
-                0x62, 0x08,
-                0x63, 0x50,
-                0x7f, 0x0a,
-                0x45, 0x60,
-                0x7f, 0x00,
-                0x4d, 0x11,
-
-                0x55, 0x80,
-                0x74, 0x21,
-                0x75, 0x1f,
-                0x4a, 0x78,
-                0x4b, 0x78,
-
-                0x44, 0x08,
-                0x45, 0x50,
-                0x64, 0xff,
-                0x65, 0x1f,
-                0x7f, 0x14,
-                0x65, 0x67,
-                0x66, 0x08,
-                0x63, 0x70,
-                0x7f, 0x15,
-                0x48, 0x48,
-                0x7f, 0x07,
-                0x41, 0x0d,
-                0x43, 0x14,
-
-                0x4b, 0x0e,
-                0x45, 0x0f,
-                0x44, 0x42,
-                0x4c, 0x80,
-                0x7f, 0x10,
-
-                0x5b, 0x02,
-                0x7f, 0x07,
-                0x40, 0x41,
-                0x70, 0x00,
-                WAIT, 0x0A,  # Sleep for 10ms
-
-                0x32, 0x44,
-                0x7f, 0x07,
-                0x40, 0x40,
-                0x7f, 0x06,
-                0x62, 0xf0,
-                0x63, 0x00,
-                0x7f, 0x0d,
-                0x48, 0xc0,
-                0x6f, 0xd5,
-                0x7f, 0x00,
-
-                0x5b, 0xa0,
-                0x4e, 0xa8,
-                0x5a, 0x50,
-                0x40, 0x80,
-                WAIT, 0xF0,
-
-                0x7f, 0x14,  # Enable LED_N pulsing
-                0x6f, 0x1c,
-                0x7f, 0x00
+                0x51, 0x70,
+                0x7f, 0x0e
             ])
+            with device as spi:
+                spi.write(_magic_buff)
+                spi.write([0x70, _c1[0]])
+                spi.write([0x71, _c2[0]])
+
+        # Config phase 3
+        _magic_buff = bytearray([
+            0x7f, 0x00,
+            0x61, 0xad,
+            0x7f, 0x03,
+            0x40, 0x00,
+            0x7f, 0x05,
+
+            0x41, 0xb3,
+            0x43, 0xf1,
+            0x45, 0x14,
+            0x5b, 0x32,
+            0x5f, 0x34,
+            0x7b, 0x08,
+            0x7f, 0x06,
+            0x44, 0x1b,
+            0x40, 0xbf,
+            0x4e, 0x3f,
+            0x7f, 0x08,
+            0x65, 0x20,
+            0x6a, 0x18,
+
+            0x7f, 0x09,
+            0x4f, 0xaf,
+            0x5f, 0x40,
+            0x48, 0x80,
+            0x49, 0x80,
+
+            0x57, 0x77,
+            0x60, 0x78,
+            0x61, 0x78,
+            0x62, 0x08,
+            0x63, 0x50,
+            0x7f, 0x0a,
+            0x45, 0x60,
+            0x7f, 0x00,
+            0x4d, 0x11,
+
+            0x55, 0x80,
+            0x74, 0x21,
+            0x75, 0x1f,
+            0x4a, 0x78,
+            0x4b, 0x78,
+
+            0x44, 0x08,
+            0x45, 0x50,
+            0x64, 0xff,
+            0x65, 0x1f,
+            0x7f, 0x14,
+            0x65, 0x67,
+            0x66, 0x08,
+            0x63, 0x70,
+            0x7f, 0x15,
+            0x48, 0x48,
+            0x7f, 0x07,
+            0x41, 0x0d,
+            0x43, 0x14,
+
+            0x4b, 0x0e,
+            0x45, 0x0f,
+            0x44, 0x42,
+            0x4c, 0x80,
+            0x7f, 0x10,
+
+            0x5b, 0x02,
+            0x7f, 0x07,
+            0x40, 0x41,
+            0x70, 0x00,
+            WAIT, 0x0A,  # Sleep for 10ms
+
+            0x32, 0x44,
+            0x7f, 0x07,
+            0x40, 0x40,
+            0x7f, 0x06,
+            0x62, 0xf0,
+            0x63, 0x00,
+            0x7f, 0x0d,
+            0x48, 0xc0,
+            0x6f, 0xd5,
+            0x7f, 0x00,
+
+            0x5b, 0xa0,
+            0x4e, 0xa8,
+            0x5a, 0x50,
+            0x40, 0x80,
+            WAIT, 0xF0,
+
+            0x7f, 0x14,  # Enable LED_N pulsing
+            0x6f, 0x1c,
+            0x7f, 0x00
+        ])
+        with device as spi:
             spi.write(_magic_buff)
 
 
 class Paa5100_SPI(Pmw3901_SPI):
 
-    def _secret_sauce(self):
+    def _secret_sauce(self, device):
         """Write the secret sauce registers for the PAA5100.
 
         Don't ask what these do, we'd have to make you walk the plank.
@@ -428,174 +468,183 @@ class Paa5100_SPI(Pmw3901_SPI):
         I hate this as much as you do, dear reader.
 
         """
-        with self._spi as spi:
 
-            # Config phase 1
-            _magic_buff = bytearray([
-                0x7f, 0x00,
-                0x55, 0x01,
-                0x50, 0x07,
+        # Config phase 1
+        _magic_buff = bytearray([
+            0x7f, 0x00,
+            0x55, 0x01,
+            0x50, 0x07,
 
-                0x7f, 0x0e,
-                0x43, 0x10
-            ])
+            0x7f, 0x0e,
+            0x43, 0x10
+        ])
+        with device as spi:
             spi.write(_magic_buff)
 
-            status = 0
+        status = bytearray(1)
+        with device as spi:
             spi.readinto(status, write_value=0x67)
-            if status & 0b10000000:
+        if status[0] & 0b10000000:
+            with device as spi:
                 spi.write([0x48, 0x04])
-            else:
+        else:
+            with device as spi:
                 spi.write([0x48, 0x02])
 
-            # Config phase 2
-            _magic_buff = bytearray([
-                0x7f, 0x00,
-                0x51, 0x7b,
-                0x50, 0x00,
-                0x55, 0x00,
-                0x7f, 0x0e
-            ])
+        # Config phase 2
+        _magic_buff = bytearray([
+            0x7f, 0x00,
+            0x51, 0x7b,
+            0x50, 0x00,
+            0x55, 0x00,
+            0x7f, 0x0e
+        ])
+        with device as spi:
             spi.write(_magic_buff)
 
-            status = 0
+        status = bytearray(1)
+        with device as spi:
             spi.readinto(status, write_value=0x73)
 
-            if status == 0x00:
-                _c1 = 0
+        if status[0] == 0x00:
+            _c1 = bytearray(1)
+            with device as spi:
                 spi.readinto(_c1, write_value=0x70)
-                _c2 = 0
+            _c2 = bytearray(1)
+            with device as spi:
                 spi.readinto(_c2, write_value=0x71)
 
-                if _c1 <= 28:
-                    _c1 += 14
-                if _c1 > 28:
-                    _c1 += 11
-                _c1 = max(0, min(0x3F, _c1))
-                _c2 = (_c2 * 45) // 100
+            if _c1[0] <= 28:
+                _c1[0] += 14
+            if _c1[0] > 28:
+                _c1[0] += 11
+            _c1[0] = max(0, min(0x3F, _c1[0]))
+            _c2[0] = (_c2[0] * 45) // 100
 
-                _magic_buff = bytearray([
-                    0x7f, 0x00,
-                    0x61, 0xad,
-                    0x51, 0x70,
-                    0x7f, 0x0e
-                ])
-                spi.write(_magic_buff)
-
-                spi.write([0x70, _c1])
-                spi.write([0x71, _c2])
-
-            # Config phase 3
             _magic_buff = bytearray([
                 0x7f, 0x00,
                 0x61, 0xad,
-
-                0x7f, 0x03,
-                0x40, 0x00,
-
-                0x7f, 0x05,
-                0x41, 0xb3,
-                0x43, 0xf1,
-                0x45, 0x14,
-
-                0x5f, 0x34,
-                0x7b, 0x08,
-                0x5e, 0x34,
-                0x5b, 0x11,
-                0x6d, 0x11,
-                0x45, 0x17,
-                0x70, 0xe5,
-                0x71, 0xe5,
-
-                0x7f, 0x06,
-                0x44, 0x1b,
-                0x40, 0xbf,
-                0x4e, 0x3f,
-
-                0x7f, 0x08,
-                0x66, 0x44,
-                0x65, 0x20,
-                0x6a, 0x3a,
-                0x61, 0x05,
-                0x62, 0x05,
-
-                0x7f, 0x09,
-                0x4f, 0xaf,
-                0x5f, 0x40,
-                0x48, 0x80,
-                0x49, 0x80,
-                0x57, 0x77,
-                0x60, 0x78,
-                0x61, 0x78,
-                0x62, 0x08,
-                0x63, 0x50,
-
-                0x7f, 0x0a,
-                0x45, 0x60,
-
-                0x7f, 0x00,
-                0x4d, 0x11,
-                0x55, 0x80,
-                0x74, 0x21,
-                0x75, 0x1f,
-                0x4a, 0x78,
-                0x4b, 0x78,
-                0x44, 0x08,
-
-                0x45, 0x50,
-                0x64, 0xff,
-                0x65, 0x1f,
-
-                0x7f, 0x14,
-                0x65, 0x67,
-                0x66, 0x08,
-                0x63, 0x70,
-                0x6f, 0x1c,
-
-                0x7f, 0x15,
-                0x48, 0x48,
-
-                0x7f, 0x07,
-                0x41, 0x0d,
-                0x43, 0x14,
-                0x4b, 0x0e,
-                0x45, 0x0f,
-                0x44, 0x42,
-                0x4c, 0x80,
-
-                0x7f, 0x10,
-                0x5b, 0x02,
-
-                0x7f, 0x07,
-                0x40, 0x41,
-
-                WAIT, 0x0a,  # Wait 10ms
-
-                0x7f, 0x00,
-                0x32, 0x00,
-
-                0x7f, 0x07,
-                0x40, 0x40,
-
-                0x7f, 0x06,
-                0x68, 0xf0,
-                0x69, 0x00,
-
-                0x7f, 0x0d,
-                0x48, 0xc0,
-                0x6f, 0xd5,
-
-                0x7f, 0x00,
-                0x5b, 0xa0,
-                0x4e, 0xa8,
-                0x5a, 0x90,
-                0x40, 0x80,
-                0x73, 0x1f,
-
-                WAIT, 0x0a,  # Wait 10ms
-
-                0x73, 0x00
+                0x51, 0x70,
+                0x7f, 0x0e
             ])
+            with device as spi:
+                spi.write(_magic_buff)
+
+                spi.write([0x70, _c1[0]])
+                spi.write([0x71, _c2[0]])
+
+        # Config phase 3
+        _magic_buff = bytearray([
+            0x7f, 0x00,
+            0x61, 0xad,
+
+            0x7f, 0x03,
+            0x40, 0x00,
+
+            0x7f, 0x05,
+            0x41, 0xb3,
+            0x43, 0xf1,
+            0x45, 0x14,
+
+            0x5f, 0x34,
+            0x7b, 0x08,
+            0x5e, 0x34,
+            0x5b, 0x11,
+            0x6d, 0x11,
+            0x45, 0x17,
+            0x70, 0xe5,
+            0x71, 0xe5,
+
+            0x7f, 0x06,
+            0x44, 0x1b,
+            0x40, 0xbf,
+            0x4e, 0x3f,
+
+            0x7f, 0x08,
+            0x66, 0x44,
+            0x65, 0x20,
+            0x6a, 0x3a,
+            0x61, 0x05,
+            0x62, 0x05,
+
+            0x7f, 0x09,
+            0x4f, 0xaf,
+            0x5f, 0x40,
+            0x48, 0x80,
+            0x49, 0x80,
+            0x57, 0x77,
+            0x60, 0x78,
+            0x61, 0x78,
+            0x62, 0x08,
+            0x63, 0x50,
+
+            0x7f, 0x0a,
+            0x45, 0x60,
+
+            0x7f, 0x00,
+            0x4d, 0x11,
+            0x55, 0x80,
+            0x74, 0x21,
+            0x75, 0x1f,
+            0x4a, 0x78,
+            0x4b, 0x78,
+            0x44, 0x08,
+
+            0x45, 0x50,
+            0x64, 0xff,
+            0x65, 0x1f,
+
+            0x7f, 0x14,
+            0x65, 0x67,
+            0x66, 0x08,
+            0x63, 0x70,
+            0x6f, 0x1c,
+
+            0x7f, 0x15,
+            0x48, 0x48,
+
+            0x7f, 0x07,
+            0x41, 0x0d,
+            0x43, 0x14,
+            0x4b, 0x0e,
+            0x45, 0x0f,
+            0x44, 0x42,
+            0x4c, 0x80,
+
+            0x7f, 0x10,
+            0x5b, 0x02,
+
+            0x7f, 0x07,
+            0x40, 0x41,
+
+            WAIT, 0x0a,  # Wait 10ms
+
+            0x7f, 0x00,
+            0x32, 0x00,
+
+            0x7f, 0x07,
+            0x40, 0x40,
+
+            0x7f, 0x06,
+            0x68, 0xf0,
+            0x69, 0x00,
+
+            0x7f, 0x0d,
+            0x48, 0xc0,
+            0x6f, 0xd5,
+
+            0x7f, 0x00,
+            0x5b, 0xa0,
+            0x4e, 0xa8,
+            0x5a, 0x90,
+            0x40, 0x80,
+            0x73, 0x1f,
+
+            WAIT, 0x0a,  # Wait 10ms
+
+            0x73, 0x00
+        ])
+        with device as spi:
             spi.write(_magic_buff)
 
 
@@ -611,9 +660,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    spi_dev = board.SPI()
-
-    flo = Pmw3901_SPI(spi_bus=spi_dev)
+    flo = Pmw3901_SPI()
     flo.set_rotation(args.rotation)
 
     tx = 0
