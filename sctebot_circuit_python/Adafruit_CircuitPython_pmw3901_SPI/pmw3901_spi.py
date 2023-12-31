@@ -79,9 +79,9 @@ class Pmw3901_SPI:
         self._in_buffer = bytearray(3)
 
         # toggle chip select
-        # cs.value = False
+        # self.cs.value = False
         # time.sleep(0.05)
-        # cs.value = True
+        # self.cs.value = True
 
         # write out POWER UP RESET
         with self.spi_bus_ as spi_bus:
@@ -108,7 +108,7 @@ class Pmw3901_SPI:
 
             product_id, revision = self.get_id(device)
             # DMR_DEBUG_20231228 - ignore revision to see if get_motion crashes
-            if product_id != 0x49:  # or revision != 0x00:
+            if product_id != 0x49 or revision != 0xFF:
                 raise RuntimeError(
                     "Invalid Product ID or Revision for PMW3901: 0x{:02x}/0x{:02x}".format(product_id, revision))
             else:
@@ -117,7 +117,6 @@ class Pmw3901_SPI:
             # DEBUG_DMR_20231228 - call set_orientation and get_motion
             self.set_orientation(device=device)
             self.get_motion(device=device)
-
 
     def get_id(self, device):
 
@@ -184,21 +183,23 @@ class Pmw3901_SPI:
         t_start = time.time()
         while time.time() - t_start < timeout:
             # with self.spi_bus_ as spi_bus:
-            _data = bytearray(12)
+            _data = bytearray(13)
 
             # device = SPIDevice(spi_bus, self.cs)
             with device as spi:
                 spi.readinto(_data, write_value=REG_MOTION_BURST)
 
+            _data_length = len(_data)
+
             (_, dr, obs,
-             x, y, quality,
+             x_, y_, quality,
              raw_sum, raw_max, raw_min,
-             shutter_upper, shutter_lower) = struct.unpack("<BBBhhBBBBB", _data)
+             shutter_upper, shutter_lower) = struct.unpack("<BBBhhBBBBBB", _data)
 
             if dr & 0b10000000 and not (quality < 0x19 and shutter_upper == 0x1f):
-                return x, y
+                return x_, y_
 
-            time.sleep(0.01)
+            time.sleep(0.1)
 
         raise RuntimeError("Timed out waiting for motion data.")
 
@@ -218,9 +219,9 @@ class Pmw3901_SPI:
                 device = SPIDevice(spi_bus, self.cs)
                 with device as spi:
                     spi.readinto(_data, write_value=REG_DATA_READY)
-                dr, x, y = struct.unpack("<Bhh", _data)
+                dr, x_, y_ = struct.unpack("<Bhh", _data)
                 if dr & 0b10000000:
-                    return x, y
+                    return x_, y_
 
             time.sleep(0.001)
 
@@ -270,7 +271,7 @@ class Pmw3901_SPI:
 
             t_start = time.time()
             raw_data = bytearray(RAW_DATA_LEN)
-            x = 0
+            x_ = 0
 
             while True:
                 data_byte = 0
@@ -278,18 +279,18 @@ class Pmw3901_SPI:
                     spi.readinto(data_byte, write_value=REG_RAWDATA_GRAB)
 
                 if data_byte & 0b11000000 == 0b01000000:  # Upper 6 bits
-                    raw_data[x] &= ~0b11111100
-                    raw_data[x] |= (data_byte & 0b00111111) << 2  # Held in 5:0
+                    raw_data[x_] &= ~0b11111100
+                    raw_data[x_] |= (data_byte & 0b00111111) << 2  # Held in 5:0
 
                 if data_byte & 0b11000000 == 0b10000000:
-                    raw_data[x] &= ~0b00000011
-                    raw_data[x] |= (data_byte & 0b00001100) >> 2  # Held in 3:2
-                    x += 1
+                    raw_data[x_] &= ~0b00000011
+                    raw_data[x_] |= (data_byte & 0b00001100) >> 2  # Held in 3:2
+                    x_ += 1
 
-                if x == RAW_DATA_LEN:
+                if x_ == RAW_DATA_LEN:
                     return raw_data
                 if time.time() - t_start > timeout:
-                    raise RuntimeError(f"Raw data capture timeout, got {x} values.")
+                    raise RuntimeError(f"Raw data capture timeout, got {x_} values.")
 
     def _secret_sauce(self, device):
         """Write the secret sauce registers.
