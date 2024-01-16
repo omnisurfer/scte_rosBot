@@ -108,7 +108,7 @@ class Pmw3901_SPI:
 
             product_id, revision = self.get_id(device)
             # DMR_DEBUG_20231228 - ignore revision to see if get_motion crashes
-            if product_id != 0x49 or revision != 0xFF:
+            if product_id != 0x49 or revision != 0x00:
                 raise RuntimeError(
                     "Invalid Product ID or Revision for PMW3901: 0x{:02x}/0x{:02x}".format(product_id, revision))
             else:
@@ -120,11 +120,27 @@ class Pmw3901_SPI:
 
     def get_id(self, device):
 
-        _output = bytearray(2)
-        with device as spi:
-            spi.readinto(_output, write_value=REG_ID)
+        # Seems to return 0xFF <product_id> and 0xFF <revision>, these are probably dummy bytes given how SPI works?
+        # readinto does not "filter" them out?
+        _buffer_out = [REG_ID, REG_ID + 1]
+        _buffer_in = bytearray(2)
 
-        return _output[1], _output[0]
+        buffer_out = bytearray(4)
+        buffer_in = bytearray(4)
+        with device as spi:
+            """
+            spi.write(_buffer_out, start=0, end=1)
+            spi.readinto(_buffer_in, start=0, end=len(_buffer_in) - 1, write_value=REG_ID)
+            id = _buffer_in[0]
+            rev = _buffer_in[1]
+            """
+
+            spi.write_readinto(buffer_out, buffer_in, in_start=0, in_end=3, out_start=0, out_end=3)
+
+        id_wr = buffer_in[1]
+        rev_wr = buffer_in[3]
+
+        return id_wr, rev_wr
 
     def set_rotation(self, degrees=0):
         """Set orientation of PMW3901 in increments of 90 degrees.
