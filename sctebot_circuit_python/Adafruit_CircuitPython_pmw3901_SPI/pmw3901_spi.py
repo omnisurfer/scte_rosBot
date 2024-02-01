@@ -98,10 +98,10 @@ class Pmw3901_SPI:
             _input = bytearray(5)
 
             for idx, offset in enumerate(range(5)):
-                status = bytearray(1)
+                status = bytearray(2)
                 with device as spi:
                     spi.readinto(status, write_value=(REG_DATA_READY + offset))
-                _input[idx] = status[0].to_bytes(1, 'little')[0]
+                _input[idx] = status[1].to_bytes(1, 'little')[0]
             print(f"got status {_input}")
 
             self._secret_sauce(device)
@@ -128,12 +128,12 @@ class Pmw3901_SPI:
         buffer_out = bytearray(4)
         buffer_in = bytearray(4)
         with device as spi:
-            """
+            """"""
             spi.write(_buffer_out, start=0, end=1)
             spi.readinto(_buffer_in, start=0, end=len(_buffer_in) - 1, write_value=REG_ID)
             id = _buffer_in[0]
             rev = _buffer_in[1]
-            """
+            """"""
 
             spi.write_readinto(buffer_out, buffer_in, in_start=0, in_end=3, out_start=0, out_end=3)
 
