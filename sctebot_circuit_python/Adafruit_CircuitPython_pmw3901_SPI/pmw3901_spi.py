@@ -73,8 +73,12 @@ class Pmw3901_SPI:
 
         self.init_device()
 
+        '''
         self.set_orientation()
+        self.frame_capture()
+        self.get_motion_slow()
         self.get_motion()
+        '''
 
     def init_device(self):
 
@@ -150,7 +154,7 @@ class Pmw3901_SPI:
         # SPI WRITE REG_ORIENTATION, value
         self._spi_write_out_buffer(bytearray([REG_ORIENTATION, value]))
 
-    def get_motion(self, timeout=20):
+    def get_motion(self, timeout=5):
         """Get motion data from PMW3901 using burst read.
 
         Reads 12 bytes sequentially from the PMW3901 and validates
@@ -194,14 +198,16 @@ class Pmw3901_SPI:
         """
         t_start = time.time()
         while time.time() - t_start < timeout:
-            with self.spi_bus_ as spi_bus:
-                _data = bytearray(5)
-                device = SPIDevice(spi_bus, self.cs_)
-                with device as spi:
-                    spi.readinto(_data, write_value=REG_DATA_READY)
-                dr, x_, y_ = struct.unpack("<Bhh", _data)
-                if dr & 0b10000000:
-                    return x_, y_
+
+            motion_data = self._spi_read_from_address(bytearray([REG_DATA_READY]), 5)
+
+            dr, x_, y_ = struct.unpack("<Bhh", motion_data)
+
+            print(f"motion_data_slow {motion_data}")
+            print(f"dr {dr}\t x_ {x_}, y_{y_}")
+
+            if dr & 0b10000000:
+                return x_, y_
 
             time.sleep(0.001)
 
@@ -213,64 +219,57 @@ class Pmw3901_SPI:
         Warning: This is *very* slow and of limited usefulness.
 
         """
-        with self.spi_bus_ as spi_bus:
-            device = SPIDevice(spi_bus, self.cs_)
+        magic_buff = bytearray([
+            0x7f, 0x07,
+            0x4c, 0x00,
+            0x7f, 0x08,
+            0x6a, 0x38,
+            0x7f, 0x00,
+            0x55, 0x04,
+            0x40, 0x80,
+            0x4d, 0x11,
 
-            _magic_buff = bytearray([
-                0x7f, 0x07,
-                0x4c, 0x00,
-                0x7f, 0x08,
-                0x6a, 0x38,
-                0x7f, 0x00,
-                0x55, 0x04,
-                0x40, 0x80,
-                0x4d, 0x11,
+            WAIT, 0x0a,
 
-                WAIT, 0x0a,
+            0x7f, 0x00,
+            0x58, 0xff
+        ])
+        self._spi_write_out_buffer(magic_buff)
 
-                0x7f, 0x00,
-                0x58, 0xff
-            ])
-            with device as spi:
-                spi.write(_magic_buff)
+        t_start = time.time()
 
-            t_start = time.time()
+        while True:
+            status = self._spi_read_from_address(bytearray([REG_RAWDATA_GRAB_STATUS]), 1)
+            if status[0] & 0b11000000:
+                break
 
-            while True:
-                status = bytearray(1)
-                spi_bus.readinto(status, write_value=REG_RAWDATA_GRAB_STATUS)
-                if status[0] & 0b11000000:
-                    break
+            if time.time() - t_start > timeout:
+                raise RuntimeError("Frame capture init timed out.")
 
-                if time.time() - t_start > timeout:
-                    raise RuntimeError("Frame capture init timed out.")
+        self._spi_write_out_buffer(bytearray([REG_RAWDATA_GRAB, 0x00]))
 
-            spi_bus.write([REG_RAWDATA_GRAB, 0x00])
+        RAW_DATA_LEN = 1225
 
-            RAW_DATA_LEN = 1225
+        t_start = time.time()
+        raw_data = bytearray(RAW_DATA_LEN)
+        x_ = 0
 
-            t_start = time.time()
-            raw_data = bytearray(RAW_DATA_LEN)
-            x_ = 0
+        while True:
+            data_byte = self._spi_read_from_address(bytearray([REG_RAWDATA_GRAB]), 1)[0]
 
-            while True:
-                data_byte = 0
-                with device as spi:
-                    spi.readinto(data_byte, write_value=REG_RAWDATA_GRAB)
+            if data_byte & 0b11000000 == 0b01000000:  # Upper 6 bits
+                raw_data[x_] &= ~0b11111100
+                raw_data[x_] |= (data_byte & 0b00111111) << 2  # Held in 5:0
 
-                if data_byte & 0b11000000 == 0b01000000:  # Upper 6 bits
-                    raw_data[x_] &= ~0b11111100
-                    raw_data[x_] |= (data_byte & 0b00111111) << 2  # Held in 5:0
+            if data_byte & 0b11000000 == 0b10000000:
+                raw_data[x_] &= ~0b00000011
+                raw_data[x_] |= (data_byte & 0b00001100) >> 2  # Held in 3:2
+                x_ += 1
 
-                if data_byte & 0b11000000 == 0b10000000:
-                    raw_data[x_] &= ~0b00000011
-                    raw_data[x_] |= (data_byte & 0b00001100) >> 2  # Held in 3:2
-                    x_ += 1
-
-                if x_ == RAW_DATA_LEN:
-                    return raw_data
-                if time.time() - t_start > timeout:
-                    raise RuntimeError(f"Raw data capture timeout, got {x_} values.")
+            if x_ == RAW_DATA_LEN:
+                return raw_data
+            if time.time() - t_start > timeout:
+                raise RuntimeError(f"Raw data capture timeout, got {x_} values.")
 
     def _secret_sauce(self):
         """Write the secret sauce registers.
@@ -281,7 +280,7 @@ class Pmw3901_SPI:
 
         """
         # Config phase 1
-        _magic_buff = bytearray([
+        magic_buff = bytearray([
             0x7f, 0x00,
             0x55, 0x01,
             0x50, 0x07,
@@ -289,7 +288,7 @@ class Pmw3901_SPI:
             0x7f, 0x0e,
             0x43, 0x10
         ])
-        self._spi_write_out_buffer(_magic_buff)
+        self._spi_write_out_buffer(magic_buff)
 
         status = self._spi_read_from_address(bytearray([0x67]), 1)
         if status[0] & 0b10000000:
@@ -298,7 +297,7 @@ class Pmw3901_SPI:
             self._spi_write_out_buffer(bytearray([0x48, 0x02]))
 
         # Config phase 2
-        _magic_buff = bytearray([
+        magic_buff = bytearray([
             0x7f, 0x00,
             0x51, 0x7b,
 
@@ -306,7 +305,7 @@ class Pmw3901_SPI:
             0x55, 0x00,
             0x7f, 0x0E
         ])
-        self._spi_write_out_buffer(_magic_buff)
+        self._spi_write_out_buffer(magic_buff)
 
         status = self._spi_read_from_address(bytearray([0x73]), 1)
         if status[0] == 0x00:
@@ -321,18 +320,18 @@ class Pmw3901_SPI:
             _c1[0] = max(0, min(0x3F, _c1[0]))
             _c2[0] = (_c2[0] * 45) // 100
 
-            _magic_buff = bytearray([
+            magic_buff = bytearray([
                 0x7f, 0x00,
                 0x61, 0xad,
                 0x51, 0x70,
                 0x7f, 0x0e
             ])
-            self._spi_write_out_buffer(_magic_buff)
+            self._spi_write_out_buffer(magic_buff)
             self._spi_write_out_buffer(bytearray([0x70, _c1[0]]))
             self._spi_write_out_buffer(bytearray([0x71, _c2[0]]))
 
         # Config phase 3
-        _magic_buff = bytearray([
+        magic_buff = bytearray([
             0x7f, 0x00,
             0x61, 0xad,
             0x7f, 0x03,
@@ -422,7 +421,7 @@ class Pmw3901_SPI:
             0x6f, 0x1c,
             0x7f, 0x00
         ])
-        self._spi_write_out_buffer(_magic_buff)
+        self._spi_write_out_buffer(magic_buff)
 
     def _spi_read_from_address(self, read_from_address: bytearray, read_length: int):
 
@@ -465,9 +464,10 @@ class Pmw3901_SPI:
         with self.spi_device_ as spi:
             spi.write(write_out_buffer)
 
+
 class Paa5100_SPI(Pmw3901_SPI):
 
-    def _secret_sauce(self, device):
+    def _secret_sauce(self):
         """Write the secret sauce registers for the PAA5100.
 
         Don't ask what these do, we'd have to make you walk the plank.
@@ -479,7 +479,7 @@ class Paa5100_SPI(Pmw3901_SPI):
         """
 
         # Config phase 1
-        _magic_buff = bytearray([
+        magic_buff = bytearray([
             0x7f, 0x00,
             0x55, 0x01,
             0x50, 0x07,
@@ -487,41 +487,29 @@ class Paa5100_SPI(Pmw3901_SPI):
             0x7f, 0x0e,
             0x43, 0x10
         ])
-        with device as spi:
-            spi.write(_magic_buff)
+        self._spi_write_out_buffer(magic_buff)
 
-        status = bytearray(1)
-        with device as spi:
-            spi.readinto(status, write_value=0x67)
+        status = self._spi_read_from_address(bytearray([0x67]), 1)
         if status[0] & 0b10000000:
-            with device as spi:
-                spi.write([0x48, 0x04])
+            self._spi_write_out_buffer(bytearray([0x48, 0x04]))
         else:
-            with device as spi:
-                spi.write([0x48, 0x02])
+            self._spi_write_out_buffer(bytearray([0x48, 0x02]))
 
         # Config phase 2
-        _magic_buff = bytearray([
+        magic_buff = bytearray([
             0x7f, 0x00,
             0x51, 0x7b,
             0x50, 0x00,
             0x55, 0x00,
             0x7f, 0x0e
         ])
-        with device as spi:
-            spi.write(_magic_buff)
+        self._spi_write_out_buffer(magic_buff)
 
-        status = bytearray(1)
-        with device as spi:
-            spi.readinto(status, write_value=0x73)
+        status = self._spi_read_from_address(bytearray([0x73]), 1)
 
         if status[0] == 0x00:
-            _c1 = bytearray(1)
-            with device as spi:
-                spi.readinto(_c1, write_value=0x70)
-            _c2 = bytearray(1)
-            with device as spi:
-                spi.readinto(_c2, write_value=0x71)
+            _c1 = self._spi_read_from_address(bytearray([0x70]), 1)
+            _c2 = self._spi_read_from_address(bytearray([0x71]), 1)
 
             if _c1[0] <= 28:
                 _c1[0] += 14
@@ -530,20 +518,18 @@ class Paa5100_SPI(Pmw3901_SPI):
             _c1[0] = max(0, min(0x3F, _c1[0]))
             _c2[0] = (_c2[0] * 45) // 100
 
-            _magic_buff = bytearray([
+            magic_buff = bytearray([
                 0x7f, 0x00,
                 0x61, 0xad,
                 0x51, 0x70,
                 0x7f, 0x0e
             ])
-            with device as spi:
-                spi.write(_magic_buff)
-
-                spi.write([0x70, _c1[0]])
-                spi.write([0x71, _c2[0]])
+            self._spi_write_out_buffer(magic_buff)
+            self._spi_write_out_buffer(bytearray([0x70, _c1[0]]))
+            self._spi_write_out_buffer(bytearray([0x71, _c2[0]]))
 
         # Config phase 3
-        _magic_buff = bytearray([
+        magic_buff = bytearray([
             0x7f, 0x00,
             0x61, 0xad,
 
@@ -653,8 +639,7 @@ class Paa5100_SPI(Pmw3901_SPI):
 
             0x73, 0x00
         ])
-        with device as spi:
-            spi.write(_magic_buff)
+        self._spi_write_out_buffer(magic_buff)
 
 
 if __name__ == "__main__":
@@ -670,6 +655,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     flo = Pmw3901_SPI()
+    # flo = Paa5100_SPI()
     flo.set_rotation(args.rotation)
 
     tx = 0
