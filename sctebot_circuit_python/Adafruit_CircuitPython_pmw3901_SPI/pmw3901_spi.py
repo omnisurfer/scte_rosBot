@@ -42,7 +42,7 @@ from adafruit_bus_device.spi_device import SPIDevice
 __version__ = "0.0.0+auto.0"
 __repo__ = "WIP"
 
-WAIT = 0xff  # -1
+WAIT = 0xFF  # -1
 
 BG_CS_FRONT_BCM = 7
 BG_CS_BACK_BCM = 8
@@ -63,20 +63,20 @@ class Pmw3901_SPI:
     WIP
     """
 
-    # DMR_TODO_20231228 - fix SPI configuration
-    def __init__(
-            self,
-            spi_bus: SPI = None,
-            cs: DigitalInOut = None,
-            frequency: int = 400000,
-    ):  # pylint: disable=invalid-name
+    def __init__(self):
 
         # SPI setup
         self.spi_bus_ = busio.SPI(board.SCK, board.MOSI, board.MISO)
-        self.cs = digitalio.DigitalInOut(board.D4)
-        self.cs.direction = digitalio.Direction.OUTPUT
-        self._out_buffer = bytearray(3)
-        self._in_buffer = bytearray(3)
+        self.cs_ = digitalio.DigitalInOut(board.D4)
+        self.cs_.direction = digitalio.Direction.OUTPUT
+        self.spi_device_ = SPIDevice(self.spi_bus_, self.cs_)
+
+        self.init_device()
+
+        self.set_orientation()
+        self.get_motion()
+
+    def init_device(self):
 
         # toggle chip select
         # self.cs.value = False
@@ -84,61 +84,31 @@ class Pmw3901_SPI:
         # self.cs.value = True
 
         # write out POWER UP RESET
-        with self.spi_bus_ as spi_bus:
-            device = SPIDevice(spi_bus, self.cs)
-            # self.spi_dev.xfer2([register | 0x80, value])
-            _output = bytearray(2)
-            _output[0] = (REG_POWER_UP_RESET.to_bytes(1, 'little'))[0]  # REG_POWER_UP_RESET
-            _output[1] = 0x5a
-            with device as spi:
-                spi.write(_output)
+        self._spi_write_out_buffer(bytearray([REG_POWER_UP_RESET, 0x5a]))
 
-            time.sleep(0.02)
+        # status
+        status_register = bytearray(5)
 
-            _input = bytearray(5)
+        status_register = self._spi_read_from_address(bytearray([REG_DATA_READY]), len(status_register))
 
-            for idx, offset in enumerate(range(5)):
-                status = bytearray(2)
-                with device as spi:
-                    spi.readinto(status, write_value=(REG_DATA_READY + offset))
-                _input[idx] = status[1].to_bytes(1, 'little')[0]
-            print(f"got status {_input}")
+        print(f"got status {status_register}")
 
-            self._secret_sauce(device)
+        self._secret_sauce()
 
-            product_id, revision = self.get_id(device)
-            # DMR_DEBUG_20231228 - ignore revision to see if get_motion crashes
-            if product_id != 0x49 or revision != 0x00:
-                raise RuntimeError(
-                    "Invalid Product ID or Revision for PMW3901: 0x{:02x}/0x{:02x}".format(product_id, revision))
-            else:
-                print(f"got product id {product_id} and revision {revision}")
+        product_id, revision = self.get_id()
 
-            # DEBUG_DMR_20231228 - call set_orientation and get_motion
-            self.set_orientation(device=device)
-            self.get_motion(device=device)
+        if product_id != 0x49 or revision != 0x00:
+            raise RuntimeError(
+                "Invalid Product ID or Revision for PMW3901: 0x{:02x}/0x{:02x}".format(product_id, revision))
+        else:
+            print(f"got product id {product_id} and revision {revision}")
 
-    def get_id(self, device):
+    def get_id(self):
 
-        # Seems to return 0xFF <product_id> and 0xFF <revision>, these are probably dummy bytes given how SPI works?
-        # readinto does not "filter" them out?
-        _buffer_out = [REG_ID, REG_ID + 1]
-        _buffer_in = bytearray(2)
+        read_data = self._spi_read_from_address(bytearray([REG_ID]), 2)
 
-        buffer_out = bytearray(4)
-        buffer_in = bytearray(4)
-        with device as spi:
-            """"""
-            spi.write(_buffer_out, start=0, end=1)
-            spi.readinto(_buffer_in, start=0, end=len(_buffer_in) - 1, write_value=REG_ID)
-            id = _buffer_in[0]
-            rev = _buffer_in[1]
-            """"""
-
-            spi.write_readinto(buffer_out, buffer_in, in_start=0, in_end=3, out_start=0, out_end=3)
-
-        id_wr = buffer_in[1]
-        rev_wr = buffer_in[3]
+        id_wr = read_data[0]
+        rev_wr = read_data[1]
 
         return id_wr, rev_wr
 
@@ -159,7 +129,7 @@ class Pmw3901_SPI:
         else:
             raise TypeError("Degrees must be one of 0, 90, 180 or 270")
 
-    def set_orientation(self, invert_x=False, invert_y=False, swap_xy=False, device=None):
+    def set_orientation(self, invert_x=False, invert_y=False, swap_xy=False):
         """Set orientation of PMW3901 manually.
 
         Swapping is performed before flipping.
@@ -178,13 +148,9 @@ class Pmw3901_SPI:
             value |= 0b00100000
 
         # SPI WRITE REG_ORIENTATION, value
-        #with self.spi_bus_ as spi_bus:
-        #    device = SPIDevice(spi_bus, self.cs)
+        self._spi_write_out_buffer(bytearray([REG_ORIENTATION, value]))
 
-        with device as spi:
-            spi.write([REG_ORIENTATION, value])
-
-    def get_motion(self, timeout=5, device=None):
+    def get_motion(self, timeout=20):
         """Get motion data from PMW3901 using burst read.
 
         Reads 12 bytes sequentially from the PMW3901 and validates
@@ -198,24 +164,22 @@ class Pmw3901_SPI:
         """
         t_start = time.time()
         while time.time() - t_start < timeout:
-            # with self.spi_bus_ as spi_bus:
-            _data = bytearray(13)
 
-            # device = SPIDevice(spi_bus, self.cs)
-            with device as spi:
-                spi.readinto(_data, write_value=REG_MOTION_BURST)
-
-            _data_length = len(_data)
+            motion_data = self._spi_read_from_address(bytearray([REG_MOTION_BURST]), 13)
 
             (_, dr, obs,
              x_, y_, quality,
              raw_sum, raw_max, raw_min,
-             shutter_upper, shutter_lower) = struct.unpack("<BBBhhBBBBBB", _data)
+             shutter_upper, shutter_lower) = struct.unpack("<BBBhhBBBBBB", motion_data)
+
+            print(f"motion_data {motion_data}")
+            print(f"_ {_}\tdr {dr}\tobs {obs}\tx_ {x_}\ty_ {y_}\tquality {quality}\traw_sum {raw_sum}\t"
+                  f"raw_max {raw_max}\traw_min {raw_min}\tshutter_upper {shutter_upper}\tshutter_lower {shutter_lower}")
 
             if dr & 0b10000000 and not (quality < 0x19 and shutter_upper == 0x1f):
                 return x_, y_
 
-            time.sleep(0.1)
+            time.sleep(1.0)
 
         raise RuntimeError("Timed out waiting for motion data.")
 
@@ -232,7 +196,7 @@ class Pmw3901_SPI:
         while time.time() - t_start < timeout:
             with self.spi_bus_ as spi_bus:
                 _data = bytearray(5)
-                device = SPIDevice(spi_bus, self.cs)
+                device = SPIDevice(spi_bus, self.cs_)
                 with device as spi:
                     spi.readinto(_data, write_value=REG_DATA_READY)
                 dr, x_, y_ = struct.unpack("<Bhh", _data)
@@ -250,7 +214,7 @@ class Pmw3901_SPI:
 
         """
         with self.spi_bus_ as spi_bus:
-            device = SPIDevice(spi_bus, self.cs)
+            device = SPIDevice(spi_bus, self.cs_)
 
             _magic_buff = bytearray([
                 0x7f, 0x07,
@@ -308,7 +272,7 @@ class Pmw3901_SPI:
                 if time.time() - t_start > timeout:
                     raise RuntimeError(f"Raw data capture timeout, got {x_} values.")
 
-    def _secret_sauce(self, device):
+    def _secret_sauce(self):
         """Write the secret sauce registers.
 
         Don't ask what these do, the datasheet refuses to explain.
@@ -325,17 +289,13 @@ class Pmw3901_SPI:
             0x7f, 0x0e,
             0x43, 0x10
         ])
-        with device as spi:
-            spi.write(_magic_buff)
+        self._spi_write_out_buffer(_magic_buff)
 
-        status = bytearray(1)
-        with device as spi:
-            spi.readinto(status, write_value=0x67)
-
+        status = self._spi_read_from_address(bytearray([0x67]), 1)
         if status[0] & 0b10000000:
-            spi.write([0x48, 0x04])
+            self._spi_write_out_buffer(bytearray([0x48, 0x04]))
         else:
-            spi.write([0x48, 0x02])
+            self._spi_write_out_buffer(bytearray([0x48, 0x02]))
 
         # Config phase 2
         _magic_buff = bytearray([
@@ -346,18 +306,12 @@ class Pmw3901_SPI:
             0x55, 0x00,
             0x7f, 0x0E
         ])
-        with device as spi:
-            spi.write(_magic_buff)
+        self._spi_write_out_buffer(_magic_buff)
 
-        with device as spi:
-            spi.readinto(status, write_value=0x73)
+        status = self._spi_read_from_address(bytearray([0x73]), 1)
         if status[0] == 0x00:
-            _c1 = bytearray(1)
-            with device as spi:
-                spi.readinto(_c1, write_value=0x70)
-            _c2 = bytearray(1)
-            with device as spi:
-                spi.readinto(_c2, write_value=0x71)
+            _c1 = self._spi_read_from_address(bytearray([0x70]), 1)
+            _c2 = self._spi_read_from_address(bytearray([0x71]), 1)
 
             if _c1[0] <= 28:
                 _c1[0] += 14
@@ -373,10 +327,9 @@ class Pmw3901_SPI:
                 0x51, 0x70,
                 0x7f, 0x0e
             ])
-            with device as spi:
-                spi.write(_magic_buff)
-                spi.write([0x70, _c1[0]])
-                spi.write([0x71, _c2[0]])
+            self._spi_write_out_buffer(_magic_buff)
+            self._spi_write_out_buffer(bytearray([0x70, _c1[0]]))
+            self._spi_write_out_buffer(bytearray([0x71, _c2[0]]))
 
         # Config phase 3
         _magic_buff = bytearray([
@@ -469,9 +422,48 @@ class Pmw3901_SPI:
             0x6f, 0x1c,
             0x7f, 0x00
         ])
-        with device as spi:
-            spi.write(_magic_buff)
+        self._spi_write_out_buffer(_magic_buff)
 
+    def _spi_read_from_address(self, read_from_address: bytearray, read_length: int):
+
+        # Seems to return 0xFF <product_id> and 0xFF <revision>, these are probably dummy bytes given how SPI works?
+        # readinto does not "filter" them out?
+        raw_read_data_length = read_length * 2
+        raw_read_data_buffer = bytearray(raw_read_data_length)
+
+        read_from_address_buffer = bytearray()
+        for i in range(raw_read_data_length):
+            if i == 0:
+                read_from_address_buffer.append(read_from_address[0])
+            else:
+                read_from_address_buffer.append(read_from_address[0] + i)
+
+        with self.spi_device_ as spi:
+            """
+            spi.write(read_from_address, start=0, end=read_length)
+            spi.readinto(raw_read_data_buffer, start=0, end=len(raw_read_data_buffer) - 1, write_value=REG_ID)
+            id = raw_read_data_buffer[0]
+            rev = raw_read_data_buffer[1]
+            """
+
+            spi.write_readinto(
+                read_from_address_buffer,
+                raw_read_data_buffer,
+                in_start=0, in_end=len(raw_read_data_buffer),
+                out_start=0, out_end=len(raw_read_data_buffer)
+            )
+
+        processed_read_data_buffer = bytearray()
+
+        for i in range(len(raw_read_data_buffer)):
+            if i % 2:
+                processed_read_data_buffer.append(raw_read_data_buffer[i])
+
+        return processed_read_data_buffer
+
+    def _spi_write_out_buffer(self, write_out_buffer: bytearray):
+        with self.spi_device_ as spi:
+            spi.write(write_out_buffer)
 
 class Paa5100_SPI(Pmw3901_SPI):
 
@@ -697,4 +689,3 @@ if __name__ == "__main__":
             time.sleep(0.01)
     except KeyboardInterrupt:
         pass
-
