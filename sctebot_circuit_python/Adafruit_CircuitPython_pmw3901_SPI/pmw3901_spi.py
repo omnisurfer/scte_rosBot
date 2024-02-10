@@ -183,7 +183,7 @@ class Pmw3901_SPI:
             if dr & 0b10000000 and not (quality < 0x19 and shutter_upper == 0x1f):
                 return x_, y_
 
-            time.sleep(1.0)
+            time.sleep(0.01)
 
         raise RuntimeError("Timed out waiting for motion data.")
 
