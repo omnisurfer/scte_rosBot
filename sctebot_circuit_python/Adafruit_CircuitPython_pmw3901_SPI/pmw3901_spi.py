@@ -42,7 +42,8 @@ from adafruit_bus_device.spi_device import SPIDevice
 __version__ = "0.0.0+auto.0"
 __repo__ = "WIP"
 
-WAIT = 0xFF  # -1
+# Not using WAIT from original implementation because secret_sauce bytes are in a bytearray.
+WAIT = -1
 
 BG_CS_FRONT_BCM = 7
 BG_CS_BACK_BCM = 8
@@ -67,6 +68,11 @@ class Pmw3901_SPI:
 
         # SPI setup
         self.spi_bus_ = busio.SPI(board.SCK, board.MOSI, board.MISO)
+        while not self.spi_bus_.try_lock():
+            pass
+        self.spi_bus_.configure(baudrate=200000)
+        self.spi_bus_.unlock()
+
         self.cs_ = digitalio.DigitalInOut(board.D4)
         self.cs_.direction = digitalio.Direction.OUTPUT
         self.spi_device_ = SPIDevice(self.spi_bus_, self.cs_)
@@ -93,7 +99,7 @@ class Pmw3901_SPI:
         # status
         status_register = bytearray(5)
 
-        status_register = self._spi_read_from_address(bytearray([REG_DATA_READY]), len(status_register))
+        status_register = self._spi_read_from_incremented_address(bytearray([REG_DATA_READY]), len(status_register))
 
         print(f"got status {status_register}")
 
@@ -109,7 +115,7 @@ class Pmw3901_SPI:
 
     def get_id(self):
 
-        read_data = self._spi_read_from_address(bytearray([REG_ID]), 2)
+        read_data = self._spi_read_from_incremented_address(bytearray([REG_ID]), 2)
 
         id_wr = read_data[0]
         rev_wr = read_data[1]
@@ -169,7 +175,7 @@ class Pmw3901_SPI:
         t_start = time.time()
         while time.time() - t_start < timeout:
 
-            motion_data = self._spi_read_from_address(bytearray([REG_MOTION_BURST]), 13)
+            motion_data = self._spi_read_from_address_number_of_bytes(bytearray([REG_MOTION_BURST]), 13)
 
             (_, dr, obs,
              x_, y_, quality,
@@ -199,7 +205,7 @@ class Pmw3901_SPI:
         t_start = time.time()
         while time.time() - t_start < timeout:
 
-            motion_data = self._spi_read_from_address(bytearray([REG_DATA_READY]), 5)
+            motion_data = self._spi_read_from_incremented_address(bytearray([REG_DATA_READY]), 5)
 
             dr, x_, y_ = struct.unpack("<Bhh", motion_data)
 
@@ -227,10 +233,14 @@ class Pmw3901_SPI:
             0x7f, 0x00,
             0x55, 0x04,
             0x40, 0x80,
-            0x4d, 0x11,
+            0x4d, 0x11
+        ])
+        self._spi_write_out_buffer(magic_buff)
 
-            WAIT, 0x0a,
+        # WAIT, 0x0a
+        self._secret_sauce_wait_time_ms(0x0a)
 
+        magic_buff = bytearray([
             0x7f, 0x00,
             0x58, 0xff
         ])
@@ -239,7 +249,7 @@ class Pmw3901_SPI:
         t_start = time.time()
 
         while True:
-            status = self._spi_read_from_address(bytearray([REG_RAWDATA_GRAB_STATUS]), 1)
+            status = self._spi_read_from_incremented_address(bytearray([REG_RAWDATA_GRAB_STATUS]), 1)
             if status[0] & 0b11000000:
                 break
 
@@ -255,7 +265,7 @@ class Pmw3901_SPI:
         x_ = 0
 
         while True:
-            data_byte = self._spi_read_from_address(bytearray([REG_RAWDATA_GRAB]), 1)[0]
+            data_byte = self._spi_read_from_incremented_address(bytearray([REG_RAWDATA_GRAB]), 1)[0]
 
             if data_byte & 0b11000000 == 0b01000000:  # Upper 6 bits
                 raw_data[x_] &= ~0b11111100
@@ -290,7 +300,7 @@ class Pmw3901_SPI:
         ])
         self._spi_write_out_buffer(magic_buff)
 
-        status = self._spi_read_from_address(bytearray([0x67]), 1)
+        status = self._spi_read_from_incremented_address(bytearray([0x67]), 1)
         if status[0] & 0b10000000:
             self._spi_write_out_buffer(bytearray([0x48, 0x04]))
         else:
@@ -307,10 +317,10 @@ class Pmw3901_SPI:
         ])
         self._spi_write_out_buffer(magic_buff)
 
-        status = self._spi_read_from_address(bytearray([0x73]), 1)
+        status = self._spi_read_from_incremented_address(bytearray([0x73]), 1)
         if status[0] == 0x00:
-            _c1 = self._spi_read_from_address(bytearray([0x70]), 1)
-            _c2 = self._spi_read_from_address(bytearray([0x71]), 1)
+            _c1 = self._spi_read_from_incremented_address(bytearray([0x70]), 1)
+            _c2 = self._spi_read_from_incremented_address(bytearray([0x71]), 1)
 
             if _c1[0] <= 28:
                 _c1[0] += 14
@@ -397,9 +407,14 @@ class Pmw3901_SPI:
             0x5b, 0x02,
             0x7f, 0x07,
             0x40, 0x41,
-            0x70, 0x00,
-            WAIT, 0x0A,  # Sleep for 10ms
+            0x70, 0x00
+        ])
+        self._spi_write_out_buffer(magic_buff)
 
+        # WAIT, 0x0A,  # Sleep for 10ms
+        self._secret_sauce_wait_time_ms(0x0a)
+
+        magic_buff = bytearray([
             0x32, 0x44,
             0x7f, 0x07,
             0x40, 0x40,
@@ -414,28 +429,37 @@ class Pmw3901_SPI:
             0x5b, 0xa0,
             0x4e, 0xa8,
             0x5a, 0x50,
-            0x40, 0x80,
-            WAIT, 0xF0,
+            0x40, 0x80
+        ])
+        self._spi_write_out_buffer(magic_buff)
 
+        # WAIT, 0xF0,
+        self._secret_sauce_wait_time_ms(0xf0)
+
+        magic_buff = bytearray([
             0x7f, 0x14,  # Enable LED_N pulsing
             0x6f, 0x1c,
             0x7f, 0x00
         ])
         self._spi_write_out_buffer(magic_buff)
 
-    def _spi_read_from_address(self, read_from_address: bytearray, read_length: int):
+    def _secret_sauce_wait_time_ms(self, hex_value):
+
+        print("Sleeping for: {:02d}ms".format(hex_value))
+
+        time.sleep(hex_value / 1000)
+
+    def _spi_read_from_incremented_address(self, read_from_address: bytearray, address_offset_count: int):
 
         # Seems to return 0xFF <product_id> and 0xFF <revision>, these are probably dummy bytes given how SPI works?
         # readinto does not "filter" them out?
-        raw_read_data_length = read_length * 2
+        raw_read_data_length = address_offset_count * 2
         raw_read_data_buffer = bytearray(raw_read_data_length)
 
         read_from_address_buffer = bytearray()
-        for i in range(raw_read_data_length):
-            if i == 0:
-                read_from_address_buffer.append(read_from_address[0])
-            else:
-                read_from_address_buffer.append(read_from_address[0] + i)
+        for i in range(address_offset_count):
+            read_from_address_buffer.append(read_from_address[0] + i)
+            read_from_address_buffer.append(0x00)
 
         with self.spi_device_ as spi:
             """
@@ -460,9 +484,43 @@ class Pmw3901_SPI:
 
         return processed_read_data_buffer
 
-    def _spi_write_out_buffer(self, write_out_buffer: bytearray):
+    def _spi_read_from_address_number_of_bytes(self, read_from_address: bytearray, read_length: int):
+        raw_read_data_length = read_length
+        raw_read_data_buffer = bytearray(raw_read_data_length)
+
+        read_from_address_buffer = bytearray()
+        for i in range(read_length):
+            if i == 0:
+                read_from_address_buffer.append(read_from_address[0])
+            else:
+                read_from_address_buffer.append(0x00)
+
         with self.spi_device_ as spi:
-            spi.write(write_out_buffer)
+
+            spi.write_readinto(
+                read_from_address_buffer,
+                raw_read_data_buffer,
+                in_start=0, in_end=len(raw_read_data_buffer),
+                out_start=0, out_end=len(raw_read_data_buffer)
+            )
+
+        return raw_read_data_buffer
+
+    def _spi_write_out_buffer(self, write_out_buffer: bytearray):
+        # set bit 8 for write
+        processed_write_out_buffer = bytearray()
+
+        for i in range(len(write_out_buffer)):
+
+            if i % 2:
+                # address
+                processed_write_out_buffer.append(write_out_buffer[i])
+            else:
+                # address
+                processed_write_out_buffer.append(write_out_buffer[i] | 0x80)
+
+        with self.spi_device_ as spi:
+            spi.write(processed_write_out_buffer)
 
 
 class Paa5100_SPI(Pmw3901_SPI):
@@ -489,7 +547,7 @@ class Paa5100_SPI(Pmw3901_SPI):
         ])
         self._spi_write_out_buffer(magic_buff)
 
-        status = self._spi_read_from_address(bytearray([0x67]), 1)
+        status = self._spi_read_from_incremented_address(bytearray([0x67]), 1)
         if status[0] & 0b10000000:
             self._spi_write_out_buffer(bytearray([0x48, 0x04]))
         else:
@@ -505,11 +563,11 @@ class Paa5100_SPI(Pmw3901_SPI):
         ])
         self._spi_write_out_buffer(magic_buff)
 
-        status = self._spi_read_from_address(bytearray([0x73]), 1)
+        status = self._spi_read_from_incremented_address(bytearray([0x73]), 1)
 
         if status[0] == 0x00:
-            _c1 = self._spi_read_from_address(bytearray([0x70]), 1)
-            _c2 = self._spi_read_from_address(bytearray([0x71]), 1)
+            _c1 = self._spi_read_from_incremented_address(bytearray([0x70]), 1)
+            _c2 = self._spi_read_from_incremented_address(bytearray([0x71]), 1)
 
             if _c1[0] <= 28:
                 _c1[0] += 14
@@ -611,9 +669,13 @@ class Paa5100_SPI(Pmw3901_SPI):
 
             0x7f, 0x07,
             0x40, 0x41,
+        ])
+        self._spi_write_out_buffer(magic_buff)
 
-            WAIT, 0x0a,  # Wait 10ms
+        # WAIT, 0x0a,  # Wait 10ms
+        self._secret_sauce_wait_time_ms(0x0a)
 
+        magic_buff = bytearray([
             0x7f, 0x00,
             0x32, 0x00,
 
@@ -635,8 +697,13 @@ class Paa5100_SPI(Pmw3901_SPI):
             0x40, 0x80,
             0x73, 0x1f,
 
-            WAIT, 0x0a,  # Wait 10ms
+        ])
+        self._spi_write_out_buffer(magic_buff)
 
+        # WAIT, 0x0a,  # Wait 10ms
+        self._secret_sauce_wait_time_ms(0x0a)
+
+        magic_buff = bytearray([
             0x73, 0x00
         ])
         self._spi_write_out_buffer(magic_buff)
