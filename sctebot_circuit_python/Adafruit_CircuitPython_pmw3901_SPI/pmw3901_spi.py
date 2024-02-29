@@ -68,14 +68,9 @@ class Pmw3901_SPI:
 
         # SPI setup
         self.spi_bus_ = busio.SPI(board.SCK, board.MOSI, board.MISO)
-        while not self.spi_bus_.try_lock():
-            pass
-        self.spi_bus_.configure(baudrate=200000)
-        self.spi_bus_.unlock()
-
         self.cs_ = digitalio.DigitalInOut(board.D4)
         self.cs_.direction = digitalio.Direction.OUTPUT
-        self.spi_device_ = SPIDevice(self.spi_bus_, self.cs_)
+        self.spi_device_ = SPIDevice(self.spi_bus_, self.cs_, baudrate=400000)
 
         self.init_device()
 
@@ -89,9 +84,11 @@ class Pmw3901_SPI:
     def init_device(self):
 
         # toggle chip select
-        # self.cs.value = False
-        # time.sleep(0.05)
-        # self.cs.value = True
+        self.cs_.value = True
+        time.sleep(0.05)
+        self.cs_.value = False
+        time.sleep(0.05)
+        self.cs_.value = True
 
         # write out POWER UP RESET
         self._spi_write_out_buffer(bytearray([REG_POWER_UP_RESET, 0x5a]))
@@ -469,12 +466,14 @@ class Pmw3901_SPI:
             rev = raw_read_data_buffer[1]
             """
 
+            # self.cs_.value = False
             spi.write_readinto(
                 read_from_address_buffer,
                 raw_read_data_buffer,
                 in_start=0, in_end=len(raw_read_data_buffer),
                 out_start=0, out_end=len(raw_read_data_buffer)
             )
+            # self.cs_.value = True
 
         processed_read_data_buffer = bytearray()
 
@@ -497,12 +496,14 @@ class Pmw3901_SPI:
 
         with self.spi_device_ as spi:
 
+            # self.cs_.value = False
             spi.write_readinto(
                 read_from_address_buffer,
                 raw_read_data_buffer,
                 in_start=0, in_end=len(raw_read_data_buffer),
                 out_start=0, out_end=len(raw_read_data_buffer)
             )
+            # self.cs_.value = True
 
         return raw_read_data_buffer
 
@@ -520,7 +521,9 @@ class Pmw3901_SPI:
                 processed_write_out_buffer.append(write_out_buffer[i] | 0x80)
 
         with self.spi_device_ as spi:
+            # self.cs_.value = False
             spi.write(processed_write_out_buffer)
+            # self.cs_.value = True
 
 
 class Paa5100_SPI(Pmw3901_SPI):
