@@ -84,11 +84,11 @@ class Pmw3901_SPI:
     def init_device(self):
 
         # toggle chip select
-        self.cs_.value = True
-        time.sleep(0.05)
         self.cs_.value = False
-        time.sleep(0.05)
+        # time.sleep(0.05)
         self.cs_.value = True
+        # time.sleep(0.05)
+        self.cs_.value = False
 
         # write out POWER UP RESET
         self._spi_write_out_buffer(bytearray([REG_POWER_UP_RESET, 0x5a]))
@@ -96,6 +96,7 @@ class Pmw3901_SPI:
         # status
         status_register = bytearray(5)
 
+        # DMR_DEBUG_20240228 - May need to try a version of read from address that only reads one byte at a time?
         status_register = self._spi_read_from_incremented_address(bytearray([REG_DATA_READY]), len(status_register))
 
         print(f"got status {status_register}")
@@ -466,14 +467,12 @@ class Pmw3901_SPI:
             rev = raw_read_data_buffer[1]
             """
 
-            # self.cs_.value = False
             spi.write_readinto(
                 read_from_address_buffer,
                 raw_read_data_buffer,
                 in_start=0, in_end=len(raw_read_data_buffer),
                 out_start=0, out_end=len(raw_read_data_buffer)
             )
-            # self.cs_.value = True
 
         processed_read_data_buffer = bytearray()
 
