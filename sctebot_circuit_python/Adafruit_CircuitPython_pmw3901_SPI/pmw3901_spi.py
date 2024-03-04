@@ -70,7 +70,15 @@ class Pmw3901_SPI:
         self.spi_bus_ = busio.SPI(board.SCK, board.MOSI, board.MISO)
         self.cs_ = digitalio.DigitalInOut(board.D4)
         self.cs_.direction = digitalio.Direction.OUTPUT
-        self.spi_device_ = SPIDevice(self.spi_bus_, self.cs_, baudrate=200000)
+        self.spi_device_ = SPIDevice(
+            spi=self.spi_bus_,
+            # chip_select=self.cs_,
+            baudrate=400000,
+            cs_active_value=False,
+            polarity=0,
+            extra_clocks=0,
+            phase=0
+        )
 
         self.init_device()
 
@@ -83,14 +91,18 @@ class Pmw3901_SPI:
 
     def init_device(self):
 
+        print("TEMP")
+
         # toggle chip select
-        self.cs_.value = False
-        time.sleep(0.028)
         self.cs_.value = True
-        # time.sleep(0.05)
+        time.sleep(0.30)
+        self.cs_.value = False
+        time.sleep(0.033)
+        self.cs_.value = True
 
         # write out POWER UP RESET
-        self._spi_write_out_buffer(bytearray([REG_POWER_UP_RESET, 0x5a]))
+        self._spi_write_out_buffer(bytearray([REG_POWER_UP_RESET, 0x5a]), single_byte_writes=True)
+        time.sleep(0.02)
 
         # status
         status_register = bytearray(5)
@@ -98,7 +110,7 @@ class Pmw3901_SPI:
         time.sleep(0.018)
 
         # DMR_DEBUG_20240228 - May need to try a version of read from address that only reads one byte at a time?
-        status_register = self._spi_read_from_incremented_address(bytearray([REG_DATA_READY]), len(status_register), single_byte_reads=False)
+        status_register = self._spi_read_from_incremented_address(bytearray([REG_DATA_READY]), len(status_register))
 
         print(f"got status {status_register}")
 
@@ -114,7 +126,7 @@ class Pmw3901_SPI:
 
     def get_id(self):
 
-        read_data = self._spi_read_from_incremented_address(bytearray([REG_ID]), 2, single_byte_reads=False)
+        read_data = self._spi_read_from_incremented_address(bytearray([REG_ID]), 2)
 
         id_wr = read_data[0]
         rev_wr = read_data[1]
@@ -448,7 +460,9 @@ class Pmw3901_SPI:
 
         time.sleep(hex_value / 1000)
 
-    def _spi_read_from_incremented_address(self, read_from_address: bytearray, address_offset_count: int, single_byte_reads=False):
+    def _spi_read_from_incremented_address(
+            self, read_from_address: bytearray, address_offset_count: int, single_byte_reads=True
+    ):
 
         processed_read_data_buffer = bytearray()
         unprocessed_read_data_buffer = bytearray()
@@ -472,29 +486,54 @@ class Pmw3901_SPI:
                 rev = unprocessed_read_data_buffer[1]
                 """
 
+                self.cs_.value = False
                 spi.write_readinto(
                     read_from_address_buffer,
                     temp_read_data_buffer,
                     in_start=0, in_end=raw_read_data_length,
                     out_start=0, out_end=raw_read_data_length
                 )
+                self.cs_.value = True
 
             unprocessed_read_data_buffer.extend(temp_read_data_buffer)
 
-        else:
+        elif single_byte_reads:
+
+            temp_read_data_buffer = bytearray(2)
 
             for i in range(address_offset_count):
 
-                first_byte_buffer = bytearray(1)
-                second_byte_buffer = bytearray(1)
+                read_from_address_buffer = [(read_from_address[0] + i), 0x00]
 
                 with self.spi_device_ as spi:
+                    self.cs_.value = False
+                    spi.write_readinto(
+                        read_from_address_buffer,
+                        temp_read_data_buffer,
+                        in_start=0, in_end=2,
+                        out_start=0, out_end=2
+                    )
+                    self.cs_.value = True
 
-                    spi.readinto(first_byte_buffer, start=0, end=1, write_value=(read_from_address[0] + i))
-                    spi.readinto(second_byte_buffer, start=0, end=1, write_value=0x00)
+                unprocessed_read_data_buffer.extend(temp_read_data_buffer)
 
-                    unprocessed_read_data_buffer.extend(first_byte_buffer)
-                    unprocessed_read_data_buffer.extend(second_byte_buffer)
+        else:
+
+            temp_read_data_buffer = bytearray(1)
+            for i in range(address_offset_count):
+
+                read_from_address_buffer = [(read_from_address[0] + i)]
+
+                with self.spi_device_ as spi:
+                    self.cs_.value = False
+                    spi.write(read_from_address_buffer, start=0, end=0)
+                    spi.readinto(
+                        temp_read_data_buffer, start=0, end=0,
+                        write_value=0x00
+                    )
+                    self.cs_.value = True
+
+                unprocessed_read_data_buffer.extend(temp_read_data_buffer)
 
         for i in range(len(unprocessed_read_data_buffer)):
             if i % 2:
@@ -514,19 +553,18 @@ class Pmw3901_SPI:
                 read_from_address_buffer.append(0x00)
 
         with self.spi_device_ as spi:
-
-            # self.cs_.value = False
+            self.cs_.value = False
             spi.write_readinto(
                 read_from_address_buffer,
                 raw_read_data_buffer,
                 in_start=0, in_end=len(raw_read_data_buffer),
                 out_start=0, out_end=len(raw_read_data_buffer)
             )
-            # self.cs_.value = True
+            self.cs_.value = True
 
         return raw_read_data_buffer
 
-    def _spi_write_out_buffer(self, write_out_buffer: bytearray, single_byte_writes=False):
+    def _spi_write_out_buffer(self, write_out_buffer: bytearray, single_byte_writes=True):
         # set bit 8 for write
         processed_write_out_buffer = bytearray()
 
@@ -538,7 +576,9 @@ class Pmw3901_SPI:
 
                 if single_byte_writes:
                     with self.spi_device_ as spi:
+                        self.cs_.value = False
                         spi.write(processed_write_out_buffer)
+                        self.cs_.value = True
 
                     processed_write_out_buffer.clear()
 
@@ -548,7 +588,9 @@ class Pmw3901_SPI:
 
         if not single_byte_writes:
             with self.spi_device_ as spi:
+                self.cs_.value = False
                 spi.write(processed_write_out_buffer)
+                self.cs_.value = True
 
 
 class Paa5100_SPI(Pmw3901_SPI):
