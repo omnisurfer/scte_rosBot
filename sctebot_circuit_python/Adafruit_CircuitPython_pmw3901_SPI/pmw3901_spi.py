@@ -70,7 +70,7 @@ class Pmw3901_SPI:
         self.spi_bus_ = busio.SPI(board.SCK, board.MOSI, board.MISO)
         self.cs_ = digitalio.DigitalInOut(board.D4)
         self.cs_.direction = digitalio.Direction.OUTPUT
-        self.spi_device_ = SPIDevice(self.spi_bus_, self.cs_, baudrate=400000)
+        self.spi_device_ = SPIDevice(self.spi_bus_, self.cs_, baudrate=200000)
 
         self.init_device()
 
@@ -85,10 +85,9 @@ class Pmw3901_SPI:
 
         # toggle chip select
         self.cs_.value = False
-        # time.sleep(0.05)
+        time.sleep(0.028)
         self.cs_.value = True
         # time.sleep(0.05)
-        self.cs_.value = False
 
         # write out POWER UP RESET
         self._spi_write_out_buffer(bytearray([REG_POWER_UP_RESET, 0x5a]))
@@ -96,8 +95,10 @@ class Pmw3901_SPI:
         # status
         status_register = bytearray(5)
 
+        time.sleep(0.018)
+
         # DMR_DEBUG_20240228 - May need to try a version of read from address that only reads one byte at a time?
-        status_register = self._spi_read_from_incremented_address(bytearray([REG_DATA_READY]), len(status_register))
+        status_register = self._spi_read_from_incremented_address(bytearray([REG_DATA_READY]), len(status_register), single_byte_reads=False)
 
         print(f"got status {status_register}")
 
@@ -113,7 +114,7 @@ class Pmw3901_SPI:
 
     def get_id(self):
 
-        read_data = self._spi_read_from_incremented_address(bytearray([REG_ID]), 2)
+        read_data = self._spi_read_from_incremented_address(bytearray([REG_ID]), 2, single_byte_reads=False)
 
         id_wr = read_data[0]
         rev_wr = read_data[1]
@@ -447,38 +448,57 @@ class Pmw3901_SPI:
 
         time.sleep(hex_value / 1000)
 
-    def _spi_read_from_incremented_address(self, read_from_address: bytearray, address_offset_count: int):
-
-        # Seems to return 0xFF <product_id> and 0xFF <revision>, these are probably dummy bytes given how SPI works?
-        # readinto does not "filter" them out?
-        raw_read_data_length = address_offset_count * 2
-        raw_read_data_buffer = bytearray(raw_read_data_length)
-
-        read_from_address_buffer = bytearray()
-        for i in range(address_offset_count):
-            read_from_address_buffer.append(read_from_address[0] + i)
-            read_from_address_buffer.append(0x00)
-
-        with self.spi_device_ as spi:
-            """
-            spi.write(read_from_address, start=0, end=read_length)
-            spi.readinto(raw_read_data_buffer, start=0, end=len(raw_read_data_buffer) - 1, write_value=REG_ID)
-            id = raw_read_data_buffer[0]
-            rev = raw_read_data_buffer[1]
-            """
-
-            spi.write_readinto(
-                read_from_address_buffer,
-                raw_read_data_buffer,
-                in_start=0, in_end=len(raw_read_data_buffer),
-                out_start=0, out_end=len(raw_read_data_buffer)
-            )
+    def _spi_read_from_incremented_address(self, read_from_address: bytearray, address_offset_count: int, single_byte_reads=False):
 
         processed_read_data_buffer = bytearray()
+        unprocessed_read_data_buffer = bytearray()
 
-        for i in range(len(raw_read_data_buffer)):
+        if not single_byte_reads:
+            # Seems to return 0xFF <product_id> and 0xFF <revision>, these are probably dummy bytes given how SPI works?
+            # readinto does not "filter" them out?
+            raw_read_data_length = address_offset_count * 2
+            temp_read_data_buffer = bytearray(raw_read_data_length)
+
+            read_from_address_buffer = bytearray()
+            for i in range(address_offset_count):
+                read_from_address_buffer.append(read_from_address[0] + i)
+                read_from_address_buffer.append(0x00)
+
+            with self.spi_device_ as spi:
+                """
+                spi.write(read_from_address, start=0, end=read_length)
+                spi.readinto(unprocessed_read_data_buffer, start=0, end=len(unprocessed_read_data_buffer) - 1, write_value=REG_ID)
+                id = unprocessed_read_data_buffer[0]
+                rev = unprocessed_read_data_buffer[1]
+                """
+
+                spi.write_readinto(
+                    read_from_address_buffer,
+                    temp_read_data_buffer,
+                    in_start=0, in_end=raw_read_data_length,
+                    out_start=0, out_end=raw_read_data_length
+                )
+
+            unprocessed_read_data_buffer.extend(temp_read_data_buffer)
+
+        else:
+
+            for i in range(address_offset_count):
+
+                first_byte_buffer = bytearray(1)
+                second_byte_buffer = bytearray(1)
+
+                with self.spi_device_ as spi:
+
+                    spi.readinto(first_byte_buffer, start=0, end=1, write_value=(read_from_address[0] + i))
+                    spi.readinto(second_byte_buffer, start=0, end=1, write_value=0x00)
+
+                    unprocessed_read_data_buffer.extend(first_byte_buffer)
+                    unprocessed_read_data_buffer.extend(second_byte_buffer)
+
+        for i in range(len(unprocessed_read_data_buffer)):
             if i % 2:
-                processed_read_data_buffer.append(raw_read_data_buffer[i])
+                processed_read_data_buffer.append(unprocessed_read_data_buffer[i])
 
         return processed_read_data_buffer
 
@@ -506,23 +526,29 @@ class Pmw3901_SPI:
 
         return raw_read_data_buffer
 
-    def _spi_write_out_buffer(self, write_out_buffer: bytearray):
+    def _spi_write_out_buffer(self, write_out_buffer: bytearray, single_byte_writes=False):
         # set bit 8 for write
         processed_write_out_buffer = bytearray()
 
         for i in range(len(write_out_buffer)):
 
             if i % 2:
-                # address
+                # data
                 processed_write_out_buffer.append(write_out_buffer[i])
+
+                if single_byte_writes:
+                    with self.spi_device_ as spi:
+                        spi.write(processed_write_out_buffer)
+
+                    processed_write_out_buffer.clear()
+
             else:
-                # address
+                # address and r/w bit
                 processed_write_out_buffer.append(write_out_buffer[i] | 0x80)
 
-        with self.spi_device_ as spi:
-            # self.cs_.value = False
-            spi.write(processed_write_out_buffer)
-            # self.cs_.value = True
+        if not single_byte_writes:
+            with self.spi_device_ as spi:
+                spi.write(processed_write_out_buffer)
 
 
 class Paa5100_SPI(Pmw3901_SPI):
@@ -547,7 +573,7 @@ class Paa5100_SPI(Pmw3901_SPI):
             0x7f, 0x0e,
             0x43, 0x10
         ])
-        self._spi_write_out_buffer(magic_buff)
+        self._spi_write_out_buffer(magic_buff, single_byte_writes=False)
 
         status = self._spi_read_from_incremented_address(bytearray([0x67]), 1)
         if status[0] & 0b10000000:
