@@ -10,7 +10,8 @@ def main():
 
     while not rospy.is_shutdown():
         rospy.loginfo('Running node...')
-
+        print("test")
+        
 
 if __name__ == '__main__':
     main()
