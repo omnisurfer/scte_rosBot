@@ -1,0 +1,12 @@
+<launch>
+    <arg name="node_name" default="pmw3901_optical_flow"/>
+    <arg name="robot_namespace" default="sctebot"/>
+
+    <group ns="$(arg robot_namespace)">
+
+        <node pkg="pmw3901_optical_flow" type="pmw3901_optical_flow_node" name="$(arg node_name)" output="screen">
+        </node>
+
+    </group>
+
+</launch>

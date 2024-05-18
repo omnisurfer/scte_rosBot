@@ -13,7 +13,7 @@ def main():
 
     sensor_class = sensor_module['pmw3901']
 
-    flo = sensor_class(spi_port=0, spi_cs_gpio=sensor_spi_slot['front'])
+    flo = sensor_class(spi_port=0, spi_cs_gpio=sensor_spi_slot['back'])
     flo.set_rotation(sensor_rotation['0'])
 
     tx = 0
