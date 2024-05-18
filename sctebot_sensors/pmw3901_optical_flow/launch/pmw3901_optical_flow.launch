@@ -4,7 +4,7 @@
 
     <group ns="$(arg robot_namespace)">
 
-        <node pkg="pmw3901_optical_flow" type="pmw3901_optical_flow_node" name="$(arg node_name)" output="screen">
+        <node pkg="pmw3901_optical_flow" type="pmw3901_optical_flow_node.py" name="$(arg node_name)" output="screen">
         </node>
 
     </group>
