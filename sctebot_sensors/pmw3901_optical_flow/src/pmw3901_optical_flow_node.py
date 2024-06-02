@@ -24,10 +24,17 @@ class PMW3901Module:
                  module=ConfigOptions.sensor_module['pmw3901'],
                  spi_port=0,
                  spi_cs_slot=ConfigOptions.sensor_spi_cs_slot['back'],
-                 rotation=ConfigOptions.sensor_rotation['0']
+                 rotation=ConfigOptions.sensor_rotation['0'],
+                 sensor_count_to_distance_tf=0.00012  # counts per meter
                  ):
 
+        """
+        dy_count = 250, dist(cm) = 3
+        c2d = 0.03m / 250cnts = 0.00012
+        """
+
         self.sensor_class = module
+        self.sensor_count_to_distance_tf = sensor_count_to_distance_tf
 
         self.flo_sensor = self.sensor_class(
             spi_port=spi_port,
@@ -35,9 +42,22 @@ class PMW3901Module:
         )
         self.flo_sensor.set_rotation(rotation)
 
-    def get_motion(self):
+        self.delta_x_raw = 0
+        self.delta_y_raw = 0
 
-        return self.flo_sensor.get_motion()
+    def get_motion_raw_count(self):
+
+        # TODO turn into thread to update async to request for data?
+        self.delta_x_raw, self.delta_y_raw = self.flo_sensor.get_motion()
+
+        return self.delta_x_raw, self.delta_y_raw
+
+    def get_motion_converted(self):
+
+        dx_conv = self.delta_x_raw * self.sensor_count_to_distance_tf
+        dy_conv = self.delta_y_raw * self.sensor_count_to_distance_tf
+
+        return dx_conv, dy_conv
 
 
 def main():
@@ -48,7 +68,7 @@ def main():
     _module = rospy.get_param("/module", 'pmw3901')
     _spi_port = rospy.get_param("/spi_port", 0)
     _spi_cs_slot = rospy.get_param("/spi_cs_slot", 'back')
-    _sensor_rotation = rospy.get_param("/rotation", '0')
+    _sensor_rotation = rospy.get_param("/rotation", '270')
 
     # check parameters
     module = PMW3901Module.ConfigOptions.sensor_module.get(_module, 'pmw3901')
@@ -64,19 +84,33 @@ def main():
         rotation=sensor_rotation
     )
 
-    tx = 0
-    ty = 0
+    tx_raw = 0
+    ty_raw = 0
+
+    tx_conv = 0
+    ty_conv = 0
 
     while not rospy.is_shutdown():
-        rospy.loginfo('F Running node...')
+        rospy.loginfo('Running node...')
 
         try:
-            dx, dy = pmw3901_module.get_motion()
+            dx, dy = pmw3901_module.get_motion_raw_count()
+            dx_conv, dy_conv = pmw3901_module.get_motion_converted()
         except RuntimeError:
             continue
-        tx += dx
-        ty += dy
-        print("Relative: x {:03d} y {:03d} | Absolute: x {:03d} y {:03d}".format(dx, dy, tx, ty))
+        tx_raw += dx
+        ty_raw += dy
+
+        tx_conv += dx_conv
+        ty_conv += dy_conv
+        '''print("RAW Relative: x {:03d} y {:03d} | Absolute: x {:03d} y {:03d}".format(
+            dx, dy, tx_raw, ty_raw
+            )
+        )'''
+        print("Absolute: x {:03f} y {:03f} | Relative: x {:03f} y {:03f} ".format(
+            tx_conv, ty_conv, dx_conv, dy_conv
+            )
+        )
         rate.sleep()
 
 
