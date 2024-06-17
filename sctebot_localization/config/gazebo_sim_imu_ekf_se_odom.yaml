@@ -38,8 +38,8 @@ gazebo_sim_imu_ekf_se_odom:
   odom0_differential: false
   odom0_relative: false
   odom0_queue_size: 10
-  odom0_pose_rejection_threshold: 15 # 2
-  odom0_twist_rejection_threshold: 3 # 0.2
+  odom0_pose_rejection_threshold: 15.0 # 2
+  odom0_twist_rejection_threshold: 5.0 # 0.2
   odom0_nodelay: false
   # endregion
 
@@ -49,14 +49,14 @@ gazebo_sim_imu_ekf_se_odom:
                  false, false, false,
                  false, false, false,
                  false, false, true,
-                 true, true, false ]
+                 true, false, false ]
   imu0_nodelay: false
   imu0_differential: false
-  imu0_relative: false
+  imu0_relative: true
   imu0_queue_size: 10
-  imu0_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
-  imu0_twist_rejection_threshold: 0.8                #
-  imu0_linear_acceleration_rejection_threshold: 0.8  #
+  imu0_pose_rejection_threshold: 0.0                 # Note the difference in parameter names
+  imu0_twist_rejection_threshold: 5.0
+  imu0_linear_acceleration_rejection_threshold: 10.0
   imu0_remove_gravitational_acceleration: false
   # endregion
 
