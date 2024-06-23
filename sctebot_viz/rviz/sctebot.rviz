@@ -306,7 +306,8 @@ Visualization Manager:
         Amcl Particles: true
         Axes: true
         Global Map:
-          "": true
+          Costmap: true
+          DWAPath: true
           Value: true
         LaserScan: true
         Local Map:
@@ -1226,7 +1227,7 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1959
-  X: 2030
+  X: 1875
   Y: 27
   d435i_mono:
     collapsed: false

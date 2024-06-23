@@ -31,7 +31,7 @@ gazebo_sim_imu_ekf_se_map:
   # region Odometry sources
   odom0: ackermann_steering_controller/odom
   odom0_config: [ true,  true,  false,
-                  false, false, true,
+                  false, false, false,
                   false, false, false,
                   false, false, false,
                   false, false, false ]
@@ -65,7 +65,7 @@ gazebo_sim_imu_ekf_se_map:
   imu0_differential: false
   imu0_relative: false
   imu0_queue_size: 10
-  imu0_pose_rejection_threshold: 0.0                 # Note the difference in parameter names
+  imu0_pose_rejection_threshold: 0.0
   imu0_twist_rejection_threshold: 5.0
   imu0_linear_acceleration_rejection_threshold: 10.0
   imu0_remove_gravitational_acceleration: false

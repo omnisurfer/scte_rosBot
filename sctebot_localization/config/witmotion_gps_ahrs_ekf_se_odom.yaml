@@ -31,15 +31,15 @@ witmotion_gps_ahrs_ekf_se_odom:
   # region Odometry sources
   odom0: ackermann_steering_controller/odom
   odom0_config: [ true,  true,  false,
-                  false, false, false,
+                  false, false, true,
                   false, false, false,
                   false, false, false,
                   false, false, false ]
   odom0_differential: false
   odom0_relative: false
   odom0_queue_size: 10
-  odom0_pose_rejection_threshold: 15 # 2
-  odom0_twist_rejection_threshold: 3 # 0.2
+  odom0_pose_rejection_threshold: 15.0
+  odom0_twist_rejection_threshold: 5.0
   odom0_nodelay: false
 
   odom1: rtabmap/odom_DISABLED
@@ -51,8 +51,8 @@ witmotion_gps_ahrs_ekf_se_odom:
   odom1_differential: false
   odom1_relative: false
   odom1_queue_size: 10
-  odom1_pose_rejection_threshold: 15 # 2
-  odom1_twist_rejection_threshold: 3 # 0.2
+  odom1_pose_rejection_threshold: 15.0
+  odom1_twist_rejection_threshold: 5.0
   odom1_nodelay: false
   # endregion
 
@@ -62,14 +62,14 @@ witmotion_gps_ahrs_ekf_se_odom:
                  false, false, false,
                  false, false, false,
                  false, false, true,
-                 true, true, false ]
+                 true, false, false ]
   imu0_nodelay: false
   imu0_differential: false
   imu0_relative: false
   imu0_queue_size: 10
-  imu0_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
-  imu0_twist_rejection_threshold: 0.8                #
-  imu0_linear_acceleration_rejection_threshold: 0.8  #
+  imu0_pose_rejection_threshold: 0.0
+  imu0_twist_rejection_threshold: 5.0
+  imu0_linear_acceleration_rejection_threshold: 30.0
   imu0_remove_gravitational_acceleration: false
 
   imu1: realsense_d435i/imu_corrected/data_DISABLED
@@ -77,14 +77,14 @@ witmotion_gps_ahrs_ekf_se_odom:
                  false, false, false,
                  false, false, false,
                  false, false, true,
-                 true, true, false ]
+                 true, false, false ]
   imu1_nodelay: false
   imu1_differential: true
   imu1_relative: false
   imu1_queue_size: 10
-  imu1_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
-  imu1_twist_rejection_threshold: 0.8                #
-  imu1_linear_acceleration_rejection_threshold: 0.8  #
+  imu1_pose_rejection_threshold: 0.0
+  imu1_twist_rejection_threshold: 5.0
+  imu1_linear_acceleration_rejection_threshold: 30.0
   imu1_remove_gravitational_acceleration: false
   # endregion
 
