@@ -118,7 +118,7 @@ namespace ackermann_steering_controller
     angular_ = angular;
 
     /// Integrate odometry:
-    const double dt = (time - timestamp_).toSec();
+    const double dt = (time - timestamp_).toSec();    
     timestamp_ = time;
     integrate_fun_(linear * dt, angular * dt);
   }

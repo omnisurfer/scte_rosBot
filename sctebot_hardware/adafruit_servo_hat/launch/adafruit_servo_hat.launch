@@ -7,8 +7,8 @@
     <!-- 2S LIPO calc max speed: 12.5 m/s, 3S LIP calc max speed: 18.3 m/s -->
     <arg name="max_linear_speed_of_vehicle_as_geared_m_s" default="2.4"/>
     <arg name="max_angular_speed_rad_s" default="1.5"/>
-    <arg name="tire_radius_m" default="0.05"/>
-    <arg name="wheel_separation_h" default="0.75"/>
+    <arg name="tire_radius_m" default="0.0525"/>
+    <arg name="wheel_separation_h" default="0.330"/>
     <arg name="wheel_separation_w" default="0.28"/>
 
 

@@ -3,7 +3,7 @@ ackermann_steering_controller:
 
   # odom
   publish_rate : 50.0
-  open_loop: false
+  open_loop: true # must set this since I have no feedback mechanism yet...
 
   # joints
   rear_wheel : 'rear_wheel_joint'
@@ -11,13 +11,13 @@ ackermann_steering_controller:
 
   # geometry
   # Wheel separation length between the front side and the rear side, which is used for calculating steer angle of Ackermann link mechanism.
-  wheel_separation_h: 0.342
+  wheel_separation_h: 0.330
   wheel_radius: 0.0525
 
   # odom calibration and tuning
   wheel_separation_h_multiplier: 1.0
-  wheel_radius_multiplier: 0.40  # 0.60
-  steer_pos_multiplier: 1.48
+  wheel_radius_multiplier: 1.0  # 0.40
+  steer_pos_multiplier: 1.0
 
   # odom covariances for the encoder output of the robot
   pose_covariance_diagonal: [ 0.001, 0.001, 0.001, 0.001, 0.001, 0.13 ]
@@ -42,7 +42,7 @@ ackermann_steering_controller:
   linear:
     x:
       has_velocity_limits: true
-      max_velocity: 2.0 # m/s
+      max_velocity: 6.0 # m/s
       has_acceleration_limits: true
       max_acceleration: 1.0 # m/s^2
   angular:

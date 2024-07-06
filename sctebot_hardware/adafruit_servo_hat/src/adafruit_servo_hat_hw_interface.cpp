@@ -6,33 +6,47 @@
 AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::string& robot_namespace, const ros::NodeHandle& node_handle):
         _node_handle(node_handle) {
 
-    this->_robot_namespace = "steer_bot_hardware_gazebo/";
+    //this->_robot_namespace = "steer_bot_hardware_gazebo/";
+    this->_robot_namespace = ros::this_node::getName() + "/";
 
     ros::NodeHandle n("~");
-    std::string front_steer_joint_names("front_steer_joint");
-    std::string rear_wheel_joint_names("rear_wheel_joint");
 
-    /*
-    steer_bot_hardware_gazebo_cpp: jnt name front_left_steer_joint
-    steer_bot_hardware_gazebo_cpp: jnt name front_left_wheel_joint
-    steer_bot_hardware_gazebo_cpp: jnt name front_right_steer_joint
-    steer_bot_hardware_gazebo_cpp: jnt name front_right_wheel_joint
-    steer_bot_hardware_gazebo_cpp: jnt name front_steer_joint
-    steer_bot_hardware_gazebo_cpp: jnt name rear_left_wheel_joint
-    steer_bot_hardware_gazebo_cpp: jnt name rear_right_wheel_joint
-    steer_bot_hardware_gazebo_cpp: jnt name rear_wheel_joint
-     *
-     */
+    // front_steer_joint
+    std::string front_steer_joint_names("front_steer_joint");
+    
+    hardware_interface::JointStateHandle front_steer_state_handle(
+        front_steer_joint_names,
+        &front_steer_position,
+        &front_steer_velocity,
+        &front_steer_effort
+    );
+    joint_state_interface.registerHandle(front_steer_state_handle);
+
+    hardware_interface::JointHandle front_steer_position_cmd_handle(
+        joint_state_interface.getHandle(front_steer_joint_names),
+        &front_steer_position_cmd
+    );
+    front_steer_joint_position_cmd_interface.registerHandle(front_steer_position_cmd_handle);
+    
+    // rear_wheel_joint
+    std::string rear_wheel_joint_names("rear_wheel_joint");
+    
+    hardware_interface::JointStateHandle rear_wheel_state_handle(
+        rear_wheel_joint_names,
+        &rear_wheel_position,
+        &rear_wheel_velocity,
+        &rear_wheel_effort
+    );
+    joint_state_interface.registerHandle(rear_wheel_state_handle);
+
+    hardware_interface::JointHandle rear_wheel_velocity_cmd_handle(
+        joint_state_interface.getHandle(rear_wheel_joint_names),
+        &rear_wheel_velocity_cmd
+    );
+    rear_wheel_joint_velocity_cmd_interface.registerHandle(rear_wheel_velocity_cmd_handle);
 
     std::vector<std::string> virtual_wheels_names;
-    /*
-    virtual_wheels_names.emplace_back("base_to_right_rear_wheel");
-    virtual_wheels_names.emplace_back("base_to_left_rear_wheel");
-    virtual_wheels_names.emplace_back("base_to_right_front_wheel");
-    virtual_wheels_names.emplace_back("base_to_left_front_wheel");
-    virtual_wheels_names.emplace_back("base_to_right_front_steer");
-    virtual_wheels_names.emplace_back("base_to_left_front_steer");
-    */
+
     virtual_wheels_names.emplace_back("rear_right_wheel_joint");
     virtual_wheels_names.emplace_back("rear_left_wheel_joint");
     virtual_wheels_names.emplace_back("front_right_wheel_joint");
@@ -43,42 +57,15 @@ AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::
     virtual_wheels_velocities.resize(6);
     virtual_wheels_position.resize(6);
     virtual_wheels_effort.resize(6);
-
-    hardware_interface::JointStateHandle front_steer_state_handle(
-            front_steer_joint_names,
-            &front_steer_position,
-            &front_steer_velocity,
-            &front_steer_effort
-    );
-    joint_state_interface.registerHandle(front_steer_state_handle);
-
-    hardware_interface::JointHandle front_steer_position_cmd_handle(
-            joint_state_interface.getHandle(front_steer_joint_names),
-            &front_steer_position_cmd
-    );
-    front_steer_joint_position_cmd_interface.registerHandle(front_steer_position_cmd_handle);
-
-    hardware_interface::JointStateHandle rear_wheel_state_handle(
-            rear_wheel_joint_names,
-            &rear_wheel_position,
-            &rear_wheel_velocity,
-            &rear_wheel_effort
-    );
-    joint_state_interface.registerHandle(rear_wheel_state_handle);
-
-    hardware_interface::JointHandle rear_wheel_velocity_cmd_handle(
-            joint_state_interface.getHandle(rear_wheel_joint_names),
-            &rear_wheel_velocity_cmd
-    );
-    rear_wheel_joint_velocity_cmd_interface.registerHandle(rear_wheel_velocity_cmd_handle);
-
+    
     this->registerVirtualJointState(
-            virtual_wheels_position,
-            virtual_wheels_velocities,
-            virtual_wheels_effort,
-            virtual_wheels_names
+        virtual_wheels_position,
+        virtual_wheels_velocities,
+        virtual_wheels_effort,
+        virtual_wheels_names
     );
 
+    // register interfaces
     registerInterface(&front_steer_joint_position_cmd_interface);
     registerInterface(&rear_wheel_joint_velocity_cmd_interface);
     registerInterface(&joint_state_interface);
@@ -106,7 +93,7 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     double angular_position_z;
 
     this->get_odometry_update(linear_velocity_x, angular_position_z);
-
+        
     /* Odometry update */
 
     bool _open_loop_odom = true;
@@ -190,29 +177,13 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
             atan2(2.0 * wheel_separation_h * tan(front_steer_position),
                   2 * wheel_separation_h - wheel_separation_w / 2.0 * tan(front_steer_position)
                   );
-
-    // region Publish odometry
-
+    
     // TODO figure out minimum time dt so that I don't mis-publish
     // Compute and store orientation info
 
     const geometry_msgs::Quaternion orientation(
             tf::createQuaternionMsgFromYaw(_odometry.getHeading()));
 
-#if ENABLE_REALTIME_PUBLISHERS
-
-    if(_odom_realtime_publisher->trylock()) {
-
-        _odom_realtime_publisher->msg_.header.stamp = time;
-        _odom_realtime_publisher->msg_.pose.pose.position.x = _odometry.getX();
-        _odom_realtime_publisher->msg_.pose.pose.position.y = _odometry.getY();
-        _odom_realtime_publisher->msg_.pose.pose.orientation = orientation;
-        _odom_realtime_publisher->msg_.twist.twist.linear.x = _odometry.getLinear();
-        _odom_realtime_publisher->msg_.twist.twist.angular.z = _odometry.getAngular();
-
-        _odom_realtime_publisher->unlockAndPublish();
-    }
-#else
     nav_msgs::Odometry _odom_msg;
 
     _odom_msg.header.stamp = time;
@@ -225,19 +196,6 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
 
     _odom_publisher.publish(_odom_msg);
 
-#endif
-
-#if ENABLE_REALTIME_PUBLISHERS
-    // May not need the tf publisher. I think the controller hardware interface will take care of this...
-    if(_enable_odom_tf && _tf_odom_realtime_publisher->trylock()) {
-        geometry_msgs::TransformStamped& odom_frame = _tf_odom_realtime_publisher->msg_.transforms[0];
-        odom_frame.header.stamp = time;
-        odom_frame.transform.translation.x = _odometry.getX();
-        odom_frame.transform.translation.y = _odometry.getY();
-        odom_frame.transform.rotation = orientation;
-        _tf_odom_realtime_publisher->unlockAndPublish();
-    }
-#else
     if(_enable_odom_tf) {
 
         tf::Transform _transform;
@@ -251,7 +209,6 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
                 tf::StampedTransform(_transform, ros::Time::now(), "world", _robot_namespace)
                 );
     }
-#endif
     // endregion
 }
 
