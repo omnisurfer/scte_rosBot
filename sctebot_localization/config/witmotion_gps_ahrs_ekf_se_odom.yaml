@@ -30,10 +30,10 @@ witmotion_gps_ahrs_ekf_se_odom:
 
   # region Odometry sources
   odom0: ackermann_steering_controller/odom
-  odom0_config: [ true,  true,  false,
+  odom0_config: [ false,  false,  false,
+                  false, false, false,
+                  true, false, false,
                   false, false, true,
-                  false, false, false,
-                  false, false, false,
                   false, false, false ]
   odom0_differential: false
   odom0_relative: false

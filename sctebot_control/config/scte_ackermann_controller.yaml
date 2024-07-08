@@ -11,12 +11,12 @@ ackermann_steering_controller:
 
   # geometry
   # Wheel separation length between the front side and the rear side, which is used for calculating steer angle of Ackermann link mechanism.
-  wheel_separation_h: 0.330
+  wheel_separation_h: 0.342
   wheel_radius: 0.0525
 
   # odom calibration and tuning
   wheel_separation_h_multiplier: 1.0
-  wheel_radius_multiplier: 1.0  # 0.40
+  wheel_radius_multiplier: 1.0
   steer_pos_multiplier: 1.0
 
   # odom covariances for the encoder output of the robot
@@ -48,9 +48,9 @@ ackermann_steering_controller:
   angular:
       z:
         has_velocity_limits: true
-        max_velocity: 1.5 # rad/s
+        max_velocity: 1.0 # 1.5 # rad/s
         has_acceleration_limits: true
-        max_acceleration: 5.5 # rad/s^2
+        max_acceleration: 1.0 #5.5 # rad/s^2
 
   # other
   # velocity_rolling_window_size: 10
