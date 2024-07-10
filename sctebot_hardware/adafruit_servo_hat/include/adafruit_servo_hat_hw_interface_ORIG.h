@@ -64,33 +64,27 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
     private:
 
-        ros::NodeHandle node_handle_;
+        ros::NodeHandle _node_handle;
         std::string _robot_namespace;
 
-        // PWM driver
-        int i2c_bus_number_;
-        int i2c_device_address_ = 0;
+        int _i2c_bus_number;
+        int _i2c_device_address = 0;
+
+        double _max_linear_x_speed_m_s;
+        double _max_linear_speed_of_vehicle_as_geared_m_s;
+        double _max_angular_z_rad_s;
+        double _tire_radius_m;
+
+        double _wheel_separation_h;
+        double _wheel_separation_w;
+
+        // Using these for debug. If needed, should probably put a mutex around them
+        std::mutex _current_command_mutex;
+        double _current_commanded_linear_x_velocity;
+        double _current_commanded_angular_z_position;
 
         std::unique_ptr<Pca9685LEDController> pca9685DeviceHandle;
 
-        double max_linear_x_speed_m_s_;
-        double max_linear_speed_of_vehicle_as_geared_m_s_;
-        double max_angular_z_rad_s_;
-        double tire_radius_m_;
-
-        double wheel_separation_h_;
-        double wheel_separation_w_;
-
-        // Wheel separation and radius calibration multipliers
-        double wheel_separation_h_multiplier_ = 1.0;
-        double wheel_radius_multiplier_ = 1.0;
-        double steer_pos_multiplier_ = 1.0;
-
-        // Using these for debug. If needed, should probably put a mutex around them
-        std::mutex current_command_mutex_;
-        double current_commanded_linear_x_velocity_;
-        double current_commanded_angular_z_velocity_;
-        
         void publishSteer(double angle_cmd);
 
         void brake();
@@ -120,17 +114,23 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         std::vector<double> virtual_wheels_velocities;
         std::vector<double> virtual_wheels_effort;
 
-        ros::Publisher steer_cmd_publisher_;
+        ros::Publisher steer_cmd_publisher;
 
         // Odometry
-        bool open_loop_odom_ = true;
-        bool enable_odom_tf_ = false;
+        ackermann_steering_controller::Odometry _odometry;
+        ros::Publisher _odom_publisher;
+        tf::TransformBroadcaster _tf_odom_broadcaster;
 
-        int velocity_rolling_window_size_ = 10;
+        // Wheel separation, wrt the midpoint of the wheel width:
+        double wheel_separation_h_ = 1.0;
 
-        ackermann_steering_controller::Odometry odometry_;
-        ros::Publisher odom_publisher_;        
-        tf::TransformBroadcaster tf_odom_broadcaster_;
+        // Wheel radius (assuming it's the same for the left and right wheels):
+        double wheel_radius_ = 0.5;
+
+        // Wheel separation and radius calibration multipliers:
+        double wheel_separation_h_multiplier_ = 0.1;
+        double wheel_radius_multiplier_ = 0.1;
+        double steer_pos_multiplier_ = 0.1;    
 
     public:
 
@@ -160,41 +160,45 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
             this->pca9685DeviceHandle.reset(new Pca9685LEDController());
 
-            this->max_linear_x_speed_m_s_ = max_linear_speed_m_s;
-            this->max_linear_speed_of_vehicle_as_geared_m_s_ = max_linear_speed_of_vehicle_as_geared_m_s;
-            this->max_angular_z_rad_s_ = max_angular_rad_s;
-            this->tire_radius_m_ = tire_radius_m;
+            this->_max_linear_x_speed_m_s = max_linear_speed_m_s;
+            this->_max_linear_speed_of_vehicle_as_geared_m_s = max_linear_speed_of_vehicle_as_geared_m_s;
+            this->_max_angular_z_rad_s = max_angular_rad_s;
+            this->_tire_radius_m = tire_radius_m;
 
-            this->wheel_separation_h_ = wheel_separation_h;
-            this->wheel_separation_w_ = wheel_separation_w;
+            this->_wheel_separation_h = wheel_separation_h;
+            this->_wheel_separation_w = wheel_separation_w;
 
-            this->i2c_bus_number_ = i2c_bus_number;
+            this->_i2c_bus_number = i2c_bus_number;
 
-            #if ENABLE_PCA9685_LED_DEVICE
-            this->i2c_device_address_ = PCA9685_RPI_ADDRESS;
+        #if ENABLE_PCA9685_LED_DEVICE
+            
+            this->_i2c_device_address = PCA9685_RPI_ADDRESS;
 
             this->pca9685DeviceHandle->config_device(
-                this->i2c_bus_number_,
-                this->i2c_device_address_,
+                this->_i2c_bus_number,
+                this->_i2c_device_address,
                 10,
                 "pca9685_led_pwm",
                 handle_pca9685_status
             );
 
-            std::cout << "connecting to " << this->i2c_bus_number_ << " at " << this->i2c_device_address_ << std::endl;
+            std::cout << "connecting to " << this->_i2c_bus_number << " at " << this->_i2c_device_address << std::endl;
 
             if(!this->pca9685DeviceHandle->connect_to_device()) {
                 init_ok = false;
-            }        
-            #endif
+            }
+            
+        #endif
 
             // Odometry
-            odometry_.setVelocityRollingWindowSize(velocity_rolling_window_size_);
+            int velocity_rolling_window_size = 10;
+
+            _odometry.setVelocityRollingWindowSize(velocity_rolling_window_size);
 
             const double wheel_separation_height = wheel_separation_h_multiplier_ * wheel_separation_h_;
-            const double wheel_radius = wheel_radius_multiplier_ * tire_radius_m;
+            const double wheel_radius = wheel_radius_multiplier_ * wheel_radius_;;
 
-            odometry_.setWheelParams(wheel_separation_height, wheel_radius);
+            _odometry.setWheelParams(wheel_separation_height, wheel_radius);
 
             std::string frame_id = "world";
             std::string child_frame_id = "base_frame";
@@ -220,25 +224,24 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
                     0., 0., 0.01, 0., 0., 0.,
                     0., 0., 0., 0.01, 0., 0.,
                     0., 0., 0., 0., 0.01, 0.,
-                    0., 0., 0., 0., 0., 0.01 };
-
+                    0., 0., 0., 0., 0., 0.01 };            
             /*
             * This odom publisher may compliment the ackermann steering controller odom which may be based
             * purely on dead reckoning.
             */
-            odom_publisher_ = node_handle_.advertise<nav_msgs::Odometry>(_robot_namespace + "odom", 100);
+            _odom_publisher = _node_handle.advertise<nav_msgs::Odometry>(_robot_namespace + "odom", 100);
 
-            nav_msgs::Odometry odom_msg_;
-            odom_msg_.header.frame_id = frame_id;
-            odom_msg_.child_frame_id = child_frame_id;
-            odom_msg_.pose.pose.position.z = pose_position_z;
-            odom_msg_.pose.covariance = pose_covariance;
+            nav_msgs::Odometry _odom_msg;
+            _odom_msg.header.frame_id = frame_id;
+            _odom_msg.child_frame_id = child_frame_id;
+            _odom_msg.pose.pose.position.z = pose_position_z;
+            _odom_msg.pose.covariance = pose_covariance;
 
-            odom_msg_.twist.twist.linear.y = twist_linear_y;
-            odom_msg_.twist.twist.linear.z = twist_linear_z;
-            odom_msg_.twist.twist.angular.x = twist_angular_x;
-            odom_msg_.twist.twist.angular.y = twist_angular_y;
-            odom_msg_.twist.covariance = twist_covariance;
+            _odom_msg.twist.twist.linear.y = twist_linear_y;
+            _odom_msg.twist.twist.linear.z = twist_linear_z;
+            _odom_msg.twist.twist.angular.x = twist_angular_x;
+            _odom_msg.twist.twist.angular.y = twist_angular_y;
+            _odom_msg.twist.covariance = twist_covariance;
             
             // set commands to zero
             this->brake();
@@ -249,50 +252,51 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         void run() {
 
         #if ENABLE_PCA9685_LED_DEVICE
-        int op_pwm_max_count_cycle = 4095;
-        float op_pwm_on_percent = 0.0;
-        float op_pwm_min_limit_duty_cycle = 0.03;
-        float op_pwm_max_limit_duty_cycle = 0.125;
-        float op_pwm_min_operating_duty_cycle = 0.03;
-        float op_pwm_max_operating_duty_cycle = 0.125;
-        float op_pwm_on_delay = 0.0;
 
-        this->pca9685DeviceHandle->init_device(
-            op_pwm_max_count_cycle,
-            op_pwm_on_delay,
-            op_pwm_min_limit_duty_cycle,
-            op_pwm_max_limit_duty_cycle,
-            op_pwm_min_operating_duty_cycle,
-            op_pwm_max_operating_duty_cycle
-        );
+            int op_pwm_max_count_cycle = 4095;
+            float op_pwm_on_percent = 0.0;
+            float op_pwm_min_limit_duty_cycle = 0.03;
+            float op_pwm_max_limit_duty_cycle = 0.125;
+            float op_pwm_min_operating_duty_cycle = 0.03;
+            float op_pwm_max_operating_duty_cycle = 0.125;
+            float op_pwm_on_delay = 0.0;
+
+            this->pca9685DeviceHandle->init_device(
+                op_pwm_max_count_cycle,
+                op_pwm_on_delay,
+                op_pwm_min_limit_duty_cycle,
+                op_pwm_max_limit_duty_cycle,
+                op_pwm_min_operating_duty_cycle,
+                op_pwm_max_operating_duty_cycle
+            );
         #endif
 
         void brake();
 
         ros::Time time = ros::Time();
 
-        odometry_.init(time);
+        _odometry.init(time);
 
     }
 
     void command_liner_x_velocity(double cmd_linear_x_velocity) {
 
-        this->current_command_mutex_.lock();
+        this->_current_command_mutex.lock();
         {
-            this->current_commanded_linear_x_velocity_ = cmd_linear_x_velocity;
+            this->_current_commanded_linear_x_velocity = cmd_linear_x_velocity;
         }
-        this->current_command_mutex_.unlock();
+        this->_current_command_mutex.unlock();
 
         double cmd_linear_pwm;
 
         //clamp the velocity to be within the driver max/min
-        double lower_velocity_limit = this->max_linear_x_speed_m_s_ * -0.25;
-        double upper_velocity_limit = this->max_linear_x_speed_m_s_;
+        double lower_velocity_limit = this->_max_linear_x_speed_m_s * -0.25;
+        double upper_velocity_limit = this->_max_linear_x_speed_m_s;
         cmd_linear_x_velocity = std::max(lower_velocity_limit, std::min(cmd_linear_x_velocity, upper_velocity_limit));
 
-        cmd_linear_pwm = (cmd_linear_x_velocity / this->max_linear_speed_of_vehicle_as_geared_m_s_) * 0.5 + 0.5;
+        cmd_linear_pwm = (cmd_linear_x_velocity / this->_max_linear_speed_of_vehicle_as_geared_m_s) * 0.5 + 0.5;
 
-        // std::cout << "cmd_lin_x: " << cmd_linear_x_velocity << " cmd_lin_pwm: " << cmd_linear_pwm << std::endl;
+        //std::cout << "cmd_lin_x: " << cmd_linear_x_velocity << " cmd_lin_pwm: " << cmd_linear_pwm << std::endl;
 
         // TODO these calls will go into the write command
         this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm));
@@ -300,22 +304,22 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
     void command_angular_z_velocity(double cmd_angular_z_velocity) {
 
-        this->current_command_mutex_.lock();
+        this->_current_command_mutex.lock();
         {
-            this->current_commanded_angular_z_velocity_ = cmd_angular_z_velocity;
+            this->_current_commanded_angular_z_position = cmd_angular_z_velocity;
         }
-        this->current_command_mutex_.unlock();
+        this->_current_command_mutex.unlock();
 
         double cmd_angular_pwm;
 
         // clamp the angular velocity
-        double lower_velocity_limit = this->max_angular_z_rad_s_ * -0.25;
-        double upper_velocity_limit = this->max_angular_z_rad_s_;
+        double lower_velocity_limit = this->_max_angular_z_rad_s * -0.25;
+        double upper_velocity_limit = this->_max_angular_z_rad_s;
         cmd_angular_z_velocity = std::max(lower_velocity_limit, std::min(cmd_angular_z_velocity, upper_velocity_limit));
 
         // DMR_DEBUG_20231104 - Inverting the result. For some reason direction is inverted. Need to look into this.
         //cmd_angular_z_velocity *= -1.0;
-        cmd_angular_pwm = (cmd_angular_z_velocity / this->max_angular_z_rad_s_) * 0.5 + 0.5;
+        cmd_angular_pwm = (cmd_angular_z_velocity / this->_max_angular_z_rad_s) * 0.5 + 0.5;
 
         //std::cout << "cmd_ang_z: " << cmd_angular_z_velocity << " cmd_ang_pwm: " << cmd_angular_pwm << std::endl;
 
@@ -329,25 +333,16 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
     }
 
-    void get_odometry_update(double& linear_x_velocity, double& angular_z_velocity) {
+    void get_odometry_update(double& linear_x_velocity, double& angular_z_position) {
 
-        // A real odometry udpate would require some hardware. For now just feeding in the commanded velocities
-        this->current_command_mutex_.lock();
+        this->_current_command_mutex.lock();
         {
-            linear_x_velocity = this->current_commanded_linear_x_velocity_;
-
-            if(linear_x_velocity > 0 || linear_x_velocity < 0)
-            {
-                angular_z_velocity = this->current_commanded_angular_z_velocity_;
-            }
-            else
-            {
-                angular_z_velocity = 0.0;
-            }
+            linear_x_velocity = this->_current_commanded_linear_x_velocity;
+            angular_z_position = this->_current_commanded_angular_z_position;
         }
-        this->current_command_mutex_.unlock();
+        this->_current_command_mutex.unlock();
 
-        // std::cout << "get_odometry_update x " << linear_x_velocity << " z " << angular_z_velocity << std::endl;
+        //std::cout << "get_odometry_update x " << linear_x_velocity << " z " << angular_z_position << std::endl;
     }
 };
 

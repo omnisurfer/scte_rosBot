@@ -4,9 +4,9 @@
 #include "adafruit_servo_hat_hw_interface.h"
 
 AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::string& robot_namespace, const ros::NodeHandle& node_handle):
-        node_handle_(node_handle) 
-{
-    
+        _node_handle(node_handle) {
+
+    //this->_robot_namespace = "steer_bot_hardware_gazebo/";
     this->_robot_namespace = ros::this_node::getName() + "/";
 
     ros::NodeHandle n("~");
@@ -74,8 +74,7 @@ AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::
 void AdafruitServoHatHardwareInterface::registerVirtualJointState(std::vector<double> &virtual_wheel_positions,
                                                                   std::vector<double> &virtual_wheel_velocities,
                                                                   std::vector<double> &virtual_wheel_efforts,
-                                                                  std::vector<std::string> &virtual_wheels_names) 
-{
+                                                                  std::vector<std::string> &virtual_wheels_names) {
     for(int i = 0; i < 6; ++i) {
         hardware_interface::JointStateHandle state_handle(
                 virtual_wheels_names[i],
@@ -90,25 +89,28 @@ void AdafruitServoHatHardwareInterface::registerVirtualJointState(std::vector<do
 // take data from hardware and send to ROS
 void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration period) {
 
-    double current_linear_velocity_x;
-    double current_angular_velocity_z;
+    double linear_velocity_x;
+    double angular_position_z;
 
-    this->get_odometry_update(current_linear_velocity_x, current_angular_velocity_z);
+    this->get_odometry_update(linear_velocity_x, angular_position_z);
         
     /* Odometry update */
+
+    bool _open_loop_odom = true;
+    bool _enable_odom_tf = false;
 
     /*
      * Look at https://github.com/CIR-KIT/steer_drive_ros/blob/kinetic-devel/steer_drive_controller/src/steer_drive_controller.cpp
      * for reference
      */
-    if (open_loop_odom_) {
-        odometry_.updateOpenLoop(current_linear_velocity_x, current_angular_velocity_z, time);
+    if (_open_loop_odom) {
+        _odometry.updateOpenLoop(linear_velocity_x, angular_position_z, time);
     }
     else {
         // TODO read in real positions
     }
 
-    #if 1
+#if 1
     /* DEBUG JOINT STATE */
     sensor_msgs::JointState joints_state = sensor_msgs::JointState();
 
@@ -123,22 +125,22 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     static int64_t sample_at_loop_rate = 0;
     static double wheel_position = 0.0;
 
-    double max_velocity_ms = this->max_linear_x_speed_m_s_;
-    double tire_radius_m = this->tire_radius_m_;
+    double max_velocity_ms = this->_max_linear_x_speed_m_s;
+    double tire_radius_m = this->_tire_radius_m;
     double tire_circumference_m = 2 * M_PI * tire_radius_m; // 0.314m
     double max_rpm = (max_velocity_ms / tire_circumference_m);
 
-    double cmd_vel_rpm = (current_linear_velocity_x / max_velocity_ms) * max_rpm;
+    double cmd_vel_rpm = (linear_velocity_x / max_velocity_ms) * max_rpm;
 
     // wheel_position = sin(double(sample_at_loop_rate) * period.toSec() * cmd_vel_rpm);
-    wheel_position += (current_linear_velocity_x / max_velocity_ms) * period.toSec();
+    wheel_position += (linear_velocity_x / max_velocity_ms) * period.toSec();
 
     // std::cout << "wheel/vel/period" << wheel_position << "," << cmd_vel_rpm << "," << period.toSec() << std::endl;
 
     sample_at_loop_rate = (sample_at_loop_rate + 1);
 
     // TODO populate with real values
-    joints_state.position[JOINT_INDEX_FRONT] = current_angular_velocity_z;
+    joints_state.position[JOINT_INDEX_FRONT] = angular_position_z;
     joints_state.position[JOINT_INDEX_REAR_LEFT] = wheel_position;
     joints_state.position[JOINT_INDEX_REAR_RIGHT] = wheel_position;
 
@@ -146,7 +148,7 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     //joints_state.velocity[JOINT_INDEX_REAR_LEFT] = wheel_position;
     //joints_state.velocity[JOINT_INDEX_REAR_RIGHT] = wheel_position;
     /* END DEBUG JOINT STATE */
-    #endif
+#endif
 
     front_steer_position = joints_state.position[JOINT_INDEX_FRONT];
     rear_wheel_position =
@@ -154,8 +156,8 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     rear_wheel_velocity =
             (joints_state.velocity[JOINT_INDEX_REAR_RIGHT] + joints_state.velocity[JOINT_INDEX_REAR_LEFT]) / 2.0;
 
-    const double wheel_separation_h = this->wheel_separation_h_;
-    const double wheel_separation_w = this->wheel_separation_w_;
+    const double wheel_separation_h = this->_wheel_separation_h;
+    const double wheel_separation_w = this->_wheel_separation_w;
 
     virtual_wheels_velocities[VIRTUAL_JOINT_IND_RIGHT_REAR] = joints_state.velocity[JOINT_INDEX_REAR_RIGHT];
     virtual_wheels_position[VIRTUAL_JOINT_IND_RIGHT_REAR] = joints_state.position[JOINT_INDEX_REAR_RIGHT];
@@ -180,33 +182,34 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     // Compute and store orientation info
 
     const geometry_msgs::Quaternion orientation(
-            tf::createQuaternionMsgFromYaw(odometry_.getHeading()));
+            tf::createQuaternionMsgFromYaw(_odometry.getHeading()));
 
-    nav_msgs::Odometry odom_msg;
+    nav_msgs::Odometry _odom_msg;
 
-    odom_msg.header.stamp = time;
-    odom_msg.pose.pose.position.x = odometry_.getX();
-    odom_msg.pose.pose.position.y = odometry_.getY();
-    odom_msg.pose.pose.orientation = orientation;
+    _odom_msg.header.stamp = time;
+    _odom_msg.pose.pose.position.x = _odometry.getX();
+    _odom_msg.pose.pose.position.y = _odometry.getY();
+    _odom_msg.pose.pose.orientation = orientation;
 
-    odom_msg.twist.twist.linear.x = odometry_.getLinear();
-    odom_msg.twist.twist.angular.z = odometry_.getAngular();
+    _odom_msg.twist.twist.linear.x = _odometry.getLinear();
+    _odom_msg.twist.twist.angular.z = _odometry.getAngular();
 
-    odom_publisher_.publish(odom_msg);
+    _odom_publisher.publish(_odom_msg);
 
-    if(enable_odom_tf_) {
+    if(_enable_odom_tf) {
 
         tf::Transform _transform;
         tf::Quaternion _q_rot;
 
-        _transform.setOrigin(tf::Vector3(odometry_.getX(), odometry_.getY(), 0.0));
-        _q_rot.setRPY(0.0, 0.0, odometry_.getHeading());
+        _transform.setOrigin(tf::Vector3(_odometry.getX(), _odometry.getY(), 0.0));
+        _q_rot.setRPY(0.0, 0.0, _odometry.getHeading());
 
         _transform.setRotation(_q_rot);
-        tf_odom_broadcaster_.sendTransform(
+        _tf_odom_broadcaster.sendTransform(
                 tf::StampedTransform(_transform, ros::Time::now(), "world", _robot_namespace)
                 );
     }
+    // endregion
 }
 
 // take commands from ROS and send to hardware
