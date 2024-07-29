@@ -301,15 +301,17 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         double cmd_linear_pwm;
 
         //clamp the velocity to be within the driver max/min
-        double lower_velocity_limit = this->max_linear_x_speed_m_s_ * -0.25;
+        double lower_velocity_limit = this->max_linear_x_speed_m_s_ * -0.5;
         double upper_velocity_limit = this->max_linear_x_speed_m_s_;
         cmd_linear_x_velocity = std::max(lower_velocity_limit, std::min(cmd_linear_x_velocity, upper_velocity_limit));
 
         cmd_linear_pwm = (cmd_linear_x_velocity / this->max_linear_speed_of_vehicle_as_geared_m_s_) * 0.5 + 0.5;
         
         //ROS_DEBUG_THROTTLE(1.0, "command_liner_x_velocity: cmd_x_velocity %f cmd_linear_pwm: %f", cmd_linear_x_velocity, cmd_linear_pwm);
+        
+        // TODO overcome stiction if requested speed is a little low
+        this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm) * 1.5);
 
-        // TODO these calls will go into the write command
         this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm));
 
         return float(cmd_linear_pwm);
@@ -329,8 +331,7 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         cmd_angular_pwm = (cmd_angular_z_velocity / this->max_angular_z_rad_s_) * 0.5 + 0.5;
         
         //ROS_DEBUG_THROTTLE(3.0, "command_angular_z_velocity: cmd_z_velocity %f cmd_angular_pwm %f", cmd_angular_z_velocity, cmd_angular_pwm);
-
-        // TODO these calls will go into the write command
+        
         this->command_pwm(Pca9685LEDController::LED0, float(cmd_angular_pwm));
 
         return float(cmd_angular_pwm);
