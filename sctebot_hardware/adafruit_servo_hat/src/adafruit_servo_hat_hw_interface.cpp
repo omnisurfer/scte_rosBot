@@ -71,7 +71,7 @@ AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::
     registerInterface(&joint_state_interface);
 
     // Status publisher
-    //servo_hat_status_pub_ = n.advertise<adafruit_servo_hat::AdafruitServoHatStatus>("status", 10);
+    servo_hat_status_pub_ = n.advertise<adafruit_servo_hat::AdafruitServoHatStatus>("status", 10);
 }
 
 void AdafruitServoHatHardwareInterface::registerVirtualJointState(std::vector<double> &virtual_wheel_positions,
@@ -213,7 +213,6 @@ void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration peri
 
     double linear_x_velocity, angular_z_velocity;
     double linear_x_velocity_pwm, angular_z_velocity_pwm;
-    
 
     this->current_command_mutex_.lock();
     {
@@ -229,13 +228,13 @@ void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration peri
         ROS_DEBUG_THROTTLE(3.0, "write: rear vel cmd %f steer cmd %f", rear_wheel_velocity_cmd, front_steer_position_cmd);
     }
 
-    //adafruit_servo_hat::AdafruitServoHatStatus msg;
-    //msg.commanded_angular_z_pwm = angular_z_velocity_pwm;
-    //msg.commanded_angular_z_velocity = angular_z_velocity;
-    //msg.commanded_linear_x_pwm = linear_x_velocity_pwm;
-    //msg.commanded_linear_x_velocity = linear_x_velocity;
+    adafruit_servo_hat::AdafruitServoHatStatus msg;
+    msg.commanded_angular_z_pwm = angular_z_velocity_pwm;
+    msg.commanded_angular_z_velocity = angular_z_velocity;
+    msg.commanded_linear_x_pwm = linear_x_velocity_pwm;
+    msg.commanded_linear_x_velocity = linear_x_velocity;
 
-    //servo_hat_status_pub_.publish(msg);
+    servo_hat_status_pub_.publish(msg);
 }
 
 void AdafruitServoHatHardwareInterface::brake() {

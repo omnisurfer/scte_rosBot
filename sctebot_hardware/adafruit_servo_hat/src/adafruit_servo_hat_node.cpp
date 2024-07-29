@@ -11,7 +11,7 @@
 double twist_linear_x_velocity, twist_angular_z_velocity;
 
 // TODO create a thread and interface through guarded variables?
-std::shared_ptr<AdafruitServoHatHardwareInterface> adafruit_servo_hat;
+std::shared_ptr<AdafruitServoHatHardwareInterface> adafruit_servo_hat_interface;
 
 void signal_handler(int sig) {
 
@@ -31,8 +31,8 @@ void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
     twist_linear_x_velocity = msg->linear.x;
     twist_angular_z_velocity = msg->angular.z;
 
-    adafruit_servo_hat->request_linear_x_velocity(twist_linear_x_velocity);
-    adafruit_servo_hat->request_angular_z_velocity(twist_angular_z_velocity);
+    adafruit_servo_hat_interface->request_linear_x_velocity(twist_linear_x_velocity);
+    adafruit_servo_hat_interface->request_angular_z_velocity(twist_angular_z_velocity);
 
     ROS_DEBUG_THROTTLE(3.0, "handle_twist_command_callback: linear_x_m/s [%f], angular_z_rad/s [%f]", msg->linear.x, msg->angular.z);
 }
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
     bool run_ros_subscriber = true;
     bool run_i2c_code = true;
 
-    adafruit_servo_hat.reset(new AdafruitServoHatHardwareInterface(robot_namespace, ros_node_handle));
+    adafruit_servo_hat_interface.reset(new AdafruitServoHatHardwareInterface(robot_namespace, ros_node_handle));
 
     if(run_i2c_code) {
 
@@ -168,7 +168,7 @@ int main(int argc, char* argv[]) {
         // TODO change this to an exception?
         bool init_ok = true;
 
-        init_ok = adafruit_servo_hat->init_device(
+        init_ok = adafruit_servo_hat_interface->init_device(
                 i2c_bus_number,
                 max_linear_speed_m_s,
                 max_linear_speed_of_vehicle_as_geared_m_s,
@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
                 );
 
         if(init_ok) {
-            adafruit_servo_hat->run();
+            adafruit_servo_hat_interface->run();
             ROS_DEBUG("%s: initialization success", node_name.c_str());
         }
         else {
@@ -194,9 +194,9 @@ int main(int argc, char* argv[]) {
         command_twist_ros_subscriber = ros_node_handle.subscribe(cmd_vel_topic, 1, handle_twist_command_callback);
     }
         
-    controller_manager::ControllerManager cm(adafruit_servo_hat.get(), ros_node_handle);
+    controller_manager::ControllerManager cm(adafruit_servo_hat_interface.get(), ros_node_handle);
 
-    double controller_period = adafruit_servo_hat->getPeriod().toSec();
+    double controller_period = adafruit_servo_hat_interface->getPeriod().toSec();
 
     ros::AsyncSpinner spinner(1);
     spinner.start();
@@ -207,12 +207,12 @@ int main(int argc, char* argv[]) {
     
     while(ros::ok()) {
 
-        ros::Time now = adafruit_servo_hat->getTime();
-        ros::Duration dt = adafruit_servo_hat->getPeriod();
+        ros::Time now = adafruit_servo_hat_interface->getTime();
+        ros::Duration dt = adafruit_servo_hat_interface->getPeriod();
 
-        adafruit_servo_hat->read(now, dt);
+        adafruit_servo_hat_interface->read(now, dt);
         cm.update(now, dt);
-        adafruit_servo_hat->write(now, dt);
+        adafruit_servo_hat_interface->write(now, dt);
 
         bool shutdown = ros::isShuttingDown();
 

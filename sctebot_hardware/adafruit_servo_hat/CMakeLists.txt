@@ -28,15 +28,15 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost 1.69.0 COMPONENTS log REQUIRED)
 
-#add_message_files(
-#  FILES
-#  AdafruitServoHatStatus.msg
-#)
+add_message_files(
+  FILES
+  AdafruitServoHatStatus.msg
+)
 
-#generate_messages(
-#  DEPENDENCIES
-#  std_msgs
-#)
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package(
         CATKIN_DEPENDS
