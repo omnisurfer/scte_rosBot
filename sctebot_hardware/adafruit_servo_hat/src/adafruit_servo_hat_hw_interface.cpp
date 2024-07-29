@@ -69,6 +69,9 @@ AdafruitServoHatHardwareInterface::AdafruitServoHatHardwareInterface(const std::
     registerInterface(&front_steer_joint_position_cmd_interface);
     registerInterface(&rear_wheel_joint_velocity_cmd_interface);
     registerInterface(&joint_state_interface);
+
+    // Status publisher
+    //servo_hat_status_pub_ = n.advertise<adafruit_servo_hat::AdafruitServoHatStatus>("status", 10);
 }
 
 void AdafruitServoHatHardwareInterface::registerVirtualJointState(std::vector<double> &virtual_wheel_positions,
@@ -119,8 +122,7 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     /*
      * 0.4m/s ~ 0.9MPH ~ 1.3RPM
      * 2.0m/s ~ 4.5MPH ~ 6.4RPM
-     */
-    static int64_t sample_at_loop_rate = 0;
+     */    
     static double wheel_position = 0.0;
 
     double max_velocity_ms = this->max_linear_x_speed_m_s_;
@@ -128,15 +130,11 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
     double tire_circumference_m = 2 * M_PI * tire_radius_m; // 0.314m
     double max_rpm = (max_velocity_ms / tire_circumference_m);
 
-    double cmd_vel_rpm = (current_linear_velocity_x / max_velocity_ms) * max_rpm;
-
-    // wheel_position = sin(double(sample_at_loop_rate) * period.toSec() * cmd_vel_rpm);
+    double cmd_vel_rpm = (current_linear_velocity_x / max_velocity_ms) * max_rpm;    
     wheel_position += (current_linear_velocity_x / max_velocity_ms) * period.toSec();
-
-    // std::cout << "wheel/vel/period" << wheel_position << "," << cmd_vel_rpm << "," << period.toSec() << std::endl;
-
-    sample_at_loop_rate = (sample_at_loop_rate + 1);
-
+    
+    //ROS_DEBUG_THROTTLE(3.0, "wheel/vel/period %f/%f/%f", wheel_position, cmd_vel_rpm, period.toSec());
+    
     // TODO populate with real values
     joints_state.position[JOINT_INDEX_FRONT] = current_angular_velocity_z;
     joints_state.position[JOINT_INDEX_REAR_LEFT] = wheel_position;
@@ -213,10 +211,31 @@ void AdafruitServoHatHardwareInterface::read(ros::Time time, ros::Duration perio
 void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration period) {
     // TODO write out the desired steer and velocity command to the servo hat here
 
-    if(rear_wheel_velocity_cmd > 0.0 && false) {
-        std::cout << "rear vel cmd: " << rear_wheel_velocity_cmd << " steer cmd: " << front_steer_position_cmd << std::endl;
+    double linear_x_velocity, angular_z_velocity;
+    double linear_x_velocity_pwm, angular_z_velocity_pwm;
+    
+
+    this->current_command_mutex_.lock();
+    {
+        linear_x_velocity = this->current_commanded_linear_x_velocity_;
+        angular_z_velocity = this->current_commanded_angular_z_velocity_;
+    }
+    this->current_command_mutex_.unlock();
+
+    linear_x_velocity_pwm = command_liner_x_velocity(linear_x_velocity);
+    angular_z_velocity_pwm = command_angular_z_velocity(angular_z_velocity);
+
+    if(rear_wheel_velocity_cmd > 0.0) {
+        ROS_DEBUG_THROTTLE(3.0, "write: rear vel cmd %f steer cmd %f", rear_wheel_velocity_cmd, front_steer_position_cmd);
     }
 
+    //adafruit_servo_hat::AdafruitServoHatStatus msg;
+    //msg.commanded_angular_z_pwm = angular_z_velocity_pwm;
+    //msg.commanded_angular_z_velocity = angular_z_velocity;
+    //msg.commanded_linear_x_pwm = linear_x_velocity_pwm;
+    //msg.commanded_linear_x_velocity = linear_x_velocity;
+
+    //servo_hat_status_pub_.publish(msg);
 }
 
 void AdafruitServoHatHardwareInterface::brake() {
@@ -227,5 +246,4 @@ void AdafruitServoHatHardwareInterface::brake() {
 
     this->command_liner_x_velocity(0.0);
     this->command_angular_z_velocity(0.0);
-
 }

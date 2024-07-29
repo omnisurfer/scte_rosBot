@@ -7,39 +7,38 @@
 
 #include "adafruit_servo_hat_hw_interface.h"
 
+
+double twist_linear_x_velocity, twist_angular_z_velocity;
+
 // TODO create a thread and interface through guarded variables?
 std::shared_ptr<AdafruitServoHatHardwareInterface> adafruit_servo_hat;
 
 void signal_handler(int sig) {
 
-    std::cout << "ROS signal handler " << sig << std::endl;
+    ROS_DEBUG_THROTTLE(3.0, "signal_handler: %i", sig);
 
     ros::shutdown();
 }
 
 void handle_servo_callback(int x, int y) {
 
-    //std::cout << "servo callback called!" << std::endl;
-
-    // Boost logging causing thread race conditions (all of them???)
-    //BOOST_LOG_TRIVIAL(debug) << "handle_servo_callback " << x << " " << y;
-    //BOOST_LOG_TRIVIAL(info) << "callback info message";
-
+    // TODO (20240728) - Currently no actual feedback from the servo driver so not printing anything
+    //ROS_DEBUG_THROTTLE(3.0, "servo handle_servo_callback: x %i, y %i", x, y);
 }
 
 void handle_twist_command_callback(const geometry_msgs::Twist::ConstPtr& msg) {
 
-    double linear_x_velocity = msg->linear.x;
-    double angular_z_velocity = msg->angular.z;
+    twist_linear_x_velocity = msg->linear.x;
+    twist_angular_z_velocity = msg->angular.z;
 
-    adafruit_servo_hat->command_liner_x_velocity(linear_x_velocity);
-    adafruit_servo_hat->command_angular_z_velocity(angular_z_velocity);
+    adafruit_servo_hat->request_linear_x_velocity(twist_linear_x_velocity);
+    adafruit_servo_hat->request_angular_z_velocity(twist_angular_z_velocity);
 
-    // ROS_INFO("Twist msg l_x [%f] m/s, a_z [%f] rad/s", msg->linear.x, msg->angular.z);
+    ROS_DEBUG_THROTTLE(3.0, "handle_twist_command_callback: linear_x_m/s [%f], angular_z_rad/s [%f]", msg->linear.x, msg->angular.z);
 }
 
 int main(int argc, char* argv[]) {
-
+    
     signal(SIGINT | SIGTERM | SIGABRT | SIGKILL, signal_handler);
 
     std::string node_name = "adafruit_servo_hat_node";
@@ -58,12 +57,11 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-
+    
     ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
-
     ros::NodeHandle ros_node_handle;
-
-    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+    
+    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
 
     ROS_INFO("%s: initializing node", node_name.c_str());
 
@@ -165,7 +163,7 @@ int main(int argc, char* argv[]) {
 
     if(run_i2c_code) {
 
-        ROS_INFO("%s: Connecting to I2C Bus number %i", node_name.c_str(), i2c_bus_number);
+        ROS_INFO("%s: connecting to I2C Bus number %i", node_name.c_str(), i2c_bus_number);
 
         // TODO change this to an exception?
         bool init_ok = true;
@@ -183,10 +181,10 @@ int main(int argc, char* argv[]) {
 
         if(init_ok) {
             adafruit_servo_hat->run();
-            ROS_INFO("%s: SERVO HAT initialization success", node_name.c_str());
+            ROS_DEBUG("%s: initialization success", node_name.c_str());
         }
         else {
-            ROS_WARN("%s: SERVO HAT initialization failed", node_name.c_str());
+            ROS_WARN("%s: initialization failed", node_name.c_str());
             return 0;
         }
     }
@@ -195,22 +193,18 @@ int main(int argc, char* argv[]) {
 
         command_twist_ros_subscriber = ros_node_handle.subscribe(cmd_vel_topic, 1, handle_twist_command_callback);
     }
-
-    double controller_period = 1.0;
-
-    //AdafruitServoHatHardwareInterface adafruit_servo_hat_hw_interface(robot_namespace, ros_node_handle);
+        
     controller_manager::ControllerManager cm(adafruit_servo_hat.get(), ros_node_handle);
 
-    controller_period = adafruit_servo_hat->getPeriod().toSec();
+    double controller_period = adafruit_servo_hat->getPeriod().toSec();
 
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
     ros::Rate loop_rate(1.0 / controller_period);
-
-    std::cout << "Adafruit Servo Hat node running..." << std::endl;
-
-    int debug_count = 0;
+    
+    ROS_INFO("Adafruit Servo Hat node running...");
+    
     while(ros::ok()) {
 
         ros::Time now = adafruit_servo_hat->getTime();
@@ -222,8 +216,8 @@ int main(int argc, char* argv[]) {
 
         bool shutdown = ros::isShuttingDown();
 
-        if(shutdown) {
-            std::cout << node_name + ": Shutting down ROS node" << std::endl;
+        if(shutdown) {            
+            ROS_INFO("%s: shutting down ROS node", node_name.c_str());
             break;
         }
 

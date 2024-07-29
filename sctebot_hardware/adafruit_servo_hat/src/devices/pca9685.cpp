@@ -184,7 +184,8 @@ void Pca9685LEDController::_servo_management_worker() {
     while(this->run_servo_status_thread) {
         run_lock.unlock();
 
-        this->_host_callback_function(1, 2);
+        // TODO (20240728) - Populate actual values from a sensor one day?
+        this->_host_callback_function(0, 0);
 
         std::map<Pca9685LEDController::LEDn, float>::iterator led_map_iterator;
         std::map<Pca9685LEDController::LEDn, float> ledn_map_pwm_power_on_percentage;

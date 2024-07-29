@@ -35,6 +35,7 @@
 #include <realtime_tools/realtime_publisher.h>
 #include <nav_msgs/Odometry.h>
 
+//#include "adafruit_servo_hat/AdafruitServoHatStatus.h"
 #include "odometry.h"
 #include "pca9685.h"
 
@@ -132,6 +133,8 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         ros::Publisher odom_publisher_;        
         tf::TransformBroadcaster tf_odom_broadcaster_;
 
+        ros::Publisher servo_hat_status_pub_;
+
     public:
 
         AdafruitServoHatHardwareInterface(const std::string& robot_namespace, const ros::NodeHandle& node_handle);
@@ -180,8 +183,8 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
                 "pca9685_led_pwm",
                 handle_pca9685_status
             );
-
-            std::cout << "connecting to " << this->i2c_bus_number_ << " at " << this->i2c_device_address_ << std::endl;
+            
+            ROS_DEBUG("connecting to %i at %i", this->i2c_bus_number_, this->i2c_device_address_);
 
             if(!this->pca9685DeviceHandle->connect_to_device()) {
                 init_ok = false;
@@ -275,14 +278,26 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
     }
 
-    void command_liner_x_velocity(double cmd_linear_x_velocity) {
-
+    void request_linear_x_velocity(double request_linear_x_velocity)
+    {
         this->current_command_mutex_.lock();
         {
-            this->current_commanded_linear_x_velocity_ = cmd_linear_x_velocity;
+            this->current_commanded_linear_x_velocity_ = request_linear_x_velocity;
         }
         this->current_command_mutex_.unlock();
+    }
 
+    void request_angular_z_velocity(double request_angular_z_velocity)
+    {
+        this->current_command_mutex_.lock();
+        {
+            this->current_commanded_angular_z_velocity_ = request_angular_z_velocity;
+        }
+        this->current_command_mutex_.unlock();
+    }
+
+    double command_liner_x_velocity(double cmd_linear_x_velocity) {
+        
         double cmd_linear_pwm;
 
         //clamp the velocity to be within the driver max/min
@@ -291,21 +306,17 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         cmd_linear_x_velocity = std::max(lower_velocity_limit, std::min(cmd_linear_x_velocity, upper_velocity_limit));
 
         cmd_linear_pwm = (cmd_linear_x_velocity / this->max_linear_speed_of_vehicle_as_geared_m_s_) * 0.5 + 0.5;
-
-        // std::cout << "cmd_lin_x: " << cmd_linear_x_velocity << " cmd_lin_pwm: " << cmd_linear_pwm << std::endl;
+        
+        ROS_DEBUG_THROTTLE(1.0, "command_liner_x_velocity: cmd_x_velocity %f cmd_linear_pwm: %f", cmd_linear_x_velocity, cmd_linear_pwm);
 
         // TODO these calls will go into the write command
         this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm));
+
+        return float(cmd_linear_pwm);
     }
 
-    void command_angular_z_velocity(double cmd_angular_z_velocity) {
-
-        this->current_command_mutex_.lock();
-        {
-            this->current_commanded_angular_z_velocity_ = cmd_angular_z_velocity;
-        }
-        this->current_command_mutex_.unlock();
-
+    double command_angular_z_velocity(double cmd_angular_z_velocity) {
+        
         double cmd_angular_pwm;
 
         // clamp the angular velocity
@@ -316,11 +327,13 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         // DMR_DEBUG_20231104 - Inverting the result. For some reason direction is inverted. Need to look into this.
         //cmd_angular_z_velocity *= -1.0;
         cmd_angular_pwm = (cmd_angular_z_velocity / this->max_angular_z_rad_s_) * 0.5 + 0.5;
-
-        //std::cout << "cmd_ang_z: " << cmd_angular_z_velocity << " cmd_ang_pwm: " << cmd_angular_pwm << std::endl;
+        
+        ROS_DEBUG_THROTTLE(3.0, "command_angular_z_velocity: cmd_z_velocity %f cmd_angular_pwm %f", cmd_angular_z_velocity, cmd_angular_pwm);
 
         // TODO these calls will go into the write command
         this->command_pwm(Pca9685LEDController::LED0, float(cmd_angular_pwm));
+
+        return float(cmd_angular_pwm);
     }
 
     void command_pwm(Pca9685LEDController::LEDn led_n, float pwm_on_percent) {
@@ -331,7 +344,7 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
     void get_odometry_update(double& linear_x_velocity, double& angular_z_velocity) {
 
-        // A real odometry udpate would require some hardware. For now just feeding in the commanded velocities
+        // A real odometry udpate would require some hardware. For now just feeding in the commanded velocities    
         this->current_command_mutex_.lock();
         {
             linear_x_velocity = this->current_commanded_linear_x_velocity_;
@@ -346,8 +359,8 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
             }
         }
         this->current_command_mutex_.unlock();
-
-        // std::cout << "get_odometry_update x " << linear_x_velocity << " z " << angular_z_velocity << std::endl;
+        
+        //ROS_DEBUG_THROTTLE(3.0, "get_odometry_update: linear_x_velocity %f angular_z_velocity %f", linear_x_velocity, angular_z_velocity);
     }
 };
 
