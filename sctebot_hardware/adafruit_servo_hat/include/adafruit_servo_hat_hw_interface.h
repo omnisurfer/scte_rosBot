@@ -28,6 +28,7 @@
 #include <thread>
 #include <utility>
 #include <condition_variable>
+#include <chrono>
 
 #include <geometry_msgs/TwistStamped.h>
 #include <tf/transform_broadcaster.h>
@@ -92,6 +93,14 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         double current_commanded_linear_x_velocity_;
         double current_commanded_angular_z_velocity_;
         
+        std::chrono::high_resolution_clock::time_point linear_x_cmd_start_time;
+        std::chrono::high_resolution_clock::time_point linear_x_cmd_current_time; 
+        double linear_x_cmd_elapsed_time_ms = 0.0;
+
+        bool initial_velocity_zeroed = false;
+        bool enable_stiction_boost = false;
+        bool stiction_boost_used = false;
+
         void publishSteer(double angle_cmd);
 
         void brake();
@@ -296,8 +305,59 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         this->current_command_mutex_.unlock();
     }
 
-    double command_liner_x_velocity(double cmd_linear_x_velocity) {
+    double command_linear_x_velocity(double cmd_linear_x_velocity) {
         
+        // WIP Hack to try and get over initial stiction in the RC BLDC motor. 
+        if(cmd_linear_x_velocity == 0.0)
+        {
+             if(!initial_velocity_zeroed)
+            {
+                ROS_DEBUG_THROTTLE(1.0, "initial_velocity_zeroed - linear_x_cmd_start_time");
+                linear_x_cmd_start_time = std::chrono::high_resolution_clock::now();
+                linear_x_cmd_current_time = std::chrono::high_resolution_clock::now();
+                linear_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(linear_x_cmd_current_time - linear_x_cmd_start_time).count();
+                initial_velocity_zeroed = true;
+                enable_stiction_boost = false;
+                stiction_boost_used = false;
+            }
+            else
+            {                
+                if(linear_x_cmd_elapsed_time_ms > 10000.0)
+                {
+                    ROS_DEBUG_THROTTLE(1.0, "initial_velocity_zeroed - elapsed_time_ms > 10000.0");
+                    enable_stiction_boost = true;
+                }
+                else
+                {
+                    linear_x_cmd_current_time = std::chrono::high_resolution_clock::now();
+                    linear_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(linear_x_cmd_current_time - linear_x_cmd_start_time).count();
+                    ROS_DEBUG_THROTTLE(1.0, "123 initial_velocity_zeroed - elapsed_time_ms: %f", linear_x_cmd_elapsed_time_ms);
+                }
+            }
+        }
+        else
+        {
+            initial_velocity_zeroed = false;
+        }
+
+        if(enable_stiction_boost)
+        {
+            ROS_DEBUG_THROTTLE(1.0, "enable_stiction_boost - enabled!");
+            
+            if(!stiction_boost_used && cmd_linear_x_velocity > 0.0)
+            {   
+                ROS_DEBUG_THROTTLE(1.0, "enable_stiction_boost - boost used!");
+                stiction_boost_used = true;
+                enable_stiction_boost = false;
+
+                //this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm) * 1.5);
+            }
+        }
+        else
+        {
+            ROS_DEBUG_THROTTLE(1.0, "enable_stiction_boost - disaabled!");
+        }
+
         double cmd_linear_pwm;
 
         //clamp the velocity to be within the driver max/min
@@ -307,10 +367,7 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
         cmd_linear_pwm = (cmd_linear_x_velocity / this->max_linear_speed_of_vehicle_as_geared_m_s_) * 0.5 + 0.5;
         
-        //ROS_DEBUG_THROTTLE(1.0, "command_liner_x_velocity: cmd_x_velocity %f cmd_linear_pwm: %f", cmd_linear_x_velocity, cmd_linear_pwm);
-        
-        // TODO overcome stiction if requested speed is a little low
-        this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm) * 1.5);
+        ROS_DEBUG_THROTTLE(1.0, "command_linear_x_velocity: cmd_x_velocity %f cmd_linear_pwm: %f", cmd_linear_x_velocity, cmd_linear_pwm);                        
 
         this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm));
 

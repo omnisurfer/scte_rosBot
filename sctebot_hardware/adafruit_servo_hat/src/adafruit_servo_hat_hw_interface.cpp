@@ -221,7 +221,7 @@ void AdafruitServoHatHardwareInterface::write(ros::Time time, ros::Duration peri
     }
     this->current_command_mutex_.unlock();
 
-    linear_x_velocity_pwm = command_liner_x_velocity(linear_x_velocity);
+    linear_x_velocity_pwm = command_linear_x_velocity(linear_x_velocity);
     angular_z_velocity_pwm = command_angular_z_velocity(angular_z_velocity);
 
     if(rear_wheel_velocity_cmd > 0.0) {
@@ -243,6 +243,6 @@ void AdafruitServoHatHardwareInterface::brake() {
     rear_wheel_velocity_cmd = 0.0;
     front_steer_position_cmd = 0.0;
 
-    this->command_liner_x_velocity(0.0);
+    this->command_linear_x_velocity(0.0);
     this->command_angular_z_velocity(0.0);
 }
