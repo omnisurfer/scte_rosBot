@@ -97,6 +97,13 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         std::chrono::high_resolution_clock::time_point linear_x_cmd_current_time; 
         double linear_x_cmd_elapsed_time_ms = 0.0;
 
+        bool initial_boost_time_ref_zeroed = false;
+        std::chrono::high_resolution_clock::time_point boost_x_cmd_start_time;
+        std::chrono::high_resolution_clock::time_point boost_x_cmd_current_time; 
+        double boost_x_cmd_elapsed_time_ms = 0.0;
+
+        double boost_coefficient = 1.0;
+
         bool initial_velocity_zeroed = false;
         bool enable_stiction_boost = false;
         bool stiction_boost_used = false;
@@ -307,31 +314,33 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
     double command_linear_x_velocity(double cmd_linear_x_velocity) {
         
-        // WIP Hack to try and get over initial stiction in the RC BLDC motor. 
+        // WIP Hack to try and get over initial stiction in the RC BLDC motor. - turn this into a state machine...        
         if(cmd_linear_x_velocity == 0.0)
-        {
+        {                        
              if(!initial_velocity_zeroed)
             {
-                ROS_DEBUG_THROTTLE(1.0, "initial_velocity_zeroed - linear_x_cmd_start_time");
+                ROS_DEBUG_THROTTLE(3.0, "initial_velocity_zeroed - linear_x_cmd_start_time");
                 linear_x_cmd_start_time = std::chrono::high_resolution_clock::now();
                 linear_x_cmd_current_time = std::chrono::high_resolution_clock::now();
                 linear_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(linear_x_cmd_current_time - linear_x_cmd_start_time).count();
                 initial_velocity_zeroed = true;
                 enable_stiction_boost = false;
-                stiction_boost_used = false;
+                stiction_boost_used = false;         
+
+                boost_coefficient = 1.0;
             }
             else
             {                
-                if(linear_x_cmd_elapsed_time_ms > 10000.0)
+                if(linear_x_cmd_elapsed_time_ms > 1000.0)
                 {
-                    ROS_DEBUG_THROTTLE(1.0, "initial_velocity_zeroed - elapsed_time_ms > 10000.0");
+                    ROS_DEBUG_THROTTLE(3.0, "initial_velocity_zeroed - elapsed_time_ms > 10000.0");
                     enable_stiction_boost = true;
                 }
                 else
                 {
                     linear_x_cmd_current_time = std::chrono::high_resolution_clock::now();
                     linear_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(linear_x_cmd_current_time - linear_x_cmd_start_time).count();
-                    ROS_DEBUG_THROTTLE(1.0, "123 initial_velocity_zeroed - elapsed_time_ms: %f", linear_x_cmd_elapsed_time_ms);
+                    ROS_DEBUG_THROTTLE(3.0, "initial_velocity_zeroed - elapsed_time_ms: %f", linear_x_cmd_elapsed_time_ms);
                 }
             }
         }
@@ -342,20 +351,54 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
 
         if(enable_stiction_boost)
         {
-            ROS_DEBUG_THROTTLE(1.0, "enable_stiction_boost - enabled!");
+            ROS_DEBUG_THROTTLE(1.0, "001");
             
             if(!stiction_boost_used && cmd_linear_x_velocity > 0.0)
             {   
-                ROS_DEBUG_THROTTLE(1.0, "enable_stiction_boost - boost used!");
+                ROS_DEBUG_THROTTLE(1.0, "002");
                 stiction_boost_used = true;
-                enable_stiction_boost = false;
+                //enable_stiction_boost = false;
 
-                //this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm) * 1.5);
+                boost_coefficient = 1.5;
+                ROS_DEBUG_THROTTLE(1.0, "boost_coeff%f", boost_coefficient);
+            }
+            else if(stiction_boost_used)
+            {
+                ROS_DEBUG_THROTTLE(1.0, "003");
+                if(!initial_boost_time_ref_zeroed)
+                {
+                    ROS_DEBUG_THROTTLE(1.0, "004");
+                    boost_x_cmd_start_time = std::chrono::high_resolution_clock::now();
+                    boost_x_cmd_current_time = std::chrono::high_resolution_clock::now();
+                    boost_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(boost_x_cmd_current_time - boost_x_cmd_start_time).count();
+                    initial_boost_time_ref_zeroed = true;
+
+                    ROS_DEBUG_THROTTLE(1.0, "boost_x_cmd_elapsed_time_ms %f", boost_x_cmd_elapsed_time_ms);
+                }
+                else
+                {
+                    ROS_DEBUG_THROTTLE(1.0, "005");
+                    if(boost_x_cmd_elapsed_time_ms > 3000.0)
+                    {                        
+                        ROS_DEBUG_THROTTLE(1.0, "006");
+                        ROS_DEBUG_THROTTLE(1.0, "boost_x_cmd_elapsed_time_ms %f", boost_x_cmd_elapsed_time_ms);
+                        enable_stiction_boost = false;
+                    }
+                    else
+                    {
+                        ROS_DEBUG_THROTTLE(1.0, "007");
+                        boost_x_cmd_current_time = std::chrono::high_resolution_clock::now();
+                        boost_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(boost_x_cmd_current_time - boost_x_cmd_start_time).count();                        
+                        ROS_DEBUG_THROTTLE(1.0, "boost_x_cmd_elapsed_time_ms %f", boost_x_cmd_elapsed_time_ms);
+                    }
+                }
             }
         }
         else
         {
-            ROS_DEBUG_THROTTLE(1.0, "enable_stiction_boost - disaabled!");
+            ROS_DEBUG_THROTTLE(1.0, "008");
+            initial_boost_time_ref_zeroed = false;
+            boost_coefficient = 1.0;
         }
 
         double cmd_linear_pwm;
@@ -366,11 +409,12 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         cmd_linear_x_velocity = std::max(lower_velocity_limit, std::min(cmd_linear_x_velocity, upper_velocity_limit));
 
         cmd_linear_pwm = (cmd_linear_x_velocity / this->max_linear_speed_of_vehicle_as_geared_m_s_) * 0.5 + 0.5;
+        cmd_linear_pwm *= boost_coefficient;
         
-        ROS_DEBUG_THROTTLE(1.0, "command_linear_x_velocity: cmd_x_velocity %f cmd_linear_pwm: %f", cmd_linear_x_velocity, cmd_linear_pwm);                        
+        ROS_DEBUG_THROTTLE(1.0, "command_linear_x_velocity: cmd_x_velocity %f cmd_linear_pwm: %f boost_coeff %f", cmd_linear_x_velocity, cmd_linear_pwm, boost_coefficient);
 
         this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm));
-
+        
         return float(cmd_linear_pwm);
     }
 
