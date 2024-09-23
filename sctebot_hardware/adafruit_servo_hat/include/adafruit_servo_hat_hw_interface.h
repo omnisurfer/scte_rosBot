@@ -102,7 +102,10 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         std::chrono::high_resolution_clock::time_point boost_x_cmd_current_time; 
         double boost_x_cmd_elapsed_time_ms = 0.0;
 
-        double boost_coefficient = 1.0;
+        #define DEFAULT_IDLE_COEFFICIENT 1.1
+        #define DEFAULT_BOOST_COEFFICIENT 1.3
+
+        double boost_coefficient = DEFAULT_IDLE_COEFFICIENT;
 
         bool initial_velocity_zeroed = false;
         bool enable_stiction_boost = false;
@@ -163,6 +166,17 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         ~AdafruitServoHatHardwareInterface() {
 
         };
+
+        typedef enum StictionBoostStates
+        {
+            ST_IDLE,
+            ST_DETECT_THROTTLE,
+            ST_ENABLE_BOOST,
+            ST_DISABLE_BOOST,
+            ST_BOOST_COOLOFF
+        };
+
+        StictionBoostStates current_stiction_boost_state = ST_IDLE;
 
         int init_device(
                 int i2c_bus_number,
@@ -313,95 +327,97 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
     }
 
     double command_linear_x_velocity(double cmd_linear_x_velocity) {
-        
-        // WIP Hack to try and get over initial stiction in the RC BLDC motor. - turn this into a state machine...        
-        if(cmd_linear_x_velocity == 0.0)
-        {                        
-             if(!initial_velocity_zeroed)
-            {
-                ROS_DEBUG_THROTTLE(3.0, "initial_velocity_zeroed - linear_x_cmd_start_time");
-                linear_x_cmd_start_time = std::chrono::high_resolution_clock::now();
-                linear_x_cmd_current_time = std::chrono::high_resolution_clock::now();
-                linear_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(linear_x_cmd_current_time - linear_x_cmd_start_time).count();
-                initial_velocity_zeroed = true;
-                enable_stiction_boost = false;
-                stiction_boost_used = false;         
-
-                boost_coefficient = 1.0;
-            }
-            else
-            {                
-                if(linear_x_cmd_elapsed_time_ms > 1000.0)
-                {
-                    ROS_DEBUG_THROTTLE(3.0, "initial_velocity_zeroed - elapsed_time_ms > 10000.0");
-                    enable_stiction_boost = true;
-                }
-                else
-                {
-                    linear_x_cmd_current_time = std::chrono::high_resolution_clock::now();
-                    linear_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(linear_x_cmd_current_time - linear_x_cmd_start_time).count();
-                    ROS_DEBUG_THROTTLE(3.0, "initial_velocity_zeroed - elapsed_time_ms: %f", linear_x_cmd_elapsed_time_ms);
-                }
-            }
-        }
-        else
-        {
-            initial_velocity_zeroed = false;
-        }
-
-        if(enable_stiction_boost)
-        {
-            ROS_DEBUG_THROTTLE(1.0, "001");
-            
-            if(!stiction_boost_used && cmd_linear_x_velocity > 0.0)
-            {   
-                ROS_DEBUG_THROTTLE(1.0, "002");
-                stiction_boost_used = true;
-                //enable_stiction_boost = false;
-
-                boost_coefficient = 1.5;
-                ROS_DEBUG_THROTTLE(1.0, "boost_coeff%f", boost_coefficient);
-            }
-            else if(stiction_boost_used)
-            {
-                ROS_DEBUG_THROTTLE(1.0, "003");
-                if(!initial_boost_time_ref_zeroed)
-                {
-                    ROS_DEBUG_THROTTLE(1.0, "004");
-                    boost_x_cmd_start_time = std::chrono::high_resolution_clock::now();
-                    boost_x_cmd_current_time = std::chrono::high_resolution_clock::now();
-                    boost_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(boost_x_cmd_current_time - boost_x_cmd_start_time).count();
-                    initial_boost_time_ref_zeroed = true;
-
-                    ROS_DEBUG_THROTTLE(1.0, "boost_x_cmd_elapsed_time_ms %f", boost_x_cmd_elapsed_time_ms);
-                }
-                else
-                {
-                    ROS_DEBUG_THROTTLE(1.0, "005");
-                    if(boost_x_cmd_elapsed_time_ms > 3000.0)
-                    {                        
-                        ROS_DEBUG_THROTTLE(1.0, "006");
-                        ROS_DEBUG_THROTTLE(1.0, "boost_x_cmd_elapsed_time_ms %f", boost_x_cmd_elapsed_time_ms);
-                        enable_stiction_boost = false;
-                    }
-                    else
-                    {
-                        ROS_DEBUG_THROTTLE(1.0, "007");
-                        boost_x_cmd_current_time = std::chrono::high_resolution_clock::now();
-                        boost_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(boost_x_cmd_current_time - boost_x_cmd_start_time).count();                        
-                        ROS_DEBUG_THROTTLE(1.0, "boost_x_cmd_elapsed_time_ms %f", boost_x_cmd_elapsed_time_ms);
-                    }
-                }
-            }
-        }
-        else
-        {
-            ROS_DEBUG_THROTTLE(1.0, "008");
-            initial_boost_time_ref_zeroed = false;
-            boost_coefficient = 1.0;
-        }
 
         double cmd_linear_pwm;
+
+        double elapsed_time_boost_is_enabled_ms = 300;
+        double elapsed_time_boost_cooldown_is_enabled_ms = 100;
+
+        switch(current_stiction_boost_state)
+        {
+            case ST_IDLE:
+            {
+                ROS_DEBUG_THROTTLE(1.0, "ST_IDLE elapsed %f", linear_x_cmd_elapsed_time_ms);
+
+                if (cmd_linear_x_velocity == 0.0)
+                {                                                            
+                    // TODO (20240922) - Add element that will wait some time before allowing for stiction boost. Basically ignore zero crossings...
+                    current_stiction_boost_state = ST_DETECT_THROTTLE;
+                    boost_coefficient = 1.0;
+                }
+                break;
+            }
+
+            case ST_DETECT_THROTTLE:
+            {
+                ROS_DEBUG_THROTTLE(1.0, "ST_DETECT_THROTTLE elapsed %f", linear_x_cmd_elapsed_time_ms);
+
+                // if zero velocity is commanded, just hang out here
+                if (cmd_linear_x_velocity == 0.0)
+                {
+                    current_stiction_boost_state = ST_DETECT_THROTTLE;                    
+                }
+                else if (cmd_linear_x_velocity >= -0.5 && cmd_linear_x_velocity <= 0.5)
+                {
+                    linear_x_cmd_start_time = std::chrono::high_resolution_clock::now();                    
+                    current_stiction_boost_state = ST_ENABLE_BOOST;
+                }
+                break;
+            }
+
+            case ST_ENABLE_BOOST:
+            {
+                ROS_DEBUG_THROTTLE(1.0, "ST_ENABLE_BOOST elapsed %f", linear_x_cmd_elapsed_time_ms);
+
+                // WIP (20240922) - add in time related code
+                boost_coefficient = DEFAULT_BOOST_COEFFICIENT;
+
+                linear_x_cmd_current_time = std::chrono::high_resolution_clock::now();
+                linear_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(linear_x_cmd_current_time - linear_x_cmd_start_time).count();
+
+                if (linear_x_cmd_elapsed_time_ms > elapsed_time_boost_is_enabled_ms)
+                {
+                    ROS_DEBUG_THROTTLE(1.0, "DISABLE BOOST elapsed %f boost_coeff %f", linear_x_cmd_elapsed_time_ms, boost_coefficient);
+                    current_stiction_boost_state = ST_DISABLE_BOOST;
+                }
+                else
+                {
+                    ROS_DEBUG_THROTTLE(1.0, "ENABLE BOOST elapsed %f boost_coeff %f", linear_x_cmd_elapsed_time_ms, boost_coefficient);
+                }
+                break;
+            }
+
+            case ST_DISABLE_BOOST:
+            {            
+                ROS_DEBUG_THROTTLE(1.0, "ST_DISABLE_BOOST elapsed %f", linear_x_cmd_elapsed_time_ms);
+
+                boost_coefficient = DEFAULT_IDLE_COEFFICIENT;
+
+                current_stiction_boost_state = ST_BOOST_COOLOFF;
+
+                break;
+            }
+
+            case ST_BOOST_COOLOFF:
+            {
+                ROS_DEBUG_THROTTLE(1.0, "ST_BOOST_COOLOFF elapsed %f", linear_x_cmd_elapsed_time_ms);
+
+                linear_x_cmd_current_time = std::chrono::high_resolution_clock::now();
+                linear_x_cmd_elapsed_time_ms = std::chrono::duration<double, std::milli>(linear_x_cmd_current_time - linear_x_cmd_start_time).count();
+
+                if (linear_x_cmd_elapsed_time_ms > elapsed_time_boost_is_enabled_ms + elapsed_time_boost_cooldown_is_enabled_ms)
+                {
+                    current_stiction_boost_state = ST_IDLE;
+                }
+                break;
+            }
+            
+            default:
+            {
+                current_stiction_boost_state = ST_DISABLE_BOOST;
+                break;
+            }
+        }
 
         //clamp the velocity to be within the driver max/min
         double lower_velocity_limit = this->max_linear_x_speed_m_s_ * -0.5;
@@ -411,7 +427,7 @@ class AdafruitServoHatHardwareInterface : public hardware_interface::RobotHW {
         cmd_linear_pwm = (cmd_linear_x_velocity / this->max_linear_speed_of_vehicle_as_geared_m_s_) * 0.5 + 0.5;
         cmd_linear_pwm *= boost_coefficient;
         
-        ROS_DEBUG_THROTTLE(1.0, "command_linear_x_velocity: cmd_x_velocity %f cmd_linear_pwm: %f boost_coeff %f", cmd_linear_x_velocity, cmd_linear_pwm, boost_coefficient);
+        ROS_DEBUG_THROTTLE(0.5, "command_linear_x_velocity: cmd_x_velocity %f cmd_linear_pwm: %f boost_coeff %f", cmd_linear_x_velocity, cmd_linear_pwm, boost_coefficient);
 
         this->command_pwm(Pca9685LEDController::LED1, float(cmd_linear_pwm));
         
